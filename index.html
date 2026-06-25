@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Healty App — Entrená · Superá · Vive Mejor</title>
+    
+    <!-- PWA / iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Healty App" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="manifest" href="./manifest.json" />
+
+    <!-- Google Fonts: Bebas Neue, Inter and Playfair Display for styling -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Script to register service worker and generate apple-touch-icon dynamically -->
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        // Generate apple-touch-icon via canvas: 180x180, rounded #0a0a0a background, Large H in #c8f135, small APP in white
+        const canvas = document.createElement('canvas');
+        canvas.width = 180;
+        canvas.height = 180;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Draw rounded background
+          ctx.beginPath();
+          ctx.fillStyle = '#0a0a0a';
+          // Draw thick rounded rectangle
+          const r = 40;
+          ctx.roundRect(0, 0, 180, 180, r);
+          ctx.fill();
+
+          // Draw "H"
+          ctx.fillStyle = '#c8f135';
+          ctx.font = '800 110px "Inter", "Bebas Neue", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('H', 90, 80);
+
+          // Draw "APP"
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '800 20px "Inter", sans-serif';
+          ctx.fillText('APP', 90, 142);
+
+          // Set as apple-touch-icon
+          const linkIcon = document.createElement('link');
+          linkIcon.rel = 'apple-touch-icon';
+          linkIcon.href = canvas.toDataURL('image/png');
+          document.head.appendChild(linkIcon);
+
+          // Find also other shortcut icon slots
+          const shortcutIcon = document.createElement('link');
+          shortcutIcon.rel = 'shortcut icon';
+          shortcutIcon.href = canvas.toDataURL('image/png');
+          document.head.appendChild(shortcutIcon);
+        }
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('./service-worker.js')
+            .then(reg => {
+              console.log('Service Worker registrado correctamente:', reg.scope);
+            })
+            .catch(err => {
+              console.log('Error al registrar Service Worker:', err);
+            });
+        }
+      });
+    </script>
+    <style>
+      /* Ensure iOS smooth scrolling and safe area layout on html level */
+      html, body {
+        background-color: #0a0a0a;
+        color: #ffffff;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        width: 100%;
+        overflow-x: hidden;
+        font-family: 'Inter', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      /* Apply safe area sizing dynamically */
+      body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: calc(64px + env(safe-area-inset-bottom));
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

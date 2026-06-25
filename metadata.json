@@ -1,0 +1,6 @@
+{
+  "name": "Healty App",
+  "description": "Tu entrenador personal con IA — Entrená, Superá, Vive Mejor",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

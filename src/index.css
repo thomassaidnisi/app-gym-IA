@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
+  --font-mono: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
+
+  /* Only brand color stays in @theme — generates bg-brand, text-brand utilities */
+  --color-brand: #c8f135;
+}
+
+/* ── DESIGN TOKENS — theme-reactive ─────────────────────────────────────── */
+
+/* Light (default) */
+:root {
+  --bg-primary:          #ffffff;
+  --bg-secondary:        #f5f5f7;
+  --bg-elevated:         #ffffff;
+  --text-primary:        #0a0a0a;
+  --text-secondary:      #6e6e73;
+  --text-tertiary:       #aeaeb2;
+  --border:              #e5e5ea;
+  --surface-hero:        #0a0a0a;        /* hero card: black on light bg */
+  --surface-hero-border: #1c1c1e;
+}
+
+/* Dark via system preference (only when user hasn't forced light) */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --bg-primary:          #121214;
+    --bg-secondary:        #1c1c1f;
+    --bg-elevated:         #232326;
+    --text-primary:        #f5f5f7;
+    --text-secondary:      #9a9a9f;
+    --text-tertiary:       #6e6e73;
+    --border:              #2c2c30;
+    --surface-hero:        #232326;      /* hero card: elevated dark, not invisible */
+    --surface-hero-border: #2c2c30;
+  }
+}
+
+/* Dark forced by user */
+html[data-theme="dark"] {
+  --bg-primary:          #121214;
+  --bg-secondary:        #1c1c1f;
+  --bg-elevated:         #232326;
+  --text-primary:        #f5f5f7;
+  --text-secondary:      #9a9a9f;
+  --text-tertiary:       #6e6e73;
+  --border:              #2c2c30;
+  --surface-hero:        #232326;
+  --surface-hero-border: #2c2c30;
+}
+
+/* Light forced by user (overrides system dark via :not guard in media query) */
+html[data-theme="light"] {
+  --bg-primary:          #ffffff;
+  --bg-secondary:        #f5f5f7;
+  --bg-elevated:         #ffffff;
+  --text-primary:        #0a0a0a;
+  --text-secondary:      #6e6e73;
+  --text-tertiary:       #aeaeb2;
+  --border:              #e5e5ea;
+  --surface-hero:        #0a0a0a;
+  --surface-hero-border: #1c1c1e;
+}
+
+/* ── SCROLLBAR ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* ── UTILITIES ───────────────────────────────────────────────────────────── */
+.safe-pt { padding-top: env(safe-area-inset-top); }
+.safe-pb { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse-slow { animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
