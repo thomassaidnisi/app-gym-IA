@@ -1,0 +1,113 @@
+import React from "react";
+import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "motion/react";
+import { DayPlan } from "../../types";
+import { useWakeLock } from "../../hooks/useWakeLock";
+import { useWorkoutSession } from "../../hooks/useWorkoutSession";
+import { Intro } from "./phases/Intro";
+import { Exercising } from "./phases/Exercising";
+import { Resting } from "./phases/Resting";
+import { Transition } from "./phases/Transition";
+import { Summary } from "./phases/Summary";
+
+interface WorkoutSessionProps {
+  day: DayPlan;
+  onClose: () => void;
+}
+
+export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose }) => {
+  useWakeLock();
+
+  const {
+    session,
+    currentBlock,
+    currentExercise,
+    nextExercise,
+    progress,
+    exerciseNumber,
+    totalExercises,
+    startSession,
+    completeSet,
+    advanceFromResting,
+    advanceFromTransition,
+    suggestWeight,
+  } = useWorkoutSession(day);
+
+  const content = (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18 }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        backgroundColor: "#0a0a0a",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      <AnimatePresence mode="wait">
+        {session.phase === "intro" && (
+          <motion.div key="intro" className="flex-1 min-h-0">
+            <Intro day={day} onStart={startSession} />
+          </motion.div>
+        )}
+
+        {session.phase === "exercising" && currentBlock && currentExercise && (
+          <motion.div key="exercising" className="flex-1 min-h-0 flex flex-col">
+            <Exercising
+              session={session}
+              currentBlock={currentBlock}
+              currentExercise={currentExercise}
+              exerciseNumber={exerciseNumber}
+              totalExercises={totalExercises}
+              progress={progress}
+              onCompleteSet={completeSet}
+              onExit={onClose}
+              suggestWeight={suggestWeight}
+            />
+          </motion.div>
+        )}
+
+        {session.phase === "resting" && currentExercise && (
+          <motion.div key="resting" className="flex-1 min-h-0 flex flex-col">
+            <Resting
+              initialSeconds={session.restSeconds}
+              currentSet={session.currentSet}
+              totalSets={session.totalSets}
+              currentExercise={currentExercise}
+              completedSets={session.completedSets}
+              isLastExercise={session.isLastExercise}
+              onAdvance={advanceFromResting}
+              onExit={onClose}
+            />
+          </motion.div>
+        )}
+
+        {session.phase === "transition" && currentExercise && (
+          <motion.div key="transition" className="flex-1 min-h-0 flex flex-col">
+            <Transition
+              completedExercise={currentExercise}
+              completedSets={session.completedSets}
+              totalSetsForExercise={session.totalSets}
+              nextExercise={nextExercise ?? null}
+              isLastExercise={session.isLastExercise}
+              onAdvance={advanceFromTransition}
+            />
+          </motion.div>
+        )}
+
+        {session.phase === "summary" && (
+          <motion.div key="summary" className="flex-1 min-h-0 flex flex-col">
+            <Summary session={session} day={day} onClose={onClose} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+
+  return createPortal(content, document.body);
+};

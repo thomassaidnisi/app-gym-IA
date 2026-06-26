@@ -493,7 +493,7 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
   // Coach IA message endpoint
   app.post("/api/coach-message", async (req, res) => {
     try {
-      const { message, plan, profile, chatHistory = [], exerciseHistory = {} } = req.body;
+      const { message, plan, profile, chatHistory = [], exerciseHistory = {}, recentWorkoutLogs = [] } = req.body;
 
       if (!message || !plan || !profile) {
         return res.status(400).json({ error: "Faltan datos requeridos (message, plan o perfil)." });
@@ -538,6 +538,14 @@ ${Object.keys(exerciseHistory).length > 0
       .map(([name, entries]) => `- ${name}: ${entries.map((e: {date:string;weight:string}) => `${e.date} → ${e.weight}`).join(" | ")}`)
       .join("\n")
   : "Sin registros de cargas aún."}
+
+ÚLTIMOS ENTRENAMIENTOS REGISTRADOS (últimas 8 sesiones completadas desde la app):
+${(recentWorkoutLogs as {date:string;dayName:string;durationMinutes:number;totalVolumeKg:number}[]).length > 0
+  ? (recentWorkoutLogs as {date:string;dayName:string;durationMinutes:number;totalVolumeKg:number}[])
+      .map((l) => `- ${l.date} | ${l.dayName} | ${l.durationMinutes} min | ${l.totalVolumeKg} kg volumen total`)
+      .join("\n")
+  : "Sin sesiones registradas aún."}
+Si el usuario pregunta sobre su progreso, volumen de entrenamiento o consistencia (ej: "¿cómo vengo esta semana?", "¿cuánto volumen hice?", "¿qué tan seguido entreno?"), usá estos datos reales para responder con precisión en vez de generalidades. NO menciones estos datos si el usuario no preguntó nada relacionado con su historial o consistencia.
 
 INSTRUCCIONES:
 1. Analizá el pedido del usuario en el contexto de su plan actual y su perfil.

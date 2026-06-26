@@ -130,3 +130,37 @@ export interface ParsedPlanResponse {
   error: string | null;
 }
 
+export interface CompletedSet {
+  exerciseId: string;
+  exerciseName: string;
+  setNumber: number;
+  weight: number | null;
+  reps: number;
+  completedAt: Date;
+}
+
+export interface SessionState {
+  phase: "intro" | "exercising" | "resting" | "transition" | "summary";
+  currentBlockIndex: number;
+  currentExerciseIndex: number;
+  currentSet: number;
+  totalSets: number;
+  restSeconds: number;
+  restRemaining: number;
+  completedSets: CompletedSet[];
+  sessionStartTime: Date;
+  sessionNotes: string;
+  isLastExercise: boolean;
+}
+
+export interface WorkoutLog {
+  id: string;
+  date: string;
+  dayName: string;
+  durationMinutes: number;
+  totalVolumeKg: number;
+  completedSets: CompletedSet[];
+  notes: string;
+  completedAt: Date;
+}
+

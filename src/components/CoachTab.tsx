@@ -87,6 +87,33 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
     });
   };
 
+  const buildRecentWorkoutSummary = (): {
+    date: string;
+    dayName: string;
+    durationMinutes: number;
+    totalVolumeKg: number;
+  }[] => {
+    try {
+      const logs = JSON.parse(localStorage.getItem("workoutLogs") ?? "[]") as {
+        date: string;
+        dayName: string;
+        durationMinutes: number;
+        totalVolumeKg: number;
+      }[];
+      return logs
+        .slice(-8)
+        .reverse()
+        .map(({ date, dayName, durationMinutes, totalVolumeKg }) => ({
+          date,
+          dayName,
+          durationMinutes,
+          totalVolumeKg,
+        }));
+    } catch {
+      return [];
+    }
+  };
+
   const buildExerciseHistory = (): Record<string, { date: string; weight: string }[]> => {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 14); // últimas 2 semanas
@@ -125,7 +152,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
       const res = await fetch("/api/coach-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userQuery, plan, profile, chatHistory: updatedMessages.slice(-6).map(m => ({ role: m.role, text: m.text })), exerciseHistory: buildExerciseHistory() }),
+        body: JSON.stringify({ message: userQuery, plan, profile, chatHistory: updatedMessages.slice(-6).map(m => ({ role: m.role, text: m.text })), exerciseHistory: buildExerciseHistory(), recentWorkoutLogs: buildRecentWorkoutSummary() }),
       });
       if (!res.ok) throw new Error("Respuesta no válida del servidor.");
       const data: CoachResponse = await res.json();

@@ -29,6 +29,9 @@ export default function App() {
       try { setProfile(JSON.parse(cachedProfile)); } catch (e) { console.error(e); }
     }
   }, []);
+useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [activeTab]);
 
   const handlePlanGenerated = (newPlan: FullTrainingPlan, newProfile: UserProfile) => {
     setPlan(newPlan);

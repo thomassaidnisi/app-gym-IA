@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FullTrainingPlan, UserProfile, DayPlan } from "../types";
+import { WorkoutSession } from "./WorkoutSession";
 import {
   Dumbbell, Clock, Play, Youtube, Check, FileText,
   PersonStanding, Footprints, Bike, Moon, Zap, Flame, CalendarDays, ChevronDown,
@@ -53,6 +54,9 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
   const [streak, setStreak] = useState(0);
   const [weekSessions, setWeekSessions] = useState(0);
   const [daysSinceLastWorkout, setDaysSinceLastWorkout] = useState<number | null>(null);
+
+  const [sessionDay, setSessionDay] = useState<DayPlan | null>(null);
+  const [statsRefreshKey, setStatsRefreshKey] = useState(0);
 
   const [heroExpanded, setHeroExpanded] = useState<boolean>(() => {
     const saved = localStorage.getItem("healty_hero_expanded");
@@ -162,7 +166,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
       if (localStorage.getItem(`gym_${getLocalDateStr(d)}`) === "true") w++;
     }
     setWeekSessions(w);
-  }, [todayStr]);
+  }, [todayStr, statsRefreshKey]);
 
   const toggleExpand = (exerciseName: string) => {
     setExpandedExercises((prev) => ({ ...prev, [exerciseName]: !prev[exerciseName] }));
@@ -301,7 +305,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
                   </div>
                   <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={handleStartWorkout}
+                    onClick={() => todayDayPlan && setSessionDay(todayDayPlan)}
                     className="mt-4 w-full bg-brand hover:bg-lime-400 text-black font-bold py-3 rounded-xl text-sm transition-all shadow-sm"
                   >
                     Empezar Entrenamiento →
@@ -535,9 +539,9 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
                                 ))}
                               </div>
                             </div>
-                            <div className="flex items-center gap-3 shrink-0">
+                            <div className="flex items-center gap-3 shrink-0 max-w-[44%]">
                               <div className="text-right select-none">
-                                <span className="font-bold text-xl tabular-nums leading-none block" style={{ color: T.textPri }}>
+                                <span className={`font-bold tabular-nums leading-snug block break-words ${(`${ex.sets}x${ex.reps}`).length > 15 ? "text-base" : "text-xl"}`} style={{ color: T.textPri }}>
                                   {ex.sets}x{ex.reps}
                                 </span>
                                 <div className="text-[9px] mt-1 block" style={{ color: T.textSec }}>
@@ -667,6 +671,11 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
             Este día no tiene entrenamiento asignado en tu plan.
           </p>
         </div>
+      )}
+
+      {/* WorkoutSession portal */}
+      {sessionDay && (
+        <WorkoutSession day={sessionDay} onClose={() => { setSessionDay(null); setStatsRefreshKey((k) => k + 1); }} />
       )}
 
       {/* Toast */}
