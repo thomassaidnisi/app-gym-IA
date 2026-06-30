@@ -13,11 +13,14 @@ import { RestTimerOverlay } from "./components/RestTimerOverlay";
 import { ThemeProvider } from "./components/ThemeContext";
 import { FullTrainingPlan, UserProfile } from "./types";
 import { Dumbbell, Sun, BarChart2, User as UserIcon, MessageSquare, BookOpen } from "lucide-react";
+import { AuthProvider, useAuth } from "./components/AuthContext";
+import { AuthScreen } from "./components/AuthScreen";
 
-export default function App() {
+function AppContent() {
   const [plan, setPlan] = useState<FullTrainingPlan | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [activeTab, setActiveTab] = useState<"gym" | "library" | "morning" | "stats" | "profile" | "coach">("gym");
+
 
   useEffect(() => {
     const cachedPlan = localStorage.getItem("healty_plan");
@@ -51,6 +54,15 @@ useEffect(() => {
   };
 
   const handleProfileUpdated = (updated: UserProfile) => setProfile(updated);
+const { user, isLoading } = useAuth();
+
+if (isLoading) {
+  return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100vh" }} />;
+}
+
+if (!user) {
+  return <AuthScreen />;
+}
 
   if (!plan || !profile) {
     return (
@@ -75,7 +87,7 @@ useEffect(() => {
  {/* Profile button — global, visible en todos los tabs */}
             <button
               onClick={() => setActiveTab("profile")}
-              className="absolute top-4 right-0 z-20 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold select-none transition-all"
+              className="absolute top-5 right-0 z-20 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold select-none transition-all"
               style={{
                 backgroundColor: activeTab === "profile" ? "var(--color-brand)" : "var(--text-primary)",
                 color: activeTab === "profile" ? "#000" : "var(--bg-primary)",
@@ -173,5 +185,12 @@ useEffect(() => {
         </div>
       </RestTimerProvider>
     </ThemeProvider>
+  );
+}
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

@@ -35,7 +35,8 @@ export const RestTimerOverlay: React.FC = () => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -16, scale: 0.96 }}
           transition={{ type: "spring", stiffness: 500, damping: 35 }}
-          className="fixed top-4 left-4 right-4 z-50 max-w-lg mx-auto"
+          className="fixed left-4 right-4 z-50 max-w-lg mx-auto"
+          style={{ top: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
         >
           <div
             className="backdrop-blur-md shadow-xl rounded-2xl px-4 py-3 flex items-center gap-3"

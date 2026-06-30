@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, Exercise, ExerciseBlock, SessionState, CompletedSet, WorkoutLog } from "../types";
+import { DayPlan, Exercise, ExerciseBlock, QueueItem, SessionState, CompletedSet, WorkoutLog } from "../types";
 
 export interface SuggestedWeight {
   weight: number;
@@ -32,58 +32,54 @@ function getRestSeconds(block: ExerciseBlock, exercise: Exercise): number {
   return 60;
 }
 
+function buildQueue(day: DayPlan): QueueItem[] {
+  return day.blocks.flatMap((block, bi) =>
+    block.exercises.map((exercise, ei) => ({
+      id: `b${bi}-e${ei}`,
+      exercise,
+      block,
+    }))
+  );
+}
+
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useWorkoutSession(day: DayPlan) {
-  const firstBlock = day.blocks[0];
-  const firstExercise = firstBlock?.exercises[0];
+  const [head, ...tail] = buildQueue(day);
 
   const [session, setSession] = useState<SessionState>({
     phase: "intro",
-    currentBlockIndex: 0,
-    currentExerciseIndex: 0,
+    completedQueue: [],
+    currentItem: head ?? null,
+    upcomingQueue: tail,
     currentSet: 1,
-    totalSets: firstExercise?.sets ?? 1,
-    restSeconds: firstExercise ? getRestSeconds(firstBlock, firstExercise) : 60,
+    totalSets: head?.exercise.sets ?? 1,
+    restSeconds: head ? getRestSeconds(head.block, head.exercise) : 60,
     restRemaining: 0,
     completedSets: [],
     sessionStartTime: new Date(),
     sessionNotes: "",
-    isLastExercise: false,
   });
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
-  const currentBlock = day.blocks[session.currentBlockIndex];
-  const currentExercise = currentBlock?.exercises[session.currentExerciseIndex];
+  const currentBlock = session.currentItem?.block ?? null;
+  const currentExercise = session.currentItem?.exercise ?? null;
+  const nextExercise = session.upcomingQueue[0]?.exercise ?? null;
 
-  const allExercises = day.blocks.flatMap((b) => b.exercises);
-  const exercisesDoneCount =
-    day.blocks
-      .slice(0, session.currentBlockIndex)
-      .reduce((sum, b) => sum + b.exercises.length, 0) +
-    session.currentExerciseIndex;
+  const totalExercises =
+    session.completedQueue.length +
+    (session.currentItem ? 1 : 0) +
+    session.upcomingQueue.length;
 
-  const exerciseNumber = exercisesDoneCount + 1;
-  const totalExercises = allExercises.length;
+  const exerciseNumber = session.completedQueue.length + 1;
+
   const progress =
     totalExercises > 0
-      ? (exercisesDoneCount + (session.currentSet - 1) / Math.max(session.totalSets, 1)) /
+      ? (session.completedQueue.length +
+          (session.currentSet - 1) / Math.max(session.totalSets, 1)) /
         totalExercises
       : 0;
-
-  // Next exercise (valid during transition phase)
-  const nextExercise = (() => {
-    if (session.isLastExercise) return null;
-    const block = day.blocks[session.currentBlockIndex];
-    const isLastInBlock =
-      session.currentExerciseIndex === (block?.exercises.length ?? 0) - 1;
-    const nextBI = isLastInBlock
-      ? session.currentBlockIndex + 1
-      : session.currentBlockIndex;
-    const nextEI = isLastInBlock ? 0 : session.currentExerciseIndex + 1;
-    return day.blocks[nextBI]?.exercises[nextEI] ?? null;
-  })();
 
   // ── Public actions ─────────────────────────────────────────────────────────
 
@@ -93,22 +89,20 @@ export function useWorkoutSession(day: DayPlan) {
 
   const completeSet = (weight: number | null, reps: number) => {
     setSession((s) => {
-      const block = day.blocks[s.currentBlockIndex];
-      const exercise = block?.exercises[s.currentExerciseIndex];
-      if (!block || !exercise) return s;
+      if (!s.currentItem) return s;
+      const { exercise, block, id } = s.currentItem;
 
-      const newCompletedSet: CompletedSet = {
-        exerciseId: `${s.currentBlockIndex}-${s.currentExerciseIndex}`,
+      const newSet: CompletedSet = {
+        exerciseId: id,
         exerciseName: exercise.name,
         setNumber: s.currentSet,
         weight,
         reps,
         completedAt: new Date(),
       };
-      const completedSets = [...s.completedSets, newCompletedSet];
+      const completedSets = [...s.completedSets, newSet];
 
       if (s.currentSet < s.totalSets) {
-        // More sets for this exercise → rest
         const restSecs = getRestSeconds(block, exercise);
         return {
           ...s,
@@ -120,19 +114,19 @@ export function useWorkoutSession(day: DayPlan) {
         };
       }
 
-      // Last set → transition
-      const isLastInBlock =
-        s.currentExerciseIndex === block.exercises.length - 1;
-      const isLastBlock = s.currentBlockIndex === day.blocks.length - 1;
-      const isLast = isLastInBlock && isLastBlock;
-
+      // Last set of this exercise — push to completedQueue, go to transition.
+      // upcomingQueue.length === 0 means this was the last exercise.
       return {
         ...s,
         completedSets,
+        completedQueue: [...s.completedQueue, s.currentItem],
         phase: "transition" as const,
-        isLastExercise: isLast,
       };
     });
+  };
+
+  const goToSummary = () => {
+    setSession((s) => ({ ...s, phase: "summary" as const }));
   };
 
   const advanceFromResting = () => {
@@ -145,34 +139,37 @@ export function useWorkoutSession(day: DayPlan) {
 
   const advanceFromTransition = () => {
     setSession((s) => {
-      if (s.isLastExercise) {
-        return { ...s, phase: "summary" as const };
-      }
-
-      const block = day.blocks[s.currentBlockIndex];
-      const isLastInBlock =
-        s.currentExerciseIndex === (block?.exercises.length ?? 0) - 1;
-
-      const nextBI = isLastInBlock
-        ? s.currentBlockIndex + 1
-        : s.currentBlockIndex;
-      const nextEI = isLastInBlock ? 0 : s.currentExerciseIndex + 1;
-
-      const nextBlock = day.blocks[nextBI];
-      const nextEx = nextBlock?.exercises[nextEI];
-      if (!nextBlock || !nextEx) return { ...s, phase: "summary" as const };
+      const [next, ...remaining] = s.upcomingQueue;
+      if (!next) return { ...s, phase: "summary" as const };
 
       return {
         ...s,
         phase: "exercising" as const,
-        currentBlockIndex: nextBI,
-        currentExerciseIndex: nextEI,
+        currentItem: next,
+        upcomingQueue: remaining,
         currentSet: 1,
-        totalSets: nextEx.sets,
-        restSeconds: getRestSeconds(nextBlock, nextEx),
+        totalSets: next.exercise.sets,
+        restSeconds: getRestSeconds(next.block, next.exercise),
         restRemaining: 0,
-        isLastExercise: false,
       };
+    });
+  };
+
+  /**
+   * Reorder upcoming exercises by providing the desired sequence of IDs.
+   * Any ID not present in newIds is appended at the end unchanged.
+   * The current exercise is never affected.
+   */
+  const reorderUpcoming = (newIds: string[]) => {
+    setSession((s) => {
+      const map = new Map(s.upcomingQueue.map((item) => [item.id, item]));
+      const reordered = newIds.flatMap((id) => {
+        const item = map.get(id);
+        return item ? [item] : [];
+      });
+      const mentioned = new Set(newIds);
+      const remainder = s.upcomingQueue.filter((item) => !mentioned.has(item.id));
+      return { ...s, upcomingQueue: [...reordered, ...remainder] };
     });
   };
 
@@ -183,13 +180,13 @@ export function useWorkoutSession(day: DayPlan) {
     const logs = loadWorkoutLogs();
     for (let i = logs.length - 1; i >= 0; i--) {
       const sets = logs[i].completedSets.filter(
-        (s) => s.exerciseName === exerciseName
+        (s: CompletedSet) => s.exerciseName === exerciseName
       );
       if (sets.length === 0) continue;
 
       const weights = sets
-        .map((s) => s.weight)
-        .filter((w): w is number => w !== null);
+        .map((s: CompletedSet) => s.weight)
+        .filter((w: number | null): w is number => w !== null);
       if (weights.length === 0) break;
 
       const lastWeight = weights[weights.length - 1];
@@ -228,10 +225,12 @@ export function useWorkoutSession(day: DayPlan) {
     exerciseNumber,
     totalExercises,
     startSession,
+    goToSummary,
     completeSet,
     advanceFromResting,
     addRestTime,
     advanceFromTransition,
+    reorderUpcoming,
     suggestWeight,
   };
 }

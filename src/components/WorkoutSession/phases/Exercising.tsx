@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Minus, Plus } from "lucide-react";
+import { X, Minus, Plus, ListOrdered } from "lucide-react";
 import { ExerciseBlock, Exercise, SessionState } from "../../../types";
 import { SuggestedWeight } from "../../../hooks/useWorkoutSession";
+import { QueueSheet } from "../QueueSheet";
+import { TechniqueSheet } from "../TechniqueSheet";
+import { ExitSheet } from "../ExitSheet";
 
 interface ExercisingProps {
   session: SessionState;
@@ -12,6 +15,8 @@ interface ExercisingProps {
   totalExercises: number;
   progress: number;
   onCompleteSet: (weight: number | null, reps: number) => void;
+  onReorder: (newIds: string[]) => void;
+  onAbandon: () => void;
   onExit: () => void;
   suggestWeight: (name: string, planWeight: string) => SuggestedWeight;
 }
@@ -29,9 +34,14 @@ export const Exercising: React.FC<ExercisingProps> = ({
   totalExercises,
   progress,
   onCompleteSet,
+  onReorder,
+  onAbandon,
   onExit,
   suggestWeight,
 }) => {
+  const [showQueue, setShowQueue] = useState(false);
+  const [showTechnique, setShowTechnique] = useState(false);
+  const [showExit, setShowExit] = useState(false);
   const suggestion = suggestWeight(currentExercise.name, currentExercise.weight);
   const [weight, setWeight] = useState(suggestion.weight);
   const [showInput, setShowInput] = useState(false);
@@ -89,10 +99,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
       {/* ── HEADER ── */}
       <div className="flex items-center gap-3 px-5 py-4 shrink-0">
         <button
-          onClick={() => {
-            console.log("[WorkoutSession] exit stub — confirmación en Parte 2");
-            onExit();
-          }}
+          onClick={() => setShowExit(true)}
           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-opacity active:opacity-60"
           style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
         >
@@ -111,8 +118,19 @@ export const Exercising: React.FC<ExercisingProps> = ({
           </h2>
         </div>
 
-        {/* Spacer para centrar el título */}
-        <div className="w-9 shrink-0" />
+        {/* Queue button */}
+        {session.upcomingQueue.length > 0 ? (
+          <button
+            onClick={() => setShowQueue(true)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-opacity active:opacity-60"
+            style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+            aria-label="Ver cola de ejercicios"
+          >
+            <ListOrdered className="w-4 h-4 text-white" strokeWidth={2} />
+          </button>
+        ) : (
+          <div className="w-9 shrink-0" />
+        )}
       </div>
 
       {/* ── MAIN CONTENT ── */}
@@ -254,6 +272,21 @@ export const Exercising: React.FC<ExercisingProps> = ({
         </div>
       </div>
 
+      {/* ── NEXT UP ── */}
+      {session.upcomingQueue.length > 0 && (
+        <div className="px-5 pb-3 shrink-0 text-center">
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.28)" }}>
+            Siguiente:{" "}
+            <span className="font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
+              {session.upcomingQueue[0].exercise.name}
+            </span>
+            {session.upcomingQueue[0].block.is_superset && (
+              <span style={{ color: "rgba(255,255,255,0.22)" }}> · superserie</span>
+            )}
+          </p>
+        </div>
+      )}
+
       {/* ── FOOTER ── */}
       <div
         className="px-5 pb-8 pt-4 shrink-0 space-y-3"
@@ -272,7 +305,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
         </motion.button>
 
         <button
-          onClick={() => console.log("[WorkoutSession] Ver técnica stub — sheet en Parte siguiente")}
+          onClick={() => setShowTechnique(true)}
           className="w-full h-10 rounded-xl text-sm font-semibold transition-opacity active:opacity-60"
           style={{
             color: "rgba(255,255,255,0.4)",
@@ -282,6 +315,22 @@ export const Exercising: React.FC<ExercisingProps> = ({
           Ver técnica
         </button>
       </div>
+      <QueueSheet
+        isOpen={showQueue}
+        items={session.upcomingQueue}
+        onConfirm={onReorder}
+        onClose={() => setShowQueue(false)}
+      />
+      <TechniqueSheet
+        isOpen={showTechnique}
+        exercise={currentExercise}
+        onClose={() => setShowTechnique(false)}
+      />
+      <ExitSheet
+        isOpen={showExit}
+        onContinue={() => setShowExit(false)}
+        onAbandon={onAbandon}
+      />
     </div>
   );
 };

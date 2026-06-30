@@ -27,9 +27,11 @@ export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose }) 
     exerciseNumber,
     totalExercises,
     startSession,
+    goToSummary,
     completeSet,
     advanceFromResting,
     advanceFromTransition,
+    reorderUpcoming,
     suggestWeight,
   } = useWorkoutSession(day);
 
@@ -66,6 +68,8 @@ export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose }) 
               totalExercises={totalExercises}
               progress={progress}
               onCompleteSet={completeSet}
+              onReorder={reorderUpcoming}
+              onAbandon={goToSummary}
               onExit={onClose}
               suggestWeight={suggestWeight}
             />
@@ -80,7 +84,7 @@ export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose }) 
               totalSets={session.totalSets}
               currentExercise={currentExercise}
               completedSets={session.completedSets}
-              isLastExercise={session.isLastExercise}
+              isLastExercise={session.upcomingQueue.length === 0}
               onAdvance={advanceFromResting}
               onExit={onClose}
             />
@@ -94,7 +98,7 @@ export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose }) 
               completedSets={session.completedSets}
               totalSetsForExercise={session.totalSets}
               nextExercise={nextExercise ?? null}
-              isLastExercise={session.isLastExercise}
+              isLastExercise={session.upcomingQueue.length === 0}
               onAdvance={advanceFromTransition}
             />
           </motion.div>

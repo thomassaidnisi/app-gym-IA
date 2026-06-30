@@ -139,10 +139,21 @@ export interface CompletedSet {
   completedAt: Date;
 }
 
+export interface QueueItem {
+  /** Stable ID: "b{blockIndex}-e{exerciseIndex}" from the original plan. */
+  id: string;
+  exercise: Exercise;
+  block: ExerciseBlock;
+}
+
 export interface SessionState {
   phase: "intro" | "exercising" | "resting" | "transition" | "summary";
-  currentBlockIndex: number;
-  currentExerciseIndex: number;
+  /** Exercises already finished, in execution order. */
+  completedQueue: QueueItem[];
+  /** Exercise currently being performed (null only before session starts). */
+  currentItem: QueueItem | null;
+  /** Exercises yet to be done — freely reorderable. */
+  upcomingQueue: QueueItem[];
   currentSet: number;
   totalSets: number;
   restSeconds: number;
@@ -150,7 +161,6 @@ export interface SessionState {
   completedSets: CompletedSet[];
   sessionStartTime: Date;
   sessionNotes: string;
-  isLastExercise: boolean;
 }
 
 export interface WorkoutLog {

@@ -110,7 +110,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         <motion.button
           whileTap={{ scale: 0.85 }}
           onClick={cycleTheme}
-          className="p-2 rounded-xl shrink-0 mt-1"
+          className="p-2 rounded-xl shrink-0 mt-1 mr-10"
           style={{ color: T.textTer }}
           aria-label="Cambiar apariencia"
         >
