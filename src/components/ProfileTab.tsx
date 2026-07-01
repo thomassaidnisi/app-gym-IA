@@ -110,6 +110,9 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           <p className="text-xs tracking-wide mt-1" style={{ color: T.textSec }}>
             Información médica, biotipos de progresión e inteligencia
           </p>
+          {user?.email && (
+            <p className="text-xs mt-1.5 select-all" style={{ color: T.textTer }}>{user.email}</p>
+          )}
         </div>
         <motion.button
           whileTap={{ scale: 0.85 }}
@@ -298,8 +301,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         </div>
       )}
 
-      {/* Sign out */}
-      <div className="flex justify-center mt-2 mb-6">
+      {/* Account info + sign out */}
+      <div className="flex flex-col items-center gap-3 mt-2 mb-6">
+        {user?.email && (
+          <div className="text-center">
+            <p className="text-xs uppercase tracking-wider font-semibold mb-1" style={{ color: T.textTer }}>Cuenta</p>
+            <p className="text-sm" style={{ color: T.textSec }}>{user.email}</p>
+          </div>
+        )}
         <button
           onClick={() => signOut()}
           className="text-sm px-4 py-2 rounded-xl transition-opacity active:opacity-50"

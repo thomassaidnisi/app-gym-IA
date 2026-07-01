@@ -52,10 +52,10 @@ useEffect(() => {
   if (!user) { setDataLoading(false); return; }
   loadUserData(user.id).then(({ profile: remoteProfile, plan: remotePlan }) => {
     if (remoteProfile) setProfile(remoteProfile);
-    else { const c = localStorage.getItem("healty_profile"); if (c) try { setProfile(JSON.parse(c)); } catch {} }
     if (remotePlan) setPlan(remotePlan);
-    else { const c = localStorage.getItem("healty_plan"); if (c) try { setPlan(JSON.parse(c)); } catch {} }
+    // Supabase responded but no data → new user, show onboarding (no localStorage fallback)
   }).catch(() => {
+    // Network/fetch error → fall back to localStorage so existing sessions don't break
     const cp = localStorage.getItem("healty_plan");
     const cpr = localStorage.getItem("healty_profile");
     if (cp) try { setPlan(JSON.parse(cp)); } catch {}

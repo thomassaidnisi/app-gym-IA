@@ -509,33 +509,49 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
           >
             {/* Step: Welcome */}
             {currentStepId === "welcome" && (
-              <div className="flex flex-col items-center text-center justify-center py-8">
-                <div className="w-20 h-20 bg-brand/10 border border-brand/20 rounded-3xl flex items-center justify-center mb-8 shadow-inner animate-pulse-slow">
-                  <Dumbbell className="w-10 h-10 text-brand" />
-                </div>
-                <h1 className="text-6xl font-extrabold tracking-tight text-white mb-2">
-                  HEALTY <span className="text-brand">APP</span>
-                </h1>
-                <p className="text-xl font-light text-white/40 tracking-wide mb-8 italic">
-                  "Entrená · Superá · Vive Mejor"
-                </p>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-left max-w-sm mb-10">
-                  <h2 className="text-brand text-sm font-bold uppercase tracking-wider mb-2">
-                    Entrenador Personal con IA
-                  </h2>
-                  <p className="text-white/60 text-sm leading-relaxed">
-                    Diseñamos un plan de fuerza e hipertrofia premium basado en tu nivel, condiciones médicas, equipamiento real y disponibilidad de tiempo.
-                  </p>
-                </div>
-                <motion.button
-                  whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-                  onClick={() => setStep(2)}
-                  className="w-full max-w-xs bg-brand hover:bg-lime-400 text-black font-semibold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base"
-                  id="start-onboarding-btn"
+              <div className="fixed inset-0 z-50 overflow-hidden">
+                {/* Background image */}
+                <img
+                  src="/onboarding-bg.png"
+                  alt=""
+                  aria-hidden
+                  className="absolute inset-0 w-full h-full object-cover object-center"
+                  style={{ zIndex: 0, userSelect: "none", pointerEvents: "none" }}
+                />
+                {/* Dark overlay */}
+                <div className="absolute inset-0 bg-black/60" style={{ zIndex: 10 }} />
+                {/* Content */}
+                <div
+                  className="relative flex flex-col items-center text-center justify-center h-full px-6"
+                  style={{ zIndex: 20, paddingTop: "env(safe-area-inset-top, 24px)", paddingBottom: "env(safe-area-inset-bottom, 24px)" }}
                 >
-                  Empezar Onboarding
-                  <ChevronRight className="w-5 h-5" />
-                </motion.button>
+                  <div className="w-20 h-20 bg-brand/10 border border-brand/20 rounded-3xl flex items-center justify-center mb-8 shadow-inner animate-pulse-slow">
+                    <Dumbbell className="w-10 h-10 text-brand" />
+                  </div>
+                  <h1 className="text-6xl font-extrabold tracking-tight text-white mb-2">
+                    HEALTY <span className="text-brand">APP</span>
+                  </h1>
+                  <p className="text-xl font-light text-white/40 tracking-wide mb-8 italic">
+                    "Entrená · Superá · Vive Mejor"
+                  </p>
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-left max-w-sm mb-10">
+                    <h2 className="text-brand text-sm font-bold uppercase tracking-wider mb-2">
+                      Entrenador Personal con IA
+                    </h2>
+                    <p className="text-white/60 text-sm leading-relaxed">
+                      Diseñamos un plan de fuerza e hipertrofia premium basado en tu nivel, condiciones médicas, equipamiento real y disponibilidad de tiempo.
+                    </p>
+                  </div>
+                  <motion.button
+                    whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
+                    onClick={() => setStep(2)}
+                    className="w-full max-w-xs bg-brand hover:bg-lime-400 text-black font-semibold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base"
+                    id="start-onboarding-btn"
+                  >
+                    Empezar Onboarding
+                    <ChevronRight className="w-5 h-5" />
+                  </motion.button>
+                </div>
               </div>
             )}
 
