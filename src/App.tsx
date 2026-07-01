@@ -15,23 +15,15 @@ import { FullTrainingPlan, UserProfile } from "./types";
 import { Dumbbell, Sun, BarChart2, User as UserIcon, MessageSquare, BookOpen } from "lucide-react";
 import { AuthProvider, useAuth } from "./components/AuthContext";
 import { AuthScreen } from "./components/AuthScreen";
+import { loadUserData } from "./lib/db";
 
 function AppContent() {
   const [plan, setPlan] = useState<FullTrainingPlan | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [activeTab, setActiveTab] = useState<"gym" | "library" | "morning" | "stats" | "profile" | "coach">("gym");
+const [dataLoading, setDataLoading] = useState(true);
 
 
-  useEffect(() => {
-    const cachedPlan = localStorage.getItem("healty_plan");
-    const cachedProfile = localStorage.getItem("healty_profile");
-    if (cachedPlan) {
-      try { setPlan(JSON.parse(cachedPlan)); } catch (e) { console.error(e); }
-    }
-    if (cachedProfile) {
-      try { setProfile(JSON.parse(cachedProfile)); } catch (e) { console.error(e); }
-    }
-  }, []);
 useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [activeTab]);
@@ -54,9 +46,24 @@ useEffect(() => {
   };
 
   const handleProfileUpdated = (updated: UserProfile) => setProfile(updated);
-const { user, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
-if (isLoading) {
+useEffect(() => {
+  if (!user) { setDataLoading(false); return; }
+  loadUserData(user.id).then(({ profile: remoteProfile, plan: remotePlan }) => {
+    if (remoteProfile) setProfile(remoteProfile);
+    else { const c = localStorage.getItem("healty_profile"); if (c) try { setProfile(JSON.parse(c)); } catch {} }
+    if (remotePlan) setPlan(remotePlan);
+    else { const c = localStorage.getItem("healty_plan"); if (c) try { setPlan(JSON.parse(c)); } catch {} }
+  }).catch(() => {
+    const cp = localStorage.getItem("healty_plan");
+    const cpr = localStorage.getItem("healty_profile");
+    if (cp) try { setPlan(JSON.parse(cp)); } catch {}
+    if (cpr) try { setProfile(JSON.parse(cpr)); } catch {}
+  }).finally(() => setDataLoading(false));
+}, [user]);
+
+if (isLoading || dataLoading) {
   return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100vh" }} />;
 }
 
@@ -122,10 +129,15 @@ if (!user) {
             </AnimatePresence>
           </main>
 
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md border-t px-4 select-none pb-safe"
-            style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border)" }}
-          >
+         <div
+  className="fixed bottom-0 left-0 right-0 z-40 px-4 select-none pb-safe"
+  style={{
+    background: "rgba(10,10,10,0.80)",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+    borderTop: "1px solid rgba(255,255,255,0.08)",
+  }}
+>
  <nav className="max-w-lg mx-auto h-16 grid grid-cols-5 items-center justify-items-center">
               {(
                 [

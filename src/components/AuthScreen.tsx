@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "./AuthContext";
-import authBg from "../assets/auth-bg.png";
+import { supabase } from "../lib/supabase";
 
-type Mode = "login" | "signup";
+type Mode = "login" | "signup" | "forgot";
 
 const inputClass =
   "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white text-base placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors";
@@ -34,7 +34,17 @@ export const AuthScreen: React.FC = () => {
     setInfo(null);
     setLoading(true);
 
-    if (mode === "login") {
+    if (mode === "forgot") {
+      const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+      if (err) {
+        setError(err.message);
+      } else {
+        setInfo("Te enviamos un link de recuperación. Revisá tu email.");
+        setEmail("");
+      }
+    } else if (mode === "login") {
       const err = await signIn(email, password);
       if (err) setError(err.message);
     } else {
@@ -56,40 +66,24 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <div
-      className="relative min-h-screen w-full overflow-hidden"
-      style={{ backgroundColor: "#0a0a0a" }}
-    >
+    <div className="relative min-h-screen w-full overflow-hidden">
       {/* ── Background image ── */}
       <img
-        src={authBg}
+        src="/auth-bg.png"
         alt=""
         aria-hidden
         className="absolute inset-0 w-full h-full object-cover object-center"
-        style={{ userSelect: "none", pointerEvents: "none" }}
+        style={{ zIndex: 0, userSelect: "none", pointerEvents: "none" }}
       />
 
-      {/* ── Gradient overlay: dark on left, lighter toward right for the image composition ── */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to right, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.65) 45%, rgba(10,10,10,0.82) 100%)",
-        }}
-      />
-      {/* Extra darkening layer at very top and bottom for safe areas */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(10,10,10,0.6) 0%, transparent 20%, transparent 80%, rgba(10,10,10,0.6) 100%)",
-        }}
-      />
+      {/* ── Dark overlay ── */}
+      <div className="absolute inset-0 bg-black/50" style={{ zIndex: 10 }} />
 
       {/* ── Content ── */}
       <div
-        className="relative z-10 min-h-screen flex items-center justify-end px-5 md:pr-16"
+        className="relative min-h-screen flex items-center justify-center md:justify-end px-5 md:pr-16"
         style={{
+          zIndex: 20,
           paddingTop: "env(safe-area-inset-top, 24px)",
           paddingBottom: "env(safe-area-inset-bottom, 24px)",
         }}
@@ -101,8 +95,8 @@ export const AuthScreen: React.FC = () => {
           transition={{ duration: 0.4 }}
           className="w-full max-w-sm rounded-3xl px-7 py-8"
           style={{
-            backgroundColor: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.10)",
+            background: "rgba(0,0,0,0.4)",
+            border: "1px solid rgba(255,255,255,0.1)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
           }}
@@ -117,30 +111,32 @@ export const AuthScreen: React.FC = () => {
             </p>
           </div>
 
-          {/* Mode toggle */}
-          <div
-            className="flex rounded-2xl p-1 mb-7"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            {(["login", "signup"] as Mode[]).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => switchMode(m)}
-                className="flex-1 h-10 rounded-xl text-sm font-bold transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-                style={
-                  mode === m
-                    ? { backgroundColor: "#c8f135", color: "#000" }
-                    : { color: "rgba(255,255,255,0.35)" }
-                }
-              >
-                {m === "login" ? "Iniciar sesión" : "Registrarse"}
-              </button>
-            ))}
-          </div>
+          {/* Mode toggle — hidden in forgot mode */}
+          {mode !== "forgot" && (
+            <div
+              className="flex rounded-2xl p-1 mb-7"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              {(["login", "signup"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => switchMode(m)}
+                  className="flex-1 h-10 rounded-xl text-sm font-bold transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                  style={
+                    mode === m
+                      ? { backgroundColor: "#c8f135", color: "#000" }
+                      : { color: "rgba(255,255,255,0.35)" }
+                  }
+                >
+                  {m === "login" ? "Iniciar sesión" : "Registrarse"}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Title */}
           <AnimatePresence mode="wait">
@@ -152,7 +148,7 @@ export const AuthScreen: React.FC = () => {
               transition={{ duration: 0.18 }}
               className="text-xl font-bold tracking-tight text-white mb-5"
             >
-              {mode === "login" ? "Iniciá sesión" : "Crear cuenta"}
+              {mode === "login" ? "Iniciá sesión" : mode === "signup" ? "Crear cuenta" : "Recuperar contraseña"}
             </motion.h2>
           </AnimatePresence>
 
@@ -213,16 +209,30 @@ export const AuthScreen: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               className={inputClass}
             />
-            <input
-              type="password"
-              placeholder="Contraseña"
-              required
-              minLength={6}
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={inputClass}
-            />
+            {mode !== "forgot" && (
+              <>
+                <input
+                  type="password"
+                  placeholder="Contraseña"
+                  required
+                  minLength={6}
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={inputClass}
+                />
+                {mode === "login" && (
+                  <button
+                    type="button"
+                    onClick={() => switchMode("forgot")}
+                    className="text-xs text-right transition-opacity active:opacity-60 outline-none"
+                    style={{ color: "rgba(255,255,255,0.35)" }}
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                )}
+              </>
+            )}
 
             {/* Feedback */}
             <AnimatePresence>
@@ -259,19 +269,21 @@ export const AuthScreen: React.FC = () => {
               className="w-full rounded-2xl font-black text-base text-black mt-1 disabled:opacity-50 transition-opacity"
               style={{ backgroundColor: "#c8f135", height: 52 }}
             >
-              {loading ? "…" : mode === "login" ? "Ingresar" : "Registrarme"}
+              {loading ? "…" : mode === "login" ? "Ingresar" : mode === "signup" ? "Registrarme" : "Enviar link de recuperación"}
             </motion.button>
           </form>
 
           <button
             type="button"
-            onClick={() => switchMode(mode === "login" ? "signup" : "login")}
+            onClick={() => switchMode(mode === "signup" ? "login" : mode === "forgot" ? "login" : "signup")}
             className="w-full mt-5 text-sm text-center transition-opacity active:opacity-60 outline-none"
             style={{ color: "rgba(255,255,255,0.3)" }}
           >
             {mode === "login"
               ? "¿No tenés cuenta? Registrate"
-              : "¿Ya tenés cuenta? Iniciá sesión"}
+              : mode === "signup"
+              ? "¿Ya tenés cuenta? Iniciá sesión"
+              : "Volver a iniciar sesión"}
           </button>
         </motion.div>
       </div>

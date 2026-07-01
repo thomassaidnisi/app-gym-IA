@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Trophy } from "lucide-react";
 import { SessionState, DayPlan, CompletedSet, WorkoutLog } from "../../../types";
+import { useAuth } from "../../AuthContext";
+import { saveWorkoutLog as saveWorkoutLogRemote, saveGymAttendance } from "../../../lib/db";
 
 interface SummaryProps {
   session: SessionState;
@@ -100,6 +102,7 @@ const EditableValue: React.FC<{
 };
 
 export const Summary: React.FC<SummaryProps> = ({ session, day, onClose }) => {
+  const { user } = useAuth();
   const [editableSets, setEditableSets] = useState<CompletedSet[]>(
     session.completedSets.map((s) => ({ ...s }))
   );
@@ -160,6 +163,12 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, onClose }) => {
 
     saveWorkoutLog(log);
     markAttendance(todayStr);
+    if (user) {
+      saveWorkoutLogRemote(user.id, todayStr, log)
+        .then(() => console.log("✅ WorkoutLog guardado en Supabase"))
+        .catch((err) => console.error("❌ Error guardando WorkoutLog:", err));
+      saveGymAttendance(user.id, todayStr).catch(console.error);
+    }
     onClose();
   };
 

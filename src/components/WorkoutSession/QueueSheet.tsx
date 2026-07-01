@@ -63,14 +63,17 @@ export const QueueSheet: React.FC<QueueSheetProps> = ({
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 420, damping: 40 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
             style={{
               position: "fixed",
               bottom: 0,
               left: 0,
               right: 0,
               zIndex: 71,
-              backgroundColor: "#111",
+              background: "rgba(18,18,18,0.75)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              borderTop: "1px solid rgba(255,255,255,0.12)",
               borderRadius: "20px 20px 0 0",
               maxHeight: "78vh",
               display: "flex",
@@ -176,7 +179,7 @@ export const QueueSheet: React.FC<QueueSheetProps> = ({
             {/* Confirm button */}
             <div className="px-5 pt-4 shrink-0">
               <motion.button
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                 onClick={handleConfirm}
                 className="w-full rounded-2xl font-black text-base text-black"
                 style={{ backgroundColor: "#c8f135", height: 52 }}

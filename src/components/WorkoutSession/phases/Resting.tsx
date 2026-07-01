@@ -216,12 +216,14 @@ export const Resting: React.FC<RestingProps> = ({
 
           {/* Time inside ring */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <span
+            <motion.span
               className="font-black tabular-nums leading-none"
               style={{ fontSize: 36, color: "#ffffff" }}
+              animate={{ scale: [1, 1.04, 1] }}
+              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
             >
               {displaySeconds}
-            </span>
+            </motion.span>
           </div>
         </div>
 
@@ -244,7 +246,7 @@ export const Resting: React.FC<RestingProps> = ({
       >
         <div className="flex gap-3">
           <motion.button
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
             onClick={handleSkip}
             className="flex-1 h-12 rounded-2xl text-sm font-semibold transition-opacity active:opacity-60"
             style={{
@@ -256,7 +258,7 @@ export const Resting: React.FC<RestingProps> = ({
           </motion.button>
 
           <motion.button
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
             onClick={handleAddTime}
             className="flex-1 h-12 rounded-2xl text-sm font-semibold transition-opacity active:opacity-60"
             style={{

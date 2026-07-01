@@ -3,6 +3,8 @@ import { UserProfile, FullTrainingPlan } from "../types";
 import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PlanUpload } from "./PlanUpload";
+import { useAuth } from "./AuthContext";
+import { saveProfile, savePlan } from "../lib/db";
 
 interface OnboardingProps {
   onPlanGenerated: (plan: FullTrainingPlan, profile: UserProfile) => void;
@@ -15,6 +17,7 @@ type StepId =
   | "preferences";
 
 export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
 
   // --- Existing state ---
@@ -269,6 +272,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
       const generatedPlan: FullTrainingPlan = await response.json();
       localStorage.setItem("healty_plan", JSON.stringify(generatedPlan));
       localStorage.setItem("healty_profile", JSON.stringify(payload));
+      if (user) {
+        await Promise.all([saveProfile(user.id, payload), savePlan(user.id, generatedPlan)]);
+      }
       onPlanGenerated(generatedPlan, payload);
     } catch (e: any) {
       console.error(e);
@@ -318,7 +324,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
         <h3 className="text-white text-xl font-bold mb-3">Error al generar plan</h3>
         <p className="text-white/50 text-sm max-w-sm mb-6 leading-relaxed">{errorMsg}</p>
         <motion.button
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
           onClick={generatePlan}
           className="bg-brand text-black hover:bg-lime-400 font-semibold px-6 py-3 rounded-xl transition-all shadow-lg flex items-center gap-2"
         >
@@ -348,9 +354,12 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
       <PlanUpload
         profile={profilePayload}
         onBack={() => setOnboardingFlow("choose_method")}
-        onPlanSaved={(plan) => {
+        onPlanSaved={async (plan) => {
           localStorage.setItem("healty_plan", JSON.stringify(plan));
           localStorage.setItem("healty_profile", JSON.stringify(profilePayload));
+          if (user) {
+            await Promise.all([saveProfile(user.id, profilePayload), savePlan(user.id, plan)]);
+          }
           onPlanGenerated(plan, profilePayload);
         }}
       />
@@ -387,7 +396,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
               </div>
             </div>
             <motion.button
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
               onClick={(e) => { e.stopPropagation(); generatePlan(); }}
               className="mt-5 w-full bg-brand text-black border-transparent text-xs font-bold py-2.5 rounded-xl uppercase tracking-wider transition-all cursor-pointer hover:bg-lime-400"
             >
@@ -411,7 +420,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
               </div>
             </div>
             <motion.button
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
               onClick={(e) => { e.stopPropagation(); setOnboardingFlow("upload"); }}
               className="mt-5 w-full bg-white/10 hover:bg-white hover:text-black border border-white/20 text-white text-xs font-bold py-2.5 rounded-xl uppercase tracking-wider transition-all cursor-pointer"
             >
@@ -519,7 +528,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
                   </p>
                 </div>
                 <motion.button
-                  whileTap={{ scale: 0.97 }}
+                  whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                   onClick={() => setStep(2)}
                   className="w-full max-w-xs bg-brand hover:bg-lime-400 text-black font-semibold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base"
                   id="start-onboarding-btn"
@@ -864,7 +873,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
               Atrás
             </button>
             <motion.button
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
               onClick={handleNext}
               disabled={!isStepValid()}
               className={`flex-1 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-1 text-sm text-black ${

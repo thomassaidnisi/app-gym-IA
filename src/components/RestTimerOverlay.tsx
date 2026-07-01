@@ -39,8 +39,13 @@ export const RestTimerOverlay: React.FC = () => {
           style={{ top: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
         >
           <div
-            className="backdrop-blur-md shadow-xl rounded-2xl px-4 py-3 flex items-center gap-3"
-            style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}
+            className="shadow-xl rounded-2xl px-4 py-3 flex items-center gap-3"
+            style={{
+              background: "rgba(18,18,18,0.70)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(255,255,255,0.10)",
+            }}
           >
             {/* Progress ring */}
             <div className="relative shrink-0">
@@ -71,13 +76,15 @@ export const RestTimerOverlay: React.FC = () => {
             </span>
 
             {/* Time display */}
-            <span
+            <motion.span
               className="font-bold text-lg tabular-nums shrink-0"
               style={{ color: T.textPri }}
               id="timer-display"
+              animate={{ scale: [1, 1.04, 1] }}
+              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
             >
               {formatTime(timeLeft)}
-            </span>
+            </motion.span>
 
             {/* Play/Pause */}
             <motion.button

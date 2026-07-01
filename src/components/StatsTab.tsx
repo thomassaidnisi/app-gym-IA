@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DailyStats, ExerciseLog } from "../types";
-import { BarChart2, Check, Droplet, Award } from "lucide-react";
-import { motion } from "motion/react";
+import { BarChart2, Check, Droplet, Award, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { useAuth } from "./AuthContext";
+import { saveDailyMetric, loadDailyMetrics, saveGymAttendance, deleteGymAttendance, loadGymAttendance } from "../lib/db";
 
 const T = {
   bg:      "var(--bg-primary)",
@@ -13,7 +15,58 @@ const T = {
   brand:   "var(--color-brand)",
 };
 
+interface ExerciseEntry {
+  date: string;
+  weight: string | null;
+  reps: string | null;
+}
+
+interface ExerciseProgress {
+  name: string;
+  entries: ExerciseEntry[]; // sorted desc by date
+}
+
+function loadExerciseProgress(): ExerciseProgress[] {
+  const byName: Record<string, Record<string, ExerciseEntry>> = {};
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key) continue;
+
+    if (key.startsWith("log_")) {
+      const parts = key.split("_");
+      if (parts.length < 3) continue;
+      const date = parts[1];
+      const name = parts.slice(2).join("_");
+      if (!byName[name]) byName[name] = {};
+      if (!byName[name][date]) byName[name][date] = { date, weight: null, reps: null };
+      byName[name][date].weight = localStorage.getItem(key);
+    }
+
+    if (key.startsWith("reps_")) {
+      const parts = key.split("_");
+      if (parts.length < 3) continue;
+      const date = parts[1];
+      const name = parts.slice(2).join("_");
+      if (!byName[name]) byName[name] = {};
+      if (!byName[name][date]) byName[name][date] = { date, weight: null, reps: null };
+      byName[name][date].reps = localStorage.getItem(key);
+    }
+  }
+
+  return Object.entries(byName)
+    .map(([name, dateMap]) => ({
+      name,
+      entries: Object.values(dateMap).sort((a, b) => b.date.localeCompare(a.date)),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export const StatsTab: React.FC = () => {
+  const { user } = useAuth();
+  // Cache remote metrics by date to avoid re-fetching on every date change
+  const remoteMetricsRef = useRef<Record<string, { peso?: number; agua?: number; sueno?: number }>>({});
+
   const getTodayStr = () => {
     const tzoffset = new Date().getTimezoneOffset() * 60000;
     return new Date(Date.now() - tzoffset).toISOString().slice(0, 10);
@@ -25,26 +78,61 @@ export const StatsTab: React.FC = () => {
   const [currentStats, setCurrentStats] = useState<DailyStats>({ weight: undefined, sleep: undefined, sleep_quality: "", water: 0 });
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
   const [recentLogs, setRecentLogs] = useState<ExerciseLog[]>([]);
+  const [exerciseProgress, setExerciseProgress] = useState<ExerciseProgress[]>([]);
+  const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
 
   const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
+  // Load all remote data once on mount (or when user changes)
+  useEffect(() => {
+    if (!user) return;
+    // Daily metrics
+    loadDailyMetrics(user.id).then((rows) => {
+      const map: Record<string, { peso?: number; agua?: number; sueno?: number; sleep_quality?: string }> = {};
+      for (const row of rows) map[row.date] = { peso: row.peso, agua: row.agua, sueno: row.sueno, sleep_quality: row.sleep_quality };
+      remoteMetricsRef.current = map;
+      applyStatsForDate(selectedDate, map);
+    }).catch(() => {});
+    // Gym attendance — merge remote into localStorage so loadMonthAttendance picks it up
+    loadGymAttendance(user.id).then((dates) => {
+      for (const date of dates) localStorage.setItem(`gym_${date}`, "true");
+      loadMonthAttendance();
+    }).catch(() => {});
+  }, [user]);
+
   useEffect(() => {
     loadDailyStats(selectedDate);
     loadRecentLogs();
     loadMonthAttendance();
+    setExerciseProgress(loadExerciseProgress());
   }, [selectedDate, currentYear, currentMonth]);
+
+  const applyStatsForDate = (
+    dateStr: string,
+    remoteMap: Record<string, { peso?: number; agua?: number; sueno?: number; sleep_quality?: string }>
+  ) => {
+    const remote = remoteMap[dateStr];
+    const local = (() => {
+      try { return JSON.parse(localStorage.getItem(`stats_${dateStr}`) ?? "null") as DailyStats | null; } catch { return null; }
+    })();
+    const merged: DailyStats = {
+      weight: local?.weight ?? remote?.peso,
+      sleep: local?.sleep ?? remote?.sueno,
+      sleep_quality: (local?.sleep_quality || remote?.sleep_quality || "") as DailyStats["sleep_quality"],
+      water: local?.water ?? remote?.agua ?? 0,
+    };
+    setCurrentStats(merged);
+    setWeightInput(merged.weight ? String(merged.weight) : "");
+    setSleepInput(merged.sleep ? String(merged.sleep) : "");
+  };
 
   const loadDailyStats = (dateStr: string) => {
     const stored = localStorage.getItem(`stats_${dateStr}`);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as DailyStats;
-        setCurrentStats(parsed);
-        setWeightInput(parsed.weight ? String(parsed.weight) : "");
-        setSleepInput(parsed.sleep ? String(parsed.sleep) : "");
-      } catch (e) { console.error(e); }
+    const remote = remoteMetricsRef.current[dateStr];
+    if (stored || remote) {
+      applyStatsForDate(dateStr, remoteMetricsRef.current);
     } else {
       setCurrentStats({ weight: undefined, sleep: undefined, sleep_quality: "", water: 0 });
       setWeightInput("");
@@ -55,6 +143,14 @@ export const StatsTab: React.FC = () => {
   const saveDailyStats = (updated: DailyStats) => {
     localStorage.setItem(`stats_${selectedDate}`, JSON.stringify(updated));
     setCurrentStats(updated);
+    if (user) {
+      saveDailyMetric(user.id, selectedDate, {
+        peso: updated.weight,
+        agua: updated.water,
+        sueno: updated.sleep,
+        sleep_quality: updated.sleep_quality ?? undefined,
+      }).catch(console.error);
+    }
   };
 
   const handleUpdateWeight = () => {
@@ -98,6 +194,10 @@ export const StatsTab: React.FC = () => {
     const newVal = !attendance[attendKey];
     if (newVal) localStorage.setItem(attendKey, "true"); else localStorage.removeItem(attendKey);
     setAttendance((prev) => { const u = { ...prev }; if (newVal) u[attendKey] = true; else delete u[attendKey]; return u; });
+    if (user) {
+      if (newVal) saveGymAttendance(user.id, dateStr).catch(console.error);
+      else deleteGymAttendance(user.id, dateStr).catch(console.error);
+    }
   };
 
   const loadRecentLogs = () => {
@@ -310,38 +410,127 @@ export const StatsTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Recent logs */}
+      {/* Exercise progression */}
       <div className="rounded-3xl p-5 mb-4 shadow-sm" style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}>
-        <h4 className="text-xs uppercase tracking-wider font-bold mb-3 select-none" style={{ color: T.textPri }}>
-          Historial de Cargas Recientes
+        <h4 className="text-xs uppercase tracking-wider font-bold mb-1 select-none" style={{ color: T.textPri }}>
+          Progresión por Ejercicio
         </h4>
-        {recentLogs.length > 0 ? (
-          <div className="overflow-hidden rounded-2xl select-text" style={{ border: `1px solid ${T.border}` }}>
-            <table className="w-full text-[11px] text-left">
-              <thead className="text-[9px] uppercase tracking-wider select-none" style={{ backgroundColor: T.bgSec, color: T.textTer }}>
-                <tr>
-                  <th className="p-3">Ejercicio</th>
-                  <th className="p-3">Carga</th>
-                  <th className="p-3 text-right">Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentLogs.map((log, i) => (
-                  <tr key={log.id} style={{ borderTop: i > 0 ? `1px solid ${T.border}` : undefined }}>
-                    <td className="p-3 font-semibold break-words pr-2 max-w-[150px]" style={{ color: T.textPri }}>{log.exerciseName}</td>
-                    <td className="p-3 font-bold" style={{ color: T.textPri }}>{log.weight}</td>
-                    <td className="p-3 text-right" style={{ color: T.textSec }}>{log.date}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-6 rounded-2xl p-4 select-none" style={{ backgroundColor: T.bgSec, border: `1px dashed ${T.border}` }}>
+        <p className="text-[10px] mb-4 select-none" style={{ color: T.textSec }}>
+          Tocá un ejercicio para ver el historial completo
+        </p>
+
+        {exerciseProgress.length === 0 ? (
+          <div className="text-center py-6 rounded-2xl" style={{ backgroundColor: T.bgSec, border: `1px dashed ${T.border}` }}>
             <Award className="w-8 h-8 block mx-auto mb-2" style={{ color: T.textTer }} />
-            <p className="text-xs leading-relaxed max-w-[200px] mx-auto" style={{ color: T.textSec }}>
+            <p className="text-xs leading-relaxed max-w-[200px] mx-auto select-none" style={{ color: T.textSec }}>
               Aún no has registrado cargas. Expande ejercicios en Gym y presioná "Grabar".
             </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {exerciseProgress.map((ex) => {
+              const latest = ex.entries[0];
+              const prev = ex.entries[1] ?? null;
+              const isOpen = expandedExercise === ex.name;
+
+              // Variation indicator based on weight (primary signal)
+              const latestW = latest.weight ? parseFloat(latest.weight) : null;
+              const prevW = prev?.weight ? parseFloat(prev.weight) : null;
+              let trend: "up" | "down" | "same" | null = null;
+              if (latestW !== null && prevW !== null) {
+                if (latestW > prevW) trend = "up";
+                else if (latestW < prevW) trend = "down";
+                else trend = "same";
+              }
+
+              return (
+                <div
+                  key={ex.name}
+                  className="rounded-2xl overflow-hidden"
+                  style={{ border: `1px solid ${T.border}` }}
+                >
+                  {/* Row — always visible */}
+                  <button
+                    onClick={() => setExpandedExercise(isOpen ? null : ex.name)}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left transition-opacity active:opacity-70"
+                    style={{ backgroundColor: T.bgSec }}
+                  >
+                    {/* Trend icon */}
+                    <div className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: T.bg }}>
+                      {trend === "up"   && <TrendingUp   className="w-3.5 h-3.5" style={{ color: T.textSec }} />}
+                      {trend === "down" && <TrendingDown className="w-3.5 h-3.5" style={{ color: T.textSec }} />}
+                      {trend === "same" && <Minus        className="w-3.5 h-3.5" style={{ color: T.textTer }} />}
+                      {trend === null   && <Minus        className="w-3.5 h-3.5" style={{ color: T.textTer }} />}
+                    </div>
+
+                    {/* Name + latest values */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold truncate" style={{ color: T.textPri }}>{ex.name}</p>
+                      <p className="text-[10px] mt-0.5" style={{ color: T.textSec }}>
+                        {[
+                          latest.weight && `${latest.weight}`,
+                          latest.reps   && `${latest.reps} reps`,
+                        ].filter(Boolean).join(" · ") || "—"}
+                        {prev && (
+                          <span style={{ color: T.textTer }}>
+                            {" "}· anterior:{" "}
+                            {[
+                              prev.weight && `${prev.weight}`,
+                              prev.reps   && `${prev.reps} reps`,
+                            ].filter(Boolean).join(" ")}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+
+                    {/* Expand chevron */}
+                    <div className="shrink-0" style={{ color: T.textTer }}>
+                      {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </div>
+                  </button>
+
+                  {/* Expanded history */}
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        key="history"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <table className="w-full text-[11px]" style={{ borderTop: `1px solid ${T.border}` }}>
+                          <thead>
+                            <tr className="text-[9px] uppercase tracking-wider" style={{ backgroundColor: T.bg, color: T.textTer }}>
+                              <th className="px-4 py-2 text-left font-semibold">Fecha</th>
+                              <th className="px-4 py-2 text-left font-semibold">Peso</th>
+                              <th className="px-4 py-2 text-left font-semibold">Reps</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {ex.entries.map((entry, i) => (
+                              <tr
+                                key={entry.date}
+                                style={{
+                                  borderTop: i > 0 ? `1px solid ${T.border}` : undefined,
+                                  backgroundColor: T.bg,
+                                }}
+                              >
+                                <td className="px-4 py-2.5" style={{ color: T.textSec }}>{entry.date}</td>
+                                <td className="px-4 py-2.5 font-semibold" style={{ color: T.textPri }}>{entry.weight ?? "—"}</td>
+                                <td className="px-4 py-2.5 font-semibold" style={{ color: T.textPri }}>{entry.reps ?? "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

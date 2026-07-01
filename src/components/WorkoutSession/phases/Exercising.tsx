@@ -296,7 +296,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
         }}
       >
         <motion.button
-          whileTap={{ scale: 0.98 }}
+          whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
           onClick={() => onCompleteSet(weight, parseReps(currentExercise.reps))}
           className="w-full h-14 rounded-2xl font-black text-base text-black"
           style={{ backgroundColor: "#c8f135" }}

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { UserProfile, FullTrainingPlan, ChatMessage, CoachResponse } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { Send, Sparkles, Check, Loader2 } from "lucide-react";
+import { useAuth } from "./AuthContext";
+import { savePlan, loadWorkoutLogsMerged } from "../lib/db";
 
 interface CoachTabProps {
   plan: FullTrainingPlan | null;
@@ -19,6 +21,7 @@ const T = {
 };
 
 export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated }) => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -87,22 +90,16 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
     });
   };
 
-  const buildRecentWorkoutSummary = (): {
+  const buildRecentWorkoutSummary = async (): Promise<{
     date: string;
     dayName: string;
     durationMinutes: number;
     totalVolumeKg: number;
-  }[] => {
+  }[]> => {
     try {
-      const logs = JSON.parse(localStorage.getItem("workoutLogs") ?? "[]") as {
-        date: string;
-        dayName: string;
-        durationMinutes: number;
-        totalVolumeKg: number;
-      }[];
+      const logs = await loadWorkoutLogsMerged(user?.id ?? null);
       return logs
-        .slice(-8)
-        .reverse()
+        .slice(0, 8)
         .map(({ date, dayName, durationMinutes, totalVolumeKg }) => ({
           date,
           dayName,
@@ -152,7 +149,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
       const res = await fetch("/api/coach-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userQuery, plan, profile, chatHistory: updatedMessages.slice(-6).map(m => ({ role: m.role, text: m.text })), exerciseHistory: buildExerciseHistory(), recentWorkoutLogs: buildRecentWorkoutSummary() }),
+        body: JSON.stringify({ message: userQuery, plan, profile, chatHistory: updatedMessages.slice(-6).map(m => ({ role: m.role, text: m.text })), exerciseHistory: buildExerciseHistory(), recentWorkoutLogs: await buildRecentWorkoutSummary() }),
       });
       if (!res.ok) throw new Error("Respuesta no válida del servidor.");
       const data: CoachResponse = await res.json();
@@ -180,6 +177,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
     await new Promise((resolve) => setTimeout(resolve, 800));
     try {
       onPlanUpdated(planPatch);
+      if (user) savePlan(user.id, planPatch).catch(console.error);
       const modified = messages.map((msg) => msg.id === messageId ? { ...msg, applied: true } : msg);
       setMessages(modified);
       localStorage.setItem("healty_chat_history", JSON.stringify(modified));

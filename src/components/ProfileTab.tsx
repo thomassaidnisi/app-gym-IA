@@ -3,6 +3,8 @@ import { FullTrainingPlan, UserProfile } from "../types";
 import { ShieldAlert, Clock, Dumbbell, Compass, Check, X, Edit2, Sun, Moon, Monitor } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "./ThemeContext";
+import { useAuth } from "./AuthContext";
+import { saveProfile } from "../lib/db";
 
 interface ProfileTabProps {
   plan: FullTrainingPlan;
@@ -27,6 +29,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   onRegenerate,
   onProfileUpdated,
 }) => {
+  const { user, signOut } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const { pref, setTheme } = useTheme();
   const cycleTheme = () =>
@@ -66,6 +69,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       injuriesOrLimitations,
     };
     localStorage.setItem("healty_profile", JSON.stringify(updated));
+    if (user) saveProfile(user.id, updated).catch(console.error);
     onProfileUpdated(updated);
     setIsEditOpen(false);
   };
@@ -293,6 +297,17 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </div>
         </div>
       )}
+
+      {/* Sign out */}
+      <div className="flex justify-center mt-2 mb-6">
+        <button
+          onClick={() => signOut()}
+          className="text-sm px-4 py-2 rounded-xl transition-opacity active:opacity-50"
+          style={{ color: "#ef4444" }}
+        >
+          Cerrar sesión
+        </button>
+      </div>
 
       {/* Edit Modal */}
       <AnimatePresence>

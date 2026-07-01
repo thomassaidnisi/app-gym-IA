@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRestTimer } from "./RestTimerContext";
+import { useAuth } from "./AuthContext";
+import { saveExerciseLog } from "../lib/db";
 
 interface GymTabProps {
   plan: FullTrainingPlan;
@@ -43,6 +45,7 @@ const shortName = (name: string) => name.split("—")[0].split("-")[0].trim();
 
 export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
   const { startTimer } = useRestTimer();
+  const { user } = useAuth();
 
   const validTrainDays = plan.days && plan.days.length > 0 ? plan.days : [];
   const [activeDayIdx, setActiveDayIdx] = useState(0);
@@ -50,7 +53,9 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
 
   const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
   const [logInputs, setLogInputs] = useState<Record<string, string>>({});
+  const [repsInputs, setRepsInputs] = useState<Record<string, string>>({});
   const [todayLogs, setTodayLogs] = useState<Record<string, string>>({});
+  const [todayRepsLogs, setTodayRepsLogs] = useState<Record<string, string>>({});
   const [streak, setStreak] = useState(0);
   const [weekSessions, setWeekSessions] = useState(0);
   const [daysSinceLastWorkout, setDaysSinceLastWorkout] = useState<number | null>(null);
@@ -128,6 +133,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
 
   useEffect(() => {
     const logs: Record<string, string> = {};
+    const repsLogs: Record<string, string> = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith(`log_${todayStr}_`)) {
@@ -135,8 +141,14 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
         const value = localStorage.getItem(key);
         if (value) logs[exerciseName] = value;
       }
+      if (key && key.startsWith(`reps_${todayStr}_`)) {
+        const exerciseName = key.replace(`reps_${todayStr}_`, "");
+        const value = localStorage.getItem(key);
+        if (value) repsLogs[exerciseName] = value;
+      }
     }
     setTodayLogs(logs);
+    setTodayRepsLogs(repsLogs);
 
     let s = 0;
     const now = new Date();
@@ -173,10 +185,25 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
   };
 
   const handleSaveWeight = (exerciseName: string) => {
-    const weightVal = logInputs[exerciseName];
-    if (!weightVal || !weightVal.trim()) return;
-    localStorage.setItem(`log_${todayStr}_${exerciseName}`, weightVal.trim());
-    setTodayLogs((prev) => ({ ...prev, [exerciseName]: weightVal.trim() }));
+    const weightVal = logInputs[exerciseName]?.trim();
+    const repsVal = repsInputs[exerciseName]?.trim();
+    if (!weightVal && !repsVal) return;
+    let normalizedWeight: string | undefined;
+    if (weightVal) {
+      normalizedWeight = /^\d+(\.\d+)?$/.test(weightVal) ? `${weightVal} kg` : weightVal;
+      localStorage.setItem(`log_${todayStr}_${exerciseName}`, normalizedWeight);
+      setTodayLogs((prev) => ({ ...prev, [exerciseName]: normalizedWeight! }));
+    }
+    if (repsVal) {
+      localStorage.setItem(`reps_${todayStr}_${exerciseName}`, repsVal);
+      setTodayRepsLogs((prev) => ({ ...prev, [exerciseName]: repsVal }));
+    }
+    if (user) {
+      saveExerciseLog(user.id, todayStr, exerciseName, {
+        peso: normalizedWeight,
+        reps: repsVal || undefined,
+      }).catch(console.error);
+    }
     const alertBox = document.getElementById("log-success-toast");
     if (alertBox) {
       alertBox.classList.remove("opacity-0", "translate-y-2");
@@ -304,7 +331,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
                     )}
                   </div>
                   <motion.button
-                    whileTap={{ scale: 0.97 }}
+                    whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                     onClick={() => todayDayPlan && setSessionDay(todayDayPlan)}
                     className="mt-4 w-full bg-brand hover:bg-lime-400 text-black font-bold py-3 rounded-xl text-sm transition-all shadow-sm"
                   >
@@ -516,13 +543,17 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
                     {block.exercises.map((ex, eIdx) => {
                       const isExpanded = !!expandedExercises[ex.name];
                       const loggedWeight = todayLogs[ex.name];
+                      const loggedReps = todayRepsLogs[ex.name];
                       return (
-                        <div
+                        <motion.div
                           key={eIdx}
-                          className="transition-all rounded-2xl overflow-hidden cursor-pointer"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: eIdx * 0.05, duration: 0.25 }}
+                          className="rounded-2xl overflow-hidden cursor-pointer"
                           style={{
-                            backgroundColor: isExpanded ? T.bg : T.bgSec,
-                            border: `1px solid ${T.border}`,
+                            background: isExpanded ? T.bg : "rgba(255,255,255,0.04)",
+                            border: "1px solid rgba(255,255,255,0.08)",
                             boxShadow: isExpanded ? "0 2px 8px rgba(0,0,0,0.08)" : "none",
                           }}
                         >
@@ -578,7 +609,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
 
                                   <div className="flex gap-2 mb-4">
                                     <motion.button
-                                      whileTap={{ scale: 0.97 }}
+                                      whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                                       onClick={(e) => { e.stopPropagation(); startTimer(ex.rest_seconds, ex.name); }}
                                       className="flex-1 bg-brand hover:bg-lime-400 text-black text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
                                     >
@@ -606,18 +637,30 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
                                       value={logInputs[ex.name] || ""}
                                       onClick={(e) => e.stopPropagation()}
                                       onChange={(e) => setLogInputs({ ...logInputs, [ex.name]: e.target.value })}
-                                      placeholder={loggedWeight ? `Registrado: ${loggedWeight}` : "Ej: 50 kg o 24kg dumbbells"}
-                                      className="flex-1 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                                      placeholder={loggedWeight ? `Peso: ${loggedWeight}` : "Peso (ej: 50 kg)"}
+                                      className="flex-1 min-w-0 rounded-xl px-3 py-2 text-xs focus:outline-none min-w-0"
                                       style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textPri }}
                                     />
-                                    <button
+                                    <input
+                                      type="number"
+                                      inputMode="numeric"
+                                      min={1}
+                                      value={repsInputs[ex.name] || ""}
+                                      onClick={(e) => e.stopPropagation()}
+                                      onChange={(e) => setRepsInputs({ ...repsInputs, [ex.name]: e.target.value })}
+                                      placeholder={loggedReps ? loggedReps : "Reps"}
+                                      className="flex-1 min-w-0 rounded-xl px-3 py-2 text-xs focus:outline-none text-center"
+                                      style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textPri }}
+                                    />
+                                    <motion.button
+                                      whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                                       onClick={(e) => { e.stopPropagation(); handleSaveWeight(ex.name); }}
-                                      className="p-2 rounded-xl transition-all text-xs flex items-center justify-center gap-1 min-w-[64px]"
+                                      className="p-2 rounded-xl text-xs flex items-center justify-center gap-1 min-w-[56px] shrink-0"
                                       style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}
                                     >
                                       <Check className="w-3.5 h-3.5" />
                                       <span>Grabar</span>
-                                    </button>
+                                    </motion.button>
                                   </div>
 
                                   <div className="mt-3 p-3 rounded-xl text-[11px] leading-relaxed select-text space-y-1" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}` }}>
@@ -632,7 +675,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
                               </motion.div>
                             )}
                           </AnimatePresence>
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>
