@@ -26,6 +26,31 @@ function parseReps(repsStr: string): number {
   return match ? parseInt(match[0], 10) : 10;
 }
 
+function getPersonalBest(exerciseName: string): { weight: number | null; reps: number | null } {
+  let bestWeight: number | null = null;
+  let bestReps: number | null = null;
+  const allKeys: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && (key.startsWith("log_") || key.startsWith("reps_"))) allKeys.push(key);
+  }
+  console.log("[getPersonalBest] buscando:", exerciseName, "keys:", allKeys);
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key) continue;
+    if (key.startsWith("log_") && key.endsWith(`_${exerciseName}`)) {
+      const raw = localStorage.getItem(key) ?? "";
+      const num = parseFloat(raw.replace(/[^\d.]/g, ""));
+      if (!isNaN(num) && (bestWeight === null || num > bestWeight)) bestWeight = num;
+    }
+    if (key.startsWith("reps_") && key.endsWith(`_${exerciseName}`)) {
+      const num = parseInt(localStorage.getItem(key) ?? "", 10);
+      if (!isNaN(num) && (bestReps === null || num > bestReps)) bestReps = num;
+    }
+  }
+  return { weight: bestWeight, reps: bestReps };
+}
+
 export const Exercising: React.FC<ExercisingProps> = ({
   session,
   currentBlock,
@@ -43,6 +68,14 @@ export const Exercising: React.FC<ExercisingProps> = ({
   const [showTechnique, setShowTechnique] = useState(false);
   const [showExit, setShowExit] = useState(false);
   const suggestion = suggestWeight(currentExercise.name, currentExercise.weight);
+  const pb = getPersonalBest(currentExercise.name);
+  const pbLabel = pb.weight !== null && pb.reps !== null
+    ? `${pb.weight} kg · ${pb.reps} reps`
+    : pb.weight !== null
+    ? `${pb.weight} kg`
+    : pb.reps !== null
+    ? `${pb.reps} reps`
+    : null;
   const [weight, setWeight] = useState(suggestion.weight);
   const [showInput, setShowInput] = useState(false);
   const [inputValue, setInputValue] = useState(String(suggestion.weight));
@@ -116,6 +149,18 @@ export const Exercising: React.FC<ExercisingProps> = ({
           <h2 className="text-sm font-bold text-white leading-snug line-clamp-1 mt-0.5">
             {currentExercise.name}
           </h2>
+          {pbLabel && (
+            <span
+              className="inline-block text-xs rounded-full px-3 py-0.5 mt-1.5"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "rgba(255,255,255,0.7)",
+              }}
+            >
+              Tu mejor marca: {pbLabel}
+            </span>
+          )}
         </div>
 
         {/* Queue button */}
