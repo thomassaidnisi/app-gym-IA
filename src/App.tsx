@@ -74,7 +74,7 @@ if (!user) {
   if (!plan || !profile) {
     return (
       <ThemeProvider>
-        <div className="w-full min-h-screen bg-black text-white px-4 md:px-0 safe-pt pb-10">
+        <div className="w-full min-h-[100dvh] bg-black text-white px-4 md:px-0 safe-pt pb-10">
           <div className="max-w-lg mx-auto">
             <Onboarding onPlanGenerated={handlePlanGenerated} />
           </div>
@@ -87,7 +87,7 @@ if (!user) {
     <ThemeProvider>
       <RestTimerProvider>
         <div
-          className="w-full min-h-screen px-4 md:px-0"
+          className="w-full min-h-[100dvh] px-4 md:px-0"
           style={{
             backgroundColor: "var(--bg-secondary)",
             color: "var(--text-primary)",

@@ -205,7 +205,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
   }
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ backgroundColor: T.bgSec, color: T.textPri }}>
+    <div className="flex flex-col min-h-[100dvh]" style={{ backgroundColor: T.bgSec, color: T.textPri }}>
       {/* Sticky Header */}
       <div className="sticky top-0 z-20 backdrop-blur-md safe-pt p-4 pl-6 pr-6" style={{ backgroundColor: T.bg, borderBottom: `1px solid ${T.border}` }}>
         <div className="flex items-center justify-between">

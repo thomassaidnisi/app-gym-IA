@@ -79,7 +79,7 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
+    <div className="relative min-h-[100dvh] w-full overflow-hidden">
       {/* Background image */}
       <img
         src="/auth-bg.png"
@@ -94,7 +94,7 @@ export const AuthScreen: React.FC = () => {
 
       {/* Content */}
       <div
-        className="relative min-h-screen flex items-center justify-center md:justify-end px-5 md:pr-16"
+        className="relative min-h-[100dvh] flex items-center justify-center md:justify-end px-5 md:pr-16"
         style={{
           zIndex: 20,
           paddingTop: "env(safe-area-inset-top, 24px)",
