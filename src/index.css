@@ -23,6 +23,7 @@
   --surface-hero-border: #1c1c1e;
   --nav-bg:              rgba(255,255,255,0.85);
   --nav-border:          rgba(0,0,0,0.08);
+  --badge-bg:            rgba(0,0,0,0.08);
 }
 
 /* Dark via system preference (only when user hasn't forced light) */
@@ -39,6 +40,7 @@
     --surface-hero-border: #2c2c30;
     --nav-bg:              rgba(10,10,10,0.80);
     --nav-border:          rgba(255,255,255,0.08);
+    --badge-bg:            rgba(255,255,255,0.12);
   }
 }
 
@@ -55,6 +57,7 @@ html[data-theme="dark"] {
   --surface-hero-border: #2c2c30;
   --nav-bg:              rgba(10,10,10,0.80);
   --nav-border:          rgba(255,255,255,0.08);
+  --badge-bg:            rgba(255,255,255,0.12);
 }
 
 /* Light forced by user (overrides system dark via :not guard in media query) */
@@ -70,6 +73,7 @@ html[data-theme="light"] {
   --surface-hero-border: #1c1c1e;
   --nav-bg:              rgba(255,255,255,0.85);
   --nav-border:          rgba(0,0,0,0.08);
+  --badge-bg:            rgba(0,0,0,0.08);
 }
 
 /* ── SCROLLBAR ───────────────────────────────────────────────────────────── */

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Onboarding } from "./components/Onboarding";
 import { GymTab } from "./components/GymTab";
 import { LibraryTab } from "./components/LibraryTab";
-import { MorningTab } from "./components/MorningTab";
+import { NutritionTab } from "./components/NutritionTab";
 import { StatsTab } from "./components/StatsTab";
 import { ProfileTab } from "./components/ProfileTab";
 import { CoachTab } from "./components/CoachTab";
@@ -12,7 +12,7 @@ import { RestTimerProvider } from "./components/RestTimerContext";
 import { RestTimerOverlay } from "./components/RestTimerOverlay";
 import { ThemeProvider } from "./components/ThemeContext";
 import { FullTrainingPlan, UserProfile } from "./types";
-import { Dumbbell, Sun, BarChart2, User as UserIcon, MessageSquare, BookOpen } from "lucide-react";
+import { Dumbbell, Apple, BarChart2, User as UserIcon, MessageSquare, BookOpen } from "lucide-react";
 import { AuthProvider, useAuth } from "./components/AuthContext";
 import { AuthScreen } from "./components/AuthScreen";
 import { loadUserData } from "./lib/db";
@@ -20,7 +20,7 @@ import { loadUserData } from "./lib/db";
 function AppContent() {
   const [plan, setPlan] = useState<FullTrainingPlan | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [activeTab, setActiveTab] = useState<"gym" | "library" | "morning" | "stats" | "profile" | "coach">("gym");
+  const [activeTab, setActiveTab] = useState<"gym" | "library" | "nutricion" | "stats" | "profile" | "coach">("gym");
 const [dataLoading, setDataLoading] = useState(true);
 
 
@@ -117,7 +117,7 @@ if (!user) {
               >
                 {activeTab === "gym" && <GymTab plan={plan} profile={profile} />}
                 {activeTab === "library" && <LibraryTab />}
-                {activeTab === "morning" && <MorningTab />}
+                {activeTab === "nutricion" && <NutritionTab profile={profile} />}
                 {activeTab === "coach" && (
                   <CoachTab plan={plan} profile={profile} onPlanUpdated={handlePlanUpdated} />
                 )}
@@ -149,7 +149,7 @@ if (!user) {
                   { id: "gym",     Icon: Dumbbell,     label: "Gym" },
                   { id: "library", Icon: BookOpen,      label: "Library" },
                   { id: "coach",   Icon: MessageSquare, label: "Coach" },
-                  { id: "morning", Icon: Sun,           label: "Mañana" },
+                  { id: "nutricion", Icon: Apple,       label: "Nutrición" },
                   { id: "stats",   Icon: BarChart2,     label: "Stats" },
                 ] as const
               ).map(({ id, Icon, label }) =>

@@ -174,3 +174,34 @@ export interface WorkoutLog {
   completedAt: Date;
 }
 
+export interface NutritionMacros {
+  proteina_g: number;
+  carbohidratos_g: number;
+  grasas_g: number;
+}
+
+export interface NutritionDistribucionItem {
+  momento: string;
+  descripcion: string;
+  ejemplos: string[];
+}
+
+export interface NutritionSuplemento {
+  nombre: string;
+  dosis: string;
+  motivo: string;
+}
+
+export interface NutritionGuide {
+  calorias_diarias: number;
+  tmb_calculada: number;
+  tdee_calculado: number;
+  objetivo: string;
+  macros: NutritionMacros;
+  distribucion: NutritionDistribucionItem[];
+  suplementos: NutritionSuplemento[];
+  datos_faltantes: string[];
+  notas: string[];
+  disclaimer: string;
+}
+

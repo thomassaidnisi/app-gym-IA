@@ -291,6 +291,113 @@ RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
     }
   });
 
+  // Generate Nutrition Guide Endpoint
+  app.post("/api/generate-nutrition", async (req, res) => {
+    try {
+      const {
+        name,
+        age,
+        weight,
+        height,
+        gender,
+        goals = [],
+        objective,
+        medicalConditions = [],
+        daysPerWeek,
+      } = req.body;
+
+      const nombre = name || "Atleta";
+      const edad = age || "No especificada";
+      const peso = weight || "No especificado";
+      const altura = height || "No especificada";
+      const genero = gender || "No especificado";
+      const objetivoStr = (goals && goals.length > 0) ? goals.join(", ") : (objective || "No especificado");
+      const diasSemana = daysPerWeek || "No especificado";
+      const condiciones = medicalConditions.length > 0 ? medicalConditions.join(", ") : "Ninguna";
+
+      const prompt = `Respondé siempre en español rioplatense argentino. Usá vocabulario local: "palta" (no aguacate), "leche descremada" (no desnatada), "maní" (no cacahuetes), "choclo" (no maíz), "arvejas" (no guisantes), "morrón" (no pimiento), "ananá" (no piña), "durazno" (no melocotón), "zapallo" (no calabaza), "batata" (no boniato o camote). Tutear siempre al usuario.
+
+Eres un nutricionista deportivo. Tu tarea es generar una guía nutricional personalizada, precisa y basada en evidencia científica. No inventes valores — usá las fórmulas indicadas.
+
+PERFIL DEL USUARIO:
+- Nombre: ${nombre}
+- Edad: ${edad} años
+- Peso: ${peso} kg
+- Altura: ${altura} cm
+- Género: ${genero}
+- Objetivo: ${objetivoStr}
+- Días de entrenamiento por semana: ${diasSemana}
+- Condiciones médicas: ${condiciones}
+
+PASO 1 — CALCULAR TMB con fórmula Mifflin-St Jeor:
+- Hombre: TMB = (10 × peso) + (6.25 × altura) - (5 × edad) + 5
+- Mujer: TMB = (10 × peso) + (6.25 × altura) - (5 × edad) - 161
+- Otro/no especificado: usá el promedio de ambas fórmulas
+
+PASO 2 — CALCULAR TDEE multiplicando TMB por factor de actividad:
+- 1-2 días/semana: × 1.375
+- 3-4 días/semana: × 1.55
+- 5-6 días/semana: × 1.725
+- 7 días/semana: × 1.9
+
+PASO 3 — AJUSTAR según objetivo:
+- Hipertrofia / ganar músculo: TDEE + 250 kcal
+- Perder grasa: TDEE - 400 kcal
+- Fuerza / rendimiento: TDEE + 100 kcal
+- Mantenimiento: TDEE sin cambio
+
+PASO 4 — CALCULAR MACROS según evidencia:
+- Proteína:
+  - Hipertrofia: 2.0g × peso corporal (kg)
+  - Pérdida de grasa: 2.2g × peso corporal (kg)
+  - Fuerza/mantenimiento: 1.8g × peso corporal (kg)
+- Grasas: mínimo 1g × peso corporal (kg), no bajar de este umbral
+- Carbohidratos: calorías restantes después de proteína y grasas ÷ 4
+
+REGLAS ESTRICTAS:
+- Si falta peso, altura, edad o género: incluí una nota en datos_faltantes indicando qué falta y que los valores son estimados
+- Si el usuario tiene condiciones médicas relevantes (diabetes, hipertensión, enfermedad renal, etc.): incluí una advertencia específica en las notas indicando que debe consultar un médico o nutricionista antes de seguir esta guía
+- No sugieras suplementos que interactúen con condiciones médicas declaradas
+- Redondea los números a valores prácticos (múltiplos de 5 para calorías, enteros para macros)
+
+Devolvé ÚNICAMENTE un JSON válido con esta estructura, sin texto adicional:
+{
+  calorias_diarias: number,
+  tmb_calculada: number,
+  tdee_calculado: number,
+  objetivo: string,
+  macros: { proteina_g: number, carbohidratos_g: number, grasas_g: number },
+  distribucion: [ { momento: string, descripcion: string, ejemplos: string[] } ],
+  suplementos: [ { nombre: string, dosis: string, motivo: string } ],
+  datos_faltantes: string[],
+  notas: string[],
+  disclaimer: string
+}`;
+
+      const ai = getGeminiClient();
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          temperature: 0.4,
+        },
+      });
+
+      const responseText = response.text;
+      if (!responseText) {
+        throw new Error("No se recibió respuesta del modelo Gemini.");
+      }
+
+      const cleaned = responseText.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
+      const parsedGuide = JSON.parse(cleaned.trim());
+      return res.json(parsedGuide);
+    } catch (error: any) {
+      console.error("Error generating nutrition guide:", error);
+      return res.status(500).json({ error: error.message || "Error interno del servidor al generar la guía nutricional." });
+    }
+  });
+
   // POST /api/parse-plan-document endpoint to read uploaded plans
   app.post("/api/parse-plan-document", upload.single("file"), async (req, res) => {
     try {

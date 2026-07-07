@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { UserProfile, FullTrainingPlan, WorkoutLog } from "../types";
+import { UserProfile, FullTrainingPlan, WorkoutLog, NutritionGuide } from "../types";
 
 export async function saveProfile(userId: string, profile: UserProfile) {
   return supabase.from("profiles").upsert({
@@ -172,6 +172,23 @@ export async function loadWorkoutLogs(userId: string): Promise<WorkoutLog[]> {
     .order("date", { ascending: false });
   if (error || !data) return [];
   return data.map((row) => row.log_json as WorkoutLog);
+}
+
+export async function saveNutritionGuide(userId: string, guide: NutritionGuide) {
+  return supabase.from("nutrition_guides").upsert(
+    { user_id: userId, guide_json: guide, updated_at: new Date().toISOString() },
+    { onConflict: "user_id" }
+  );
+}
+
+export async function loadNutritionGuide(userId: string): Promise<NutritionGuide | null> {
+  const { data, error } = await supabase
+    .from("nutrition_guides")
+    .select("guide_json")
+    .eq("user_id", userId)
+    .single();
+  if (error || !data) return null;
+  return (data.guide_json as NutritionGuide) ?? null;
 }
 
 /** Merges Supabase logs with localStorage logs (localStorage wins on same date for backwards compat) */
