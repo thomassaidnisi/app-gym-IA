@@ -113,7 +113,9 @@ export interface ChatMessage {
   role: 'user' | 'coach';
   text: string;
   planPatch?: FullTrainingPlan;
+  nutritionPatch?: NutritionGuide;
   applied?: boolean;
+  nutritionApplied?: boolean;
   timestamp: number;
 }
 
@@ -121,6 +123,8 @@ export interface CoachResponse {
   coach_message: string;
   plan_modified: boolean;
   updated_plan: FullTrainingPlan | null;
+  nutrition_modified: boolean;
+  updated_nutrition_guide: NutritionGuide | null;
 }
 
 export interface ParsedPlanResponse {

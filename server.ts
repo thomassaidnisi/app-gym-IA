@@ -600,7 +600,7 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
   // Coach IA message endpoint
   app.post("/api/coach-message", async (req, res) => {
     try {
-      const { message, plan, profile, chatHistory = [], exerciseHistory = {}, recentWorkoutLogs = [] } = req.body;
+      const { message, plan, profile, nutritionGuide = null, chatHistory = [], exerciseHistory = {}, recentWorkoutLogs = [] } = req.body;
 
       if (!message || !plan || !profile) {
         return res.status(400).json({ error: "Faltan datos requeridos (message, plan o perfil)." });
@@ -633,6 +633,9 @@ PLAN ACTUAL COMPLETO:
 ${JSON.stringify(plan, null, 2)}
 ${sourceInstruction}
 
+GUÍA NUTRICIONAL ACTUAL DEL USUARIO: ${nutritionGuide ? JSON.stringify(nutritionGuide, null, 2) : "El usuario todavía no generó una guía nutricional."}
+Podés responder preguntas sobre esta guía y sugerir modificaciones cuando el usuario lo pida (reemplazos de alimentos, exclusiones, ajustes de porciones). Si el usuario pide un cambio en su nutrición, devolvé nutrition_modified: true y updated_nutrition_guide con la guía completa modificada.
+
 HISTORIAL DE CONVERSACIÓN RECIENTE:
 ${formattedHistory || "Ninguno"}
 
@@ -663,6 +666,7 @@ INSTRUCCIONES:
 3. Si el usuario hace una pregunta sobre entrenamiento, nutrición, técnica, etc.:
    - Respondé de forma clara y concisa (máximo 4 oraciones).
    - NO incluyas "updated_plan" si no hubo cambios al plan.
+   - NO incluyas "updated_nutrition_guide" si no hubo cambios a la guía nutricional.
 4. Mantén un tono motivador, directo y profesional. Como un buen coach personal.
 5. Si el pedido es imposible dado el equipamiento disponible, explicalo y sugerí una alternativa viable.
 6. Respondé SIEMPRE en español.
@@ -678,7 +682,9 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
 {
   "coach_message": "tu respuesta en texto natural para el usuario",
   "plan_modified": true o false,
-  "updated_plan": { ...plan completo modificado... } o null
+  "updated_plan": { ...plan completo modificado... } o null,
+  "nutrition_modified": true o false,
+  "updated_nutrition_guide": { ...guía nutricional completa modificada... } o null
 }`;
 
       const ai = getGeminiClient();
@@ -700,7 +706,9 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
       return res.json({
         coach_message: parsedResponse.coach_message || "¡Hola! ¿En qué puedo ayudarte hoy?",
         plan_modified: !!parsedResponse.plan_modified,
-        updated_plan: parsedResponse.updated_plan || null
+        updated_plan: parsedResponse.updated_plan || null,
+        nutrition_modified: !!parsedResponse.nutrition_modified,
+        updated_nutrition_guide: parsedResponse.updated_nutrition_guide || null
       });
 
     } catch (error: any) {
@@ -708,7 +716,9 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
       return res.status(500).json({
         coach_message: "Hubo un error al procesar tu solicitud con el coach. Por favor, intenta de nuevo.",
         plan_modified: false,
-        updated_plan: null
+        updated_plan: null,
+        nutrition_modified: false,
+        updated_nutrition_guide: null
       });
     }
   });

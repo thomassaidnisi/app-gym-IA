@@ -11,15 +11,16 @@ import { CoachTab } from "./components/CoachTab";
 import { RestTimerProvider } from "./components/RestTimerContext";
 import { RestTimerOverlay } from "./components/RestTimerOverlay";
 import { ThemeProvider } from "./components/ThemeContext";
-import { FullTrainingPlan, UserProfile } from "./types";
+import { FullTrainingPlan, UserProfile, NutritionGuide } from "./types";
 import { Dumbbell, Apple, BarChart2, User as UserIcon, MessageSquare, BookOpen } from "lucide-react";
 import { AuthProvider, useAuth } from "./components/AuthContext";
 import { AuthScreen } from "./components/AuthScreen";
-import { loadUserData } from "./lib/db";
+import { loadUserData, loadNutritionGuide, saveNutritionGuide } from "./lib/db";
 
 function AppContent() {
   const [plan, setPlan] = useState<FullTrainingPlan | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [nutritionGuide, setNutritionGuide] = useState<NutritionGuide | null>(null);
   const [activeTab, setActiveTab] = useState<"gym" | "library" | "nutricion" | "stats" | "profile" | "coach">("gym");
 const [dataLoading, setDataLoading] = useState(true);
 
@@ -46,13 +47,23 @@ useEffect(() => {
   };
 
   const handleProfileUpdated = (updated: UserProfile) => setProfile(updated);
+
+  const handleNutritionUpdated = (updatedGuide: NutritionGuide) => {
+    setNutritionGuide(updatedGuide);
+    if (user) saveNutritionGuide(user.id, updatedGuide).catch(console.error);
+  };
+
   const { user, isLoading } = useAuth();
 
 useEffect(() => {
   if (!user) { setDataLoading(false); return; }
-  loadUserData(user.id).then(({ profile: remoteProfile, plan: remotePlan }) => {
+  Promise.all([
+    loadUserData(user.id),
+    loadNutritionGuide(user.id),
+  ]).then(([{ profile: remoteProfile, plan: remotePlan }, remoteGuide]) => {
     if (remoteProfile) setProfile(remoteProfile);
     if (remotePlan) setPlan(remotePlan);
+    if (remoteGuide) setNutritionGuide(remoteGuide);
     // Supabase responded but no data → new user, show onboarding (no localStorage fallback)
   }).catch(() => {
     // Network/fetch error → fall back to localStorage so existing sessions don't break
@@ -119,7 +130,13 @@ if (!user) {
                 {activeTab === "library" && <LibraryTab />}
                 {activeTab === "nutricion" && <NutritionTab profile={profile} />}
                 {activeTab === "coach" && (
-                  <CoachTab plan={plan} profile={profile} onPlanUpdated={handlePlanUpdated} />
+                  <CoachTab
+                    plan={plan}
+                    profile={profile}
+                    onPlanUpdated={handlePlanUpdated}
+                    nutritionGuide={nutritionGuide}
+                    onNutritionUpdated={handleNutritionUpdated}
+                  />
                 )}
                 {activeTab === "stats" && <StatsTab />}
                 {activeTab === "profile" && (

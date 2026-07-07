@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { UserProfile, FullTrainingPlan, ChatMessage, CoachResponse } from "../types";
+import { UserProfile, FullTrainingPlan, NutritionGuide, ChatMessage, CoachResponse } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { Send, Sparkles, Check, Loader2 } from "lucide-react";
 import { useAuth } from "./AuthContext";
@@ -9,6 +9,8 @@ interface CoachTabProps {
   plan: FullTrainingPlan | null;
   profile: UserProfile | null;
   onPlanUpdated: (updatedPlan: FullTrainingPlan) => void;
+  nutritionGuide: NutritionGuide | null;
+  onNutritionUpdated: (updatedGuide: NutritionGuide) => void;
 }
 
 const T = {
@@ -20,7 +22,7 @@ const T = {
   border:  "var(--border)",
 };
 
-export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated }) => {
+export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated, nutritionGuide, onNutritionUpdated }) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
@@ -149,13 +151,14 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
       const res = await fetch("/api/coach-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userQuery, plan, profile, chatHistory: updatedMessages.slice(-6).map(m => ({ role: m.role, text: m.text })), exerciseHistory: buildExerciseHistory(), recentWorkoutLogs: await buildRecentWorkoutSummary() }),
+        body: JSON.stringify({ message: userQuery, plan, profile, nutritionGuide, chatHistory: updatedMessages.slice(-6).map(m => ({ role: m.role, text: m.text })), exerciseHistory: buildExerciseHistory(), recentWorkoutLogs: await buildRecentWorkoutSummary() }),
       });
       if (!res.ok) throw new Error("Respuesta no válida del servidor.");
       const data: CoachResponse = await res.json();
       const coachMessage: ChatMessage = {
         id: `coach-${Date.now()}`, role: "coach", text: data.coach_message, timestamp: Date.now(),
         planPatch: data.plan_modified && data.updated_plan ? data.updated_plan : undefined, applied: false,
+        nutritionPatch: data.nutrition_modified && data.updated_nutrition_guide ? data.updated_nutrition_guide : undefined, nutritionApplied: false,
       };
       const finalMessages = [...updatedMessages, coachMessage].slice(-20);
       setMessages(finalMessages);
@@ -185,6 +188,22 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
     } catch (e) {
       console.error(e);
       setApplyState((prev) => ({ ...prev, [messageId]: "idle" }));
+    }
+  };
+
+  const handleApplyNutritionPatch = async (messageId: string, nutritionPatch: NutritionGuide) => {
+    if (applyState[`nutrition-${messageId}`] === "success" || applyState[`nutrition-${messageId}`] === "loading") return;
+    setApplyState((prev) => ({ ...prev, [`nutrition-${messageId}`]: "loading" }));
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      onNutritionUpdated(nutritionPatch);
+      const modified = messages.map((msg) => msg.id === messageId ? { ...msg, nutritionApplied: true } : msg);
+      setMessages(modified);
+      localStorage.setItem("healty_chat_history", JSON.stringify(modified));
+      setApplyState((prev) => ({ ...prev, [`nutrition-${messageId}`]: "success" }));
+    } catch (e) {
+      console.error(e);
+      setApplyState((prev) => ({ ...prev, [`nutrition-${messageId}`]: "idle" }));
     }
   };
 
@@ -295,6 +314,41 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
                         {applyState[msg.id] === "loading"
                           ? <><Loader2 className="w-4 h-4 animate-spin text-black" />Aplicando...</>
                           : <><Check className="w-4 h-4 text-black" />Aplicar Cambios al Plan</>}
+                      </motion.button>
+                    )}
+                  </motion.div>
+                )}
+
+                {isCoach && msg.nutritionPatch && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="mt-2 w-[85%] rounded-2xl p-3.5 space-y-3"
+                    style={{ backgroundColor: T.bg, border: `1px solid ${T.border}`, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
+                  >
+                    <div className="flex items-start gap-2">
+                      <Sparkles className="w-4 h-4 text-brand shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="text-xs font-semibold" style={{ color: T.textPri }}>Cambio en tu guía nutricional</h4>
+                        <p className="text-[11px]" style={{ color: T.textSec }}>Aplicá estos cambios para reemplazar tu guía activa.</p>
+                      </div>
+                    </div>
+                    {msg.nutritionApplied ? (
+                      <div className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold uppercase" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}>
+                        <Check className="w-4 h-4" style={{ color: T.textPri }} />
+                        Cambios aplicados
+                      </div>
+                    ) : (
+                      <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => handleApplyNutritionPatch(msg.id, msg.nutritionPatch!)}
+                        disabled={applyState[`nutrition-${msg.id}`] === "loading"}
+                        className="w-full bg-brand text-black hover:bg-lime-400 py-2.5 rounded-xl text-xs font-semibold uppercase shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      >
+                        {applyState[`nutrition-${msg.id}`] === "loading"
+                          ? <><Loader2 className="w-4 h-4 animate-spin text-black" />Aplicando...</>
+                          : <><Check className="w-4 h-4 text-black" />Aplicar cambios</>}
                       </motion.button>
                     )}
                   </motion.div>
