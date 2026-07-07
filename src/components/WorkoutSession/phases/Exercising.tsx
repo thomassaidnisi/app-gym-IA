@@ -82,22 +82,43 @@ export const Exercising: React.FC<ExercisingProps> = ({
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Reset weight when exercise changes
+  const [reps, setReps] = useState(parseReps(currentExercise.reps));
+  const [showRepsInput, setShowRepsInput] = useState(false);
+  const [repsInputValue, setRepsInputValue] = useState(String(parseReps(currentExercise.reps)));
+  const repsLongPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const repsInputRef = useRef<HTMLInputElement>(null);
+
+  // Reset weight and reps when exercise changes
   useEffect(() => {
     const s = suggestWeight(currentExercise.name, currentExercise.weight);
     setWeight(s.weight);
     setInputValue(String(s.weight));
     setShowInput(false);
+
+    const targetReps = parseReps(currentExercise.reps);
+    setReps(targetReps);
+    setRepsInputValue(String(targetReps));
+    setShowRepsInput(false);
   }, [currentExercise.name]);
 
   useEffect(() => {
     if (showInput) inputRef.current?.focus();
   }, [showInput]);
 
+  useEffect(() => {
+    if (showRepsInput) repsInputRef.current?.focus();
+  }, [showRepsInput]);
+
   const adjust = (delta: number) => {
     const next = Math.max(0, parseFloat((weight + delta).toFixed(1)));
     setWeight(next);
     setInputValue(String(next));
+  };
+
+  const adjustReps = (delta: number) => {
+    const next = Math.max(0, reps + delta);
+    setReps(next);
+    setRepsInputValue(String(next));
   };
 
   const handlePressStart = () => {
@@ -107,11 +128,25 @@ export const Exercising: React.FC<ExercisingProps> = ({
     if (longPressTimer.current) clearTimeout(longPressTimer.current);
   };
 
+  const handleRepsPressStart = () => {
+    repsLongPressTimer.current = setTimeout(() => setShowRepsInput(true), 500);
+  };
+  const handleRepsPressEnd = () => {
+    if (repsLongPressTimer.current) clearTimeout(repsLongPressTimer.current);
+  };
+
   const commitInput = () => {
     const parsed = parseFloat(inputValue.replace(",", "."));
     if (!isNaN(parsed) && parsed >= 0) setWeight(parsed);
     else setInputValue(String(weight));
     setShowInput(false);
+  };
+
+  const commitRepsInput = () => {
+    const parsed = parseInt(repsInputValue, 10);
+    if (!isNaN(parsed) && parsed >= 0) setReps(parsed);
+    else setRepsInputValue(String(reps));
+    setShowRepsInput(false);
   };
 
   const blockLabel = currentBlock.title || currentBlock.label || "Bloque";
@@ -291,6 +326,83 @@ export const Exercising: React.FC<ExercisingProps> = ({
 
           </div>
 
+          {/* ── REPS ZONE ── */}
+          <div className="flex items-center gap-6 mt-2">
+
+            {/* -1 rep */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => adjustReps(-1)}
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-opacity active:opacity-60"
+              style={{ backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}
+            >
+              <Minus className="w-4 h-4 text-white" strokeWidth={2} />
+            </motion.button>
+
+            {/* Reps display / input */}
+            <div
+              className="flex items-end gap-1.5 cursor-pointer select-none"
+              onPointerDown={handleRepsPressStart}
+              onPointerUp={handleRepsPressEnd}
+              onPointerLeave={handleRepsPressEnd}
+              onPointerCancel={handleRepsPressEnd}
+            >
+              <AnimatePresence mode="wait">
+                {showRepsInput ? (
+                  <motion.input
+                    key="reps-input"
+                    ref={repsInputRef}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    type="number"
+                    inputMode="numeric"
+                    value={repsInputValue}
+                    onChange={(e) => setRepsInputValue(e.target.value)}
+                    onBlur={commitRepsInput}
+                    onKeyDown={(e) => { if (e.key === "Enter") commitRepsInput(); }}
+                    className="font-black text-center tabular-nums bg-transparent focus:outline-none"
+                    style={{
+                      fontSize: 28,
+                      color: "#ffffff",
+                      width: "3ch",
+                      lineHeight: 1,
+                      caretColor: "#ffffff",
+                    }}
+                  />
+                ) : (
+                  <motion.span
+                    key="reps-display"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="font-black tabular-nums leading-none"
+                    style={{ fontSize: 28, color: "#ffffff" }}
+                  >
+                    {reps}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+              <span
+                className="text-sm font-semibold mb-0.5"
+                style={{ color: "rgba(255,255,255,0.4)" }}
+              >
+                reps
+              </span>
+            </div>
+
+            {/* +1 rep */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => adjustReps(+1)}
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-opacity active:opacity-60"
+              style={{ backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}
+            >
+              <Plus className="w-4 h-4 text-white" strokeWidth={2} />
+            </motion.button>
+
+          </div>
+
           {/* Historial */}
           {suggestion.lastWeight !== null && (
             <motion.p
@@ -342,7 +454,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
       >
         <motion.button
           whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-          onClick={() => onCompleteSet(weight, parseReps(currentExercise.reps))}
+          onClick={() => onCompleteSet(weight, reps)}
           className="w-full h-14 rounded-2xl font-black text-base text-black"
           style={{ backgroundColor: "#c8f135" }}
         >
