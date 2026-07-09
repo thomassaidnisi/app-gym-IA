@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   Apple, Loader2, RefreshCw, AlertTriangle, Flame,
   Beef, Wheat, Droplet, Sunrise, Coffee, UtensilsCrossed, Zap,
 } from "lucide-react";
-import { UserProfile, NutritionGuide } from "../types";
+import { UserProfile, NutritionGuide, NutritionDistribucionItem } from "../types";
 import { useAuth } from "./AuthContext";
 import { saveNutritionGuide, loadNutritionGuide } from "../lib/db";
 
@@ -32,12 +32,97 @@ function momentIcon(momento: string) {
   return UtensilsCrossed;
 }
 
+const MACRO_COLORS = {
+  proteina: "rgba(99,102,241,1)",
+  carbos: "rgba(245,158,11,1)",
+  grasas: "rgba(16,185,129,1)",
+};
+
+function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function describeArcPath(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
+  // Full circle edge case: draw as two half-arcs so the path renders.
+  if (endAngle - startAngle >= 359.99) {
+    const p1 = polarToCartesian(cx, cy, r, startAngle);
+    const p2 = polarToCartesian(cx, cy, r, startAngle + 180);
+    return `M ${cx} ${cy} L ${p1.x} ${p1.y} A ${r} ${r} 0 1 1 ${p2.x} ${p2.y} A ${r} ${r} 0 1 1 ${p1.x} ${p1.y} Z`;
+  }
+  const start = polarToCartesian(cx, cy, r, startAngle);
+  const end = polarToCartesian(cx, cy, r, endAngle);
+  const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y} Z`;
+}
+
+const PlateChart: React.FC<{ macros: NonNullable<NutritionDistribucionItem["macros"]> }> = ({ macros }) => {
+  const kcalProteina = macros.proteina_g * 4;
+  const kcalCarbos = macros.carbohidratos_g * 4;
+  const kcalGrasas = macros.grasas_g * 9;
+  const total = kcalProteina + kcalCarbos + kcalGrasas;
+
+  const slices = total > 0
+    ? [
+        { color: MACRO_COLORS.proteina, kcal: kcalProteina },
+        { color: MACRO_COLORS.carbos, kcal: kcalCarbos },
+        { color: MACRO_COLORS.grasas, kcal: kcalGrasas },
+      ]
+    : [];
+
+  let angleCursor = 0;
+  const cx = 60, cy = 60, r = 56;
+
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <div className="relative w-[120px] h-[120px]">
+        <svg width={120} height={120} viewBox="0 0 120 120">
+          {slices.map((s, i) => {
+            const sliceAngle = (s.kcal / total) * 360;
+            const path = describeArcPath(cx, cy, r, angleCursor, angleCursor + sliceAngle);
+            angleCursor += sliceAngle;
+            return <path key={i} d={path} fill={s.color} />;
+          })}
+          <circle cx={cx} cy={cy} r={34} fill={T.bgSec} />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-base font-black tabular-nums" style={{ color: T.textPri }}>
+            {macros.calorias}
+          </span>
+          <span className="text-[9px]" style={{ color: T.textTer }}>kcal</span>
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center justify-center gap-1.5">
+        <span
+          className="text-[10px] font-semibold rounded-full px-2 py-0.5"
+          style={{ backgroundColor: "rgba(99,102,241,0.15)", color: "#818cf8" }}
+        >
+          {macros.proteina_g}g Proteína
+        </span>
+        <span
+          className="text-[10px] font-semibold rounded-full px-2 py-0.5"
+          style={{ backgroundColor: "rgba(245,158,11,0.15)", color: "#f59e0b" }}
+        >
+          {macros.carbohidratos_g}g Carbos
+        </span>
+        <span
+          className="text-[10px] font-semibold rounded-full px-2 py-0.5"
+          style={{ backgroundColor: "rgba(16,185,129,0.15)", color: "#10b981" }}
+        >
+          {macros.grasas_g}g Grasas
+        </span>
+      </div>
+    </div>
+  );
+};
+
 export const NutritionTab: React.FC<NutritionTabProps> = ({ profile }) => {
   const { user } = useAuth();
   const [guide, setGuide] = useState<NutritionGuide | null>(null);
   const [isLoadingGuide, setIsLoadingGuide] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [expandedMoment, setExpandedMoment] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user) { setIsLoadingGuide(false); return; }
@@ -204,11 +289,13 @@ export const NutritionTab: React.FC<NutritionTabProps> = ({ profile }) => {
           <div className="flex flex-col gap-2">
             {guide.distribucion.map((d, i) => {
               const Icon = momentIcon(d.momento);
+              const isExpanded = expandedMoment === i;
               return (
                 <div
                   key={i}
-                  className="rounded-2xl p-4"
+                  className="rounded-2xl p-4 cursor-pointer select-none"
                   style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}` }}
+                  onClick={() => setExpandedMoment(isExpanded ? null : i)}
                 >
                   <div className="flex items-center gap-2">
                     <Icon className="w-4 h-4 shrink-0" style={{ color: T.brand }} />
@@ -228,6 +315,28 @@ export const NutritionTab: React.FC<NutritionTabProps> = ({ profile }) => {
                       ))}
                     </div>
                   )}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                        className="overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="pt-4 mt-3" style={{ borderTop: `1px solid ${T.border}` }}>
+                          {d.macros ? (
+                            <PlateChart macros={d.macros} />
+                          ) : (
+                            <p className="text-xs text-center py-2" style={{ color: T.textTer }}>
+                              Actualizá tu guía para ver el desglose por comida
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               );
             })}

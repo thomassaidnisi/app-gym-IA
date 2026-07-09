@@ -354,6 +354,8 @@ PASO 4 — CALCULAR MACROS según evidencia:
 - Grasas: mínimo 1g × peso corporal (kg), no bajar de este umbral
 - Carbohidratos: calorías restantes después de proteína y grasas ÷ 4
 
+Para cada momento del día en "distribucion", estimá los macros aproximados (proteina_g, carbohidratos_g, grasas_g, calorias) coherentes con el total diario — la suma de todos los momentos debe ser consistente con los macros totales calculados. Distribuí según criterio nutricional: más carbohidratos en pre-entrenamiento y post-entrenamiento, más proteína en almuerzo y cena, grasas distribuidas principalmente en desayuno y almuerzo.
+
 REGLAS ESTRICTAS:
 - Si falta peso, altura, edad o género: incluí una nota en datos_faltantes indicando qué falta y que los valores son estimados
 - Si el usuario tiene condiciones médicas relevantes (diabetes, hipertensión, enfermedad renal, etc.): incluí una advertencia específica en las notas indicando que debe consultar un médico o nutricionista antes de seguir esta guía
@@ -367,7 +369,7 @@ Devolvé ÚNICAMENTE un JSON válido con esta estructura, sin texto adicional:
   tdee_calculado: number,
   objetivo: string,
   macros: { proteina_g: number, carbohidratos_g: number, grasas_g: number },
-  distribucion: [ { momento: string, descripcion: string, ejemplos: string[] } ],
+  distribucion: [ { momento: string, descripcion: string, ejemplos: string[], macros: { proteina_g: number, carbohidratos_g: number, grasas_g: number, calorias: number } } ],
   suplementos: [ { nombre: string, dosis: string, motivo: string } ],
   datos_faltantes: string[],
   notas: string[],

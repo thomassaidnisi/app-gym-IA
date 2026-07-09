@@ -188,6 +188,12 @@ export interface NutritionDistribucionItem {
   momento: string;
   descripcion: string;
   ejemplos: string[];
+  macros?: {
+    proteina_g: number;
+    carbohidratos_g: number;
+    grasas_g: number;
+    calorias: number;
+  };
 }
 
 export interface NutritionSuplemento {
