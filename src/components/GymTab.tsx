@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FullTrainingPlan, UserProfile, DayPlan } from "../types";
+import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion } from "../types";
 import { WorkoutSession } from "./WorkoutSession";
 import {
   Dumbbell, Clock, Play, Youtube, Check, FileText,
-  PersonStanding, Footprints, Bike, Moon, Zap, Flame, CalendarDays, ChevronDown,
+  PersonStanding, Footprints, Bike, Moon, Zap, Flame, CalendarDays, ChevronDown, X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRestTimer } from "./RestTimerContext";
@@ -13,6 +13,8 @@ import { saveExerciseLog } from "../lib/db";
 interface GymTabProps {
   plan: FullTrainingPlan;
   profile: UserProfile;
+  coachSuggestions?: ProgressionSuggestion[];
+  onOpenCoach?: (initialMessage: string) => void;
 }
 
 const DAY_KEYS = [
@@ -43,9 +45,16 @@ const getWorkoutIcon = (routineName: string, className = "w-4 h-4"): React.React
 
 const shortName = (name: string) => name.split("—")[0].split("-")[0].trim();
 
-export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
+export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach }) => {
   const { startTimer } = useRestTimer();
   const { user } = useAuth();
+
+  const [dismissTick, setDismissTick] = useState(0);
+
+  const handleOpenCoachSuggestions = () => {
+    if (!onOpenCoach) return;
+    onOpenCoach(coachSuggestions.map((s) => s.message).join("\n"));
+  };
 
   const validTrainDays = plan.days && plan.days.length > 0 ? plan.days : [];
   const [activeDayIdx, setActiveDayIdx] = useState(0);
@@ -253,8 +262,56 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile }) => {
     heroBorder:  "var(--surface-hero-border)",
   };
 
+  const isSuggestionsDismissedToday = dismissTick >= 0 &&
+    localStorage.getItem(`coach_suggestions_dismissed_${todayStr}`) === "true";
+  const showCoachSuggestions = coachSuggestions.length > 0 && !isSuggestionsDismissedToday;
+
   return (
     <div className="w-full">
+
+      {/* ── COACH PROACTIVO ── */}
+      {showCoachSuggestions && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 rounded-2xl p-4 flex items-center gap-3 relative"
+          style={{
+            backgroundColor: "rgba(99,102,241,0.10)",
+            border: "1px solid rgba(99,102,241,0.25)",
+          }}
+        >
+          <button
+            onClick={handleOpenCoachSuggestions}
+            className="flex items-center gap-3 flex-1 min-w-0 text-left"
+          >
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+              style={{ backgroundColor: "rgba(99,102,241,0.18)" }}
+            >
+              <Zap className="w-4 h-4" style={{ color: "#818cf8" }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold" style={{ color: T.textPri }}>
+                Tu Coach tiene {coachSuggestions.length > 1 ? `${coachSuggestions.length} sugerencias` : "una sugerencia"}
+              </p>
+              <p className="text-xs truncate" style={{ color: T.textSec }}>
+                {coachSuggestions[0].exercise}: {coachSuggestions[0].message}
+              </p>
+            </div>
+          </button>
+          <button
+            onClick={() => {
+              localStorage.setItem(`coach_suggestions_dismissed_${todayStr}`, "true");
+              setDismissTick((t) => t + 1);
+            }}
+            className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+            style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+            aria-label="Descartar sugerencia"
+          >
+            <X className="w-3.5 h-3.5" style={{ color: T.textTer }} />
+          </button>
+        </motion.div>
+      )}
 
       {/* ── HERO TOGGLE ── */}
       <div className="pt-4 mb-1">

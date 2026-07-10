@@ -11,6 +11,7 @@ interface CoachTabProps {
   onPlanUpdated: (updatedPlan: FullTrainingPlan) => void;
   nutritionGuide: NutritionGuide | null;
   onNutritionUpdated: (updatedGuide: NutritionGuide) => void;
+  initialMessage?: string;
 }
 
 const T = {
@@ -22,7 +23,7 @@ const T = {
   border:  "var(--border)",
 };
 
-export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated, nutritionGuide, onNutritionUpdated }) => {
+export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated, nutritionGuide, onNutritionUpdated, initialMessage }) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
@@ -53,6 +54,17 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
       initializeWelcome();
     }
   }, [plan?.plan_name, profile?.name]);
+
+  const sentInitialMessageRef = useRef(false);
+  useEffect(() => {
+    if (!initialMessage || !plan || !profile) return;
+    if (sentInitialMessageRef.current) return;
+    if (messages.length === 1 && messages[0].id === "welcome") {
+      sentInitialMessageRef.current = true;
+      handleSendMessage(undefined, initialMessage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessage, messages]);
 
   const initializeWelcome = () => {
     if (!plan || !profile) return;
@@ -137,10 +149,11 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
     return history;
   };
 
-    const handleSendMessage = async (e?: React.FormEvent) => {
+    const handleSendMessage = async (e?: React.FormEvent, textOverride?: string) => {
     if (e) e.preventDefault();
-    if (!inputText.trim() || isLoading || !plan || !profile) return;
-    const userQuery = inputText.trim();
+    const rawText = textOverride ?? inputText;
+    if (!rawText.trim() || isLoading || !plan || !profile) return;
+    const userQuery = rawText.trim();
     setInputText("");
     const userMessage: ChatMessage = { id: `user-${Date.now()}`, role: "user", text: userQuery, timestamp: Date.now() };
     const updatedMessages = [...messages, userMessage].slice(-20);

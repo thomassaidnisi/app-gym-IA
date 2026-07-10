@@ -194,6 +194,7 @@ export interface NutritionDistribucionItem {
     grasas_g: number;
     calorias: number;
   };
+  razon?: string;
 }
 
 export interface NutritionSuplemento {
@@ -213,5 +214,13 @@ export interface NutritionGuide {
   datos_faltantes: string[];
   notas: string[];
   disclaimer: string;
+}
+
+export interface ProgressionSuggestion {
+  exercise: string;
+  currentWeight: string;
+  currentReps: string;
+  sessionsStuck: number;
+  message: string;
 }
 

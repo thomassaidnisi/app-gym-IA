@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Apple, Loader2, RefreshCw, AlertTriangle, Flame,
-  Beef, Wheat, Droplet, Sunrise, Coffee, UtensilsCrossed, Zap,
+  Beef, Wheat, Droplet, Sunrise, Coffee, UtensilsCrossed, Zap, Info,
 } from "lucide-react";
 import { UserProfile, NutritionGuide, NutritionDistribucionItem } from "../types";
 import { useAuth } from "./AuthContext";
@@ -43,17 +43,17 @@ function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
 
-function describeArcPath(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
+function describeArcStroke(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
   // Full circle edge case: draw as two half-arcs so the path renders.
   if (endAngle - startAngle >= 359.99) {
     const p1 = polarToCartesian(cx, cy, r, startAngle);
     const p2 = polarToCartesian(cx, cy, r, startAngle + 180);
-    return `M ${cx} ${cy} L ${p1.x} ${p1.y} A ${r} ${r} 0 1 1 ${p2.x} ${p2.y} A ${r} ${r} 0 1 1 ${p1.x} ${p1.y} Z`;
+    return `M ${p1.x} ${p1.y} A ${r} ${r} 0 1 1 ${p2.x} ${p2.y} A ${r} ${r} 0 1 1 ${p1.x} ${p1.y}`;
   }
   const start = polarToCartesian(cx, cy, r, startAngle);
   const end = polarToCartesian(cx, cy, r, endAngle);
   const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
-  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y} Z`;
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
 }
 
 const PlateChart: React.FC<{ macros: NonNullable<NutritionDistribucionItem["macros"]> }> = ({ macros }) => {
@@ -71,7 +71,7 @@ const PlateChart: React.FC<{ macros: NonNullable<NutritionDistribucionItem["macr
     : [];
 
   let angleCursor = 0;
-  const cx = 60, cy = 60, r = 56;
+  const cx = 60, cy = 60, r = 45, strokeWidth = 22;
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -79,9 +79,22 @@ const PlateChart: React.FC<{ macros: NonNullable<NutritionDistribucionItem["macr
         <svg width={120} height={120} viewBox="0 0 120 120">
           {slices.map((s, i) => {
             const sliceAngle = (s.kcal / total) * 360;
-            const path = describeArcPath(cx, cy, r, angleCursor, angleCursor + sliceAngle);
+            const path = describeArcStroke(cx, cy, r, angleCursor, angleCursor + sliceAngle);
             angleCursor += sliceAngle;
-            return <path key={i} d={path} fill={s.color} />;
+            return (
+              <motion.path
+                key={i}
+                d={path}
+                fill="none"
+                stroke={s.color}
+                strokeWidth={strokeWidth}
+                pathLength={100}
+                strokeDasharray={100}
+                initial={{ strokeDashoffset: 100 }}
+                animate={{ strokeDashoffset: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut", delay: i * 0.2 }}
+              />
+            );
           })}
           <circle cx={cx} cy={cy} r={34} fill={T.bgSec} />
         </svg>
@@ -326,6 +339,12 @@ export const NutritionTab: React.FC<NutritionTabProps> = ({ profile }) => {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="pt-4 mt-3" style={{ borderTop: `1px solid ${T.border}` }}>
+                          {d.razon && (
+                            <div className="flex items-start gap-1.5 mb-3" style={{ opacity: 0.7 }}>
+                              <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: T.textSec }} />
+                              <p className="text-xs" style={{ color: T.textSec }}>{d.razon}</p>
+                            </div>
+                          )}
                           {d.macros ? (
                             <PlateChart macros={d.macros} />
                           ) : (

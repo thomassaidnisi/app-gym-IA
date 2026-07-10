@@ -39,6 +39,14 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
+function sanitizeJsonText(text: string): string {
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, "") // block comments
+    .replace(/(^|\s)\/\/.*$/gm, "$1") // line comments
+    .replace(/'([^']*)'/g, '"$1"') // single-quoted strings → double-quoted
+    .replace(/,(\s*[}\]])/g, "$1"); // trailing commas before } or ]
+}
+
 function parseExcelToTabular(buffer: Buffer): string {
   try {
     const workbook = xlsx.read(buffer, { type: "buffer" });
@@ -356,20 +364,22 @@ PASO 4 — CALCULAR MACROS según evidencia:
 
 Para cada momento del día en "distribucion", estimá los macros aproximados (proteina_g, carbohidratos_g, grasas_g, calorias) coherentes con el total diario — la suma de todos los momentos debe ser consistente con los macros totales calculados. Distribuí según criterio nutricional: más carbohidratos en pre-entrenamiento y post-entrenamiento, más proteína en almuerzo y cena, grasas distribuidas principalmente en desayuno y almuerzo.
 
+Para cada momento del día en "distribucion", incluí un campo "razon" con una explicación breve (1-2 oraciones) de por qué ese plato está estructurado así para el objetivo del usuario — en términos nutricionales concretos, no genéricos. Ejemplo: "Los carbohidratos de rápida absorción proveen energía inmediata para el entrenamiento, mientras que la proteína previene el catabolismo muscular durante el esfuerzo."
+
 REGLAS ESTRICTAS:
 - Si falta peso, altura, edad o género: incluí una nota en datos_faltantes indicando qué falta y que los valores son estimados
 - Si el usuario tiene condiciones médicas relevantes (diabetes, hipertensión, enfermedad renal, etc.): incluí una advertencia específica en las notas indicando que debe consultar un médico o nutricionista antes de seguir esta guía
 - No sugieras suplementos que interactúen con condiciones médicas declaradas
 - Redondea los números a valores prácticos (múltiplos de 5 para calorías, enteros para macros)
 
-Devolvé ÚNICAMENTE un JSON válido con esta estructura, sin texto adicional:
+Devolvé ÚNICAMENTE un JSON válido RFC 8259. Sin comentarios, sin trailing commas, sin comillas simples, sin texto fuera del JSON. Solo el objeto JSON puro.
 {
   calorias_diarias: number,
   tmb_calculada: number,
   tdee_calculado: number,
   objetivo: string,
   macros: { proteina_g: number, carbohidratos_g: number, grasas_g: number },
-  distribucion: [ { momento: string, descripcion: string, ejemplos: string[], macros: { proteina_g: number, carbohidratos_g: number, grasas_g: number, calorias: number } } ],
+  distribucion: [ { momento: string, descripcion: string, ejemplos: string[], macros: { proteina_g: number, carbohidratos_g: number, grasas_g: number, calorias: number }, razon: string } ],
   suplementos: [ { nombre: string, dosis: string, motivo: string } ],
   datos_faltantes: string[],
   notas: string[],
@@ -392,8 +402,16 @@ Devolvé ÚNICAMENTE un JSON válido con esta estructura, sin texto adicional:
       }
 
       const cleaned = responseText.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
-      const parsedGuide = JSON.parse(cleaned.trim());
-      return res.json(parsedGuide);
+      console.error("RAW GEMINI RESPONSE:", cleaned);
+
+      try {
+        const guide = JSON.parse(sanitizeJsonText(cleaned.trim()));
+        return res.json(guide);
+      } catch (e) {
+        console.error("JSON PARSE ERROR:", e);
+        console.error("CLEANED TEXT:", cleaned);
+        return res.status(500).json({ error: "json_parse_error", message: String(e) });
+      }
     } catch (error: any) {
       console.error("Error generating nutrition guide:", error);
       return res.status(500).json({ error: error.message || "Error interno del servidor al generar la guía nutricional." });

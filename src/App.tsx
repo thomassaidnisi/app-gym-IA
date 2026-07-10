@@ -11,16 +11,19 @@ import { CoachTab } from "./components/CoachTab";
 import { RestTimerProvider } from "./components/RestTimerContext";
 import { RestTimerOverlay } from "./components/RestTimerOverlay";
 import { ThemeProvider } from "./components/ThemeContext";
-import { FullTrainingPlan, UserProfile, NutritionGuide } from "./types";
+import { FullTrainingPlan, UserProfile, NutritionGuide, ProgressionSuggestion } from "./types";
 import { Dumbbell, Apple, BarChart2, User as UserIcon, MessageSquare, BookOpen } from "lucide-react";
 import { AuthProvider, useAuth } from "./components/AuthContext";
 import { AuthScreen } from "./components/AuthScreen";
-import { loadUserData, loadNutritionGuide, saveNutritionGuide } from "./lib/db";
+import { loadUserData, loadNutritionGuide, saveNutritionGuide, loadExerciseLogs } from "./lib/db";
+import { getProgressionSuggestions } from "./lib/progression";
 
 function AppContent() {
   const [plan, setPlan] = useState<FullTrainingPlan | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [nutritionGuide, setNutritionGuide] = useState<NutritionGuide | null>(null);
+  const [coachSuggestions, setCoachSuggestions] = useState<ProgressionSuggestion[]>([]);
+  const [coachInitialMessage, setCoachInitialMessage] = useState<string | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"gym" | "library" | "nutricion" | "stats" | "profile" | "coach">("gym");
 const [dataLoading, setDataLoading] = useState(true);
 
@@ -53,6 +56,11 @@ useEffect(() => {
     if (user) saveNutritionGuide(user.id, updatedGuide).catch(console.error);
   };
 
+  const handleOpenCoachWithMessage = (initialMessage: string) => {
+    setCoachInitialMessage(initialMessage);
+    setActiveTab("coach");
+  };
+
   const { user, isLoading } = useAuth();
 
 useEffect(() => {
@@ -60,10 +68,12 @@ useEffect(() => {
   Promise.all([
     loadUserData(user.id),
     loadNutritionGuide(user.id),
-  ]).then(([{ profile: remoteProfile, plan: remotePlan }, remoteGuide]) => {
+    loadExerciseLogs(user.id),
+  ]).then(([{ profile: remoteProfile, plan: remotePlan }, remoteGuide, exerciseLogs]) => {
     if (remoteProfile) setProfile(remoteProfile);
     if (remotePlan) setPlan(remotePlan);
     if (remoteGuide) setNutritionGuide(remoteGuide);
+    setCoachSuggestions(getProgressionSuggestions(exerciseLogs));
     // Supabase responded but no data → new user, show onboarding (no localStorage fallback)
   }).catch(() => {
     // Network/fetch error → fall back to localStorage so existing sessions don't break
@@ -126,7 +136,14 @@ if (!user) {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ type: "spring", stiffness: 500, damping: 35 }}
               >
-                {activeTab === "gym" && <GymTab plan={plan} profile={profile} />}
+                {activeTab === "gym" && (
+                  <GymTab
+                    plan={plan}
+                    profile={profile}
+                    coachSuggestions={coachSuggestions}
+                    onOpenCoach={handleOpenCoachWithMessage}
+                  />
+                )}
                 {activeTab === "library" && <LibraryTab />}
                 {activeTab === "nutricion" && <NutritionTab profile={profile} />}
                 {activeTab === "coach" && (
@@ -136,6 +153,7 @@ if (!user) {
                     onPlanUpdated={handlePlanUpdated}
                     nutritionGuide={nutritionGuide}
                     onNutritionUpdated={handleNutritionUpdated}
+                    initialMessage={coachInitialMessage}
                   />
                 )}
                 {activeTab === "stats" && <StatsTab />}
