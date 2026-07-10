@@ -6,6 +6,7 @@ export interface UserProfile {
   gender: string;
   goals: string[];
   objective?: string;
+  muscle_focus?: string[];
   medicalConditions: string[];
   experience: string;
   daysPerWeek: number;

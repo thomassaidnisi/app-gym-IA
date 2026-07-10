@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { UserProfile, FullTrainingPlan } from "../types";
-import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp } from "lucide-react";
+import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PlanUpload } from "./PlanUpload";
 import { useAuth } from "./AuthContext";
@@ -27,6 +27,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
   const [height, setHeight] = useState<number | "">("");
   const [gender, setGender] = useState("");
   const [goals, setGoals] = useState<string[]>([]);
+  const [muscleFocus, setMuscleFocus] = useState<string[]>([]);
   const [medicalConditions, setMedicalConditions] = useState<string[]>([]);
   const [otherMedical, setOtherMedical] = useState("");
   const [experience, setExperience] = useState("");
@@ -108,6 +109,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
             : [p.objective];
         }
         setGoals(initialGoals);
+        setMuscleFocus(p.muscle_focus || []);
         setName(p.name || "");
         setAge(p.age || "");
         setWeight(p.weight || "");
@@ -146,9 +148,23 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
 
   // --- Toggle helpers ---
   const toggleGoal = (goalId: string) => {
-    setGoals((prev) =>
-      prev.includes(goalId) ? prev.filter((g) => g !== goalId) : [...prev, goalId]
-    );
+    setGoals((prev) => {
+      const next = prev.includes(goalId) ? prev.filter((g) => g !== goalId) : [...prev, goalId];
+      if (goalId === "💪 Ganar músculo (hipertrofia)" && !next.includes(goalId)) {
+        setMuscleFocus([]);
+      }
+      return next;
+    });
+  };
+
+  const toggleMuscleFocus = (zone: string) => {
+    if (zone === "⚖️ Full body") {
+      setMuscleFocus(["⚖️ Full body"]);
+    } else {
+      let current = muscleFocus.filter((z) => z !== "⚖️ Full body");
+      current = current.includes(zone) ? current.filter((z) => z !== zone) : [...current, zone];
+      setMuscleFocus(current);
+    }
   };
 
   const toggleMedical = (cond: string) => {
@@ -245,7 +261,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
 
     const payload: UserProfile = {
       name, age: Number(age), weight: Number(weight), height: Number(height),
-      gender, goals, objective: goals.join(", "),
+      gender, goals, objective: goals.join(", "), muscle_focus: muscleFocus,
       medicalConditions: activeMedicalList, experience, daysPerWeek,
       sessionDuration, cardioEquipment, strengthEquipment,
       exercisesToAvoid, injuriesOrLimitations, specificGoal,
@@ -345,7 +361,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
   if (onboardingFlow === "upload") {
     const profilePayload: UserProfile = {
       name, age: Number(age), weight: Number(weight), height: Number(height),
-      gender, goals, objective: goals.join(", "),
+      gender, goals, objective: goals.join(", "), muscle_focus: muscleFocus,
       medicalConditions, experience, daysPerWeek, sessionDuration,
       cardioEquipment, strengthEquipment, exercisesToAvoid, injuriesOrLimitations,
       trainingLocation: (trainingLocation as "home" | "gym" | "both") || "gym",
@@ -630,6 +646,24 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
                     </button>
                   ))}
                 </div>
+
+                {goals.includes("💪 Ganar músculo (hipertrofia)") && (
+                  <div className="mt-6">
+                    <h3 className="text-sm font-bold text-white mb-1">¿Qué zonas querés priorizar?</h3>
+                    <p className="text-xs text-white/50 mb-3 leading-relaxed">Selección múltiple.</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        "🍑 Glúteos", "🦵 Piernas", "💪 Espalda", "🫁 Pecho",
+                        "🤸 Hombros", "💪 Brazos", "🔥 Core", "⚖️ Full body",
+                      ].map((zone) => (
+                        <button key={zone} onClick={() => toggleMuscleFocus(zone)} className={chipBtn(muscleFocus.includes(zone))}>
+                          <span>{zone}</span>
+                          {muscleFocus.includes(zone) && <Check className="w-3.5 h-3.5 text-white" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -865,13 +899,23 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-white/40 text-sm placeholder-white/20"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-white/40 uppercase mb-2">¿Tenés algún objetivo o evento específico?</label>
-                    <input type="text" value={specificGoal} onChange={(e) => setSpecificGoal(e.target.value)}
-                      placeholder="Ej: Quiero mejorar mi resistencia para jugar tenis 2 veces por semana"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-white/40 text-sm placeholder-white/20"
-                    />
+                </div>
+
+                <div className="mt-5 bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
+                  <div className="w-12 h-12 mx-auto bg-brand/10 border border-brand/20 rounded-2xl flex items-center justify-center mb-3">
+                    <Target className="w-6 h-6 text-brand" />
                   </div>
+                  <h3 className="text-base font-bold text-white mb-1">¿Algo más que el plan deba saber?</h3>
+                  <p className="text-xs text-white/50 mb-4 leading-relaxed">
+                    Zonas a priorizar, deportes que practicás, restricciones de movimiento...
+                  </p>
+                  <textarea
+                    value={specificGoal}
+                    onChange={(e) => setSpecificGoal(e.target.value)}
+                    placeholder="Ej: Quiero priorizar glúteos y piernas, juego al tenis los sábados, no puedo hacer peso muerto por hernia"
+                    rows={4}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-white/40 text-sm placeholder-white/20 text-left resize-none"
+                  />
                 </div>
               </div>
             )}

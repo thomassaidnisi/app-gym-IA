@@ -106,6 +106,7 @@ async function startServer() {
         exercisesToAvoid = "",
         injuriesOrLimitations = "",
         specificGoal = "",
+        muscle_focus = [] as string[],
         trainingLocation = "gym",
         locationByDay = {} as Record<string, string>,
         gymCardioEquipment = [] as string[],
@@ -144,6 +145,7 @@ PERFIL DEL USUARIO:
 - Ejercicios a evitar: ${exercisesToAvoid || "Ninguno"}
 - Lesiones o limitaciones: ${injuriesOrLimitations || "Ninguna"}
 ${specificGoal ? `- Objetivo o evento específico: "${specificGoal}". Considerá esto al diseñar el plan — si menciona un deporte, incluí trabajo complementario relevante (movilidad, potencia, resistencia específica); si menciona una fecha límite, tené en cuenta el tiempo disponible para progresar.` : ""}
+${muscle_focus.length > 0 && !muscle_focus.includes("⚖️ Full body") ? `- Zonas musculares a priorizar: ${muscle_focus.join(", ")}. Aumentá el volumen de trabajo en estos grupos.` : ""}
 ${trainingLocation === "both"
   ? `- Ubicación de entrenamiento: AMBOS lugares según este calendario semanal: ${JSON.stringify(locationByDay)}
 - Cardio en GYM: ${gymCardioEquipment.length > 0 ? gymCardioEquipment.join(", ") : "Ninguno"}
