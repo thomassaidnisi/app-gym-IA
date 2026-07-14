@@ -61,7 +61,7 @@ useEffect(() => {
     setActiveTab("coach");
   };
 
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isPasswordRecovery } = useAuth();
 
 useEffect(() => {
   if (!user) { setDataLoading(false); return; }
@@ -88,7 +88,7 @@ if (isLoading || dataLoading) {
   return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100vh" }} />;
 }
 
-if (!user) {
+if (!user || isPasswordRecovery) {
   return <AuthScreen />;
 }
 

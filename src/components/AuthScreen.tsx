@@ -10,7 +10,7 @@ const inputClass =
   "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white text-base placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors";
 
 export const AuthScreen: React.FC = () => {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, isPasswordRecovery, clearPasswordRecovery } = useAuth();
   const [mode, setMode] = useState<Mode>("login");
 
   const [email, setEmail] = useState("");
@@ -23,6 +23,140 @@ export const AuthScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetSuccess, setResetSuccess] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError(null);
+
+    if (newPassword.length < 6) {
+      setResetError("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setResetError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    setResetLoading(true);
+    const { error: err } = await supabase.auth.updateUser({ password: newPassword });
+    setResetLoading(false);
+
+    if (err) {
+      setResetError(err.message);
+    } else {
+      setResetSuccess(true);
+      setTimeout(() => clearPasswordRecovery(), 1500);
+    }
+  };
+
+  if (isPasswordRecovery) {
+    return (
+      <div className="relative min-h-[100dvh] w-full overflow-hidden">
+        <img
+          src="/auth-bg.png"
+          alt=""
+          aria-hidden
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          style={{ zIndex: 0, userSelect: "none", pointerEvents: "none" }}
+        />
+        <div className="absolute inset-0 bg-black/50" style={{ zIndex: 10 }} />
+        <div
+          className="relative min-h-[100dvh] flex items-center justify-center md:justify-end px-5 md:pr-16"
+          style={{
+            zIndex: 20,
+            paddingTop: "env(safe-area-inset-top, 24px)",
+            paddingBottom: "env(safe-area-inset-bottom, 24px)",
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-full max-w-sm rounded-3xl px-7 py-8"
+            style={{
+              background: "rgba(0,0,0,0.4)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+            }}
+          >
+            <div className="mb-8">
+              <p className="text-3xl font-black tracking-tight text-white">
+                healty<span style={{ color: "#c8f135" }}>.</span>
+              </p>
+              <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Ingresá tu nueva contraseña para tu cuenta.
+              </p>
+            </div>
+
+            <h2 className="text-xl font-bold tracking-tight text-white mb-5">
+              Creá tu nueva contraseña
+            </h2>
+
+            {resetSuccess ? (
+              <p className="text-sm px-1" style={{ color: "#c8f135" }}>
+                ¡Contraseña actualizada! Redirigiendo...
+              </p>
+            ) : (
+              <form onSubmit={handleResetPassword} className="flex flex-col gap-3">
+                <input
+                  type="password"
+                  placeholder="Nueva contraseña"
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className={inputClass}
+                />
+                <input
+                  type="password"
+                  placeholder="Confirmar contraseña"
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={inputClass}
+                />
+
+                <AnimatePresence>
+                  {resetError && (
+                    <motion.p
+                      key="reset-error"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="text-sm px-1"
+                      style={{ color: "#f87171" }}
+                    >
+                      {resetError}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  disabled={resetLoading}
+                  className="w-full rounded-2xl font-black text-base text-black mt-1 disabled:opacity-50 transition-opacity"
+                  style={{ backgroundColor: "#c8f135", height: 52 }}
+                >
+                  {resetLoading ? "…" : "Guardar contraseña"}
+                </motion.button>
+              </form>
+            )}
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   const switchMode = (next: Mode) => {
     setMode(next);
