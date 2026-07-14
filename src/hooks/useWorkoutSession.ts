@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, Exercise, ExerciseBlock, QueueItem, SessionState, CompletedSet, WorkoutLog } from "../types";
+import { DayPlan, Exercise, ExerciseBlock, QueueItem, SessionState, CompletedSet, WorkoutLog, PausedSession } from "../types";
 
 export interface SuggestedWeight {
   weight: number;
@@ -44,22 +44,50 @@ function buildQueue(day: DayPlan): QueueItem[] {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useWorkoutSession(day: DayPlan) {
-  const [head, ...tail] = buildQueue(day);
+export function useWorkoutSession(day: DayPlan, resume?: PausedSession | null) {
+  const queue = buildQueue(day);
+  const [head, ...tail] = queue;
 
-  const [session, setSession] = useState<SessionState>({
-    phase: "intro",
-    completedQueue: [],
-    currentItem: head ?? null,
-    upcomingQueue: tail,
-    currentSet: 1,
-    totalSets: head?.exercise.sets ?? 1,
-    restSeconds: head ? getRestSeconds(head.block, head.exercise) : 60,
-    restRemaining: 0,
-    completedSets: [],
-    sessionStartTime: new Date(),
-    sessionNotes: "",
-  });
+  const buildInitialSession = (): SessionState => {
+    if (resume) {
+      const byId = new Map(queue.map((q) => [q.id, q]));
+      const currentItem = byId.get(resume.currentItemId) ?? head ?? null;
+      const upcomingQueue = resume.upcomingQueueIds
+        .map((id) => byId.get(id))
+        .filter((item): item is QueueItem => !!item);
+      const completedQueue = resume.completedQueueIds
+        .map((id) => byId.get(id))
+        .filter((item): item is QueueItem => !!item);
+      return {
+        phase: "exercising",
+        completedQueue,
+        currentItem,
+        upcomingQueue,
+        currentSet: resume.currentSet,
+        totalSets: resume.totalSets,
+        restSeconds: currentItem ? getRestSeconds(currentItem.block, currentItem.exercise) : 60,
+        restRemaining: 0,
+        completedSets: resume.completedSets.map((s) => ({ ...s, completedAt: new Date(s.completedAt) })),
+        sessionStartTime: new Date(resume.sessionStartTime),
+        sessionNotes: "",
+      };
+    }
+    return {
+      phase: "intro",
+      completedQueue: [],
+      currentItem: head ?? null,
+      upcomingQueue: tail,
+      currentSet: 1,
+      totalSets: head?.exercise.sets ?? 1,
+      restSeconds: head ? getRestSeconds(head.block, head.exercise) : 60,
+      restRemaining: 0,
+      completedSets: [],
+      sessionStartTime: new Date(),
+      sessionNotes: "",
+    };
+  };
+
+  const [session, setSession] = useState<SessionState>(buildInitialSession);
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
@@ -155,6 +183,42 @@ export function useWorkoutSession(day: DayPlan) {
     });
   };
 
+  /** Skip the current exercise entirely — no sets are recorded, it never enters completedQueue. */
+  const skipExercise = () => {
+    setSession((s) => {
+      if (!s.currentItem) return s;
+      const [next, ...remaining] = s.upcomingQueue;
+      if (!next) return { ...s, phase: "summary" as const };
+
+      return {
+        ...s,
+        phase: "exercising" as const,
+        currentItem: next,
+        upcomingQueue: remaining,
+        currentSet: 1,
+        totalSets: next.exercise.sets,
+        restSeconds: getRestSeconds(next.block, next.exercise),
+        restRemaining: 0,
+      };
+    });
+  };
+
+  /** Snapshot the current progress so it can be restored later via the `resume` param. */
+  const pauseSession = (): PausedSession | null => {
+    if (!session.currentItem) return null;
+    return {
+      dayName: day.name,
+      currentItemId: session.currentItem.id,
+      upcomingQueueIds: session.upcomingQueue.map((item) => item.id),
+      completedQueueIds: session.completedQueue.map((item) => item.id),
+      currentSet: session.currentSet,
+      totalSets: session.totalSets,
+      completedSets: session.completedSets,
+      sessionStartTime: session.sessionStartTime.toISOString(),
+      pausedAt: Date.now(),
+    };
+  };
+
   /**
    * Reorder upcoming exercises by providing the desired sequence of IDs.
    * Any ID not present in newIds is appended at the end unchanged.
@@ -227,6 +291,8 @@ export function useWorkoutSession(day: DayPlan) {
     startSession,
     goToSummary,
     completeSet,
+    skipExercise,
+    pauseSession,
     advanceFromResting,
     addRestTime,
     advanceFromTransition,

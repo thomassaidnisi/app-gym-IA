@@ -151,6 +151,18 @@ export interface QueueItem {
   block: ExerciseBlock;
 }
 
+export interface PausedSession {
+  dayName: string;
+  currentItemId: string;
+  upcomingQueueIds: string[];
+  completedQueueIds: string[];
+  currentSet: number;
+  totalSets: number;
+  completedSets: CompletedSet[];
+  sessionStartTime: string;
+  pausedAt: number;
+}
+
 export interface SessionState {
   phase: "intro" | "exercising" | "resting" | "transition" | "summary";
   /** Exercises already finished, in execution order. */

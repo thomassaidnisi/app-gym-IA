@@ -6,6 +6,7 @@ import { SuggestedWeight } from "../../../hooks/useWorkoutSession";
 import { QueueSheet } from "../QueueSheet";
 import { TechniqueSheet } from "../TechniqueSheet";
 import { ExitSheet } from "../ExitSheet";
+import { SkipConfirmModal } from "../SkipConfirmModal";
 
 interface ExercisingProps {
   session: SessionState;
@@ -15,8 +16,10 @@ interface ExercisingProps {
   totalExercises: number;
   progress: number;
   onCompleteSet: (weight: number | null, reps: number) => void;
+  onSkip: () => void;
   onReorder: (newIds: string[]) => void;
   onAbandon: () => void;
+  onPause: () => void;
   onExit: () => void;
   suggestWeight: (name: string, planWeight: string) => SuggestedWeight;
 }
@@ -59,14 +62,17 @@ export const Exercising: React.FC<ExercisingProps> = ({
   totalExercises,
   progress,
   onCompleteSet,
+  onSkip,
   onReorder,
   onAbandon,
+  onPause,
   onExit,
   suggestWeight,
 }) => {
   const [showQueue, setShowQueue] = useState(false);
   const [showTechnique, setShowTechnique] = useState(false);
   const [showExit, setShowExit] = useState(false);
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const suggestion = suggestWeight(currentExercise.name, currentExercise.weight);
   const pb = getPersonalBest(currentExercise.name);
   const pbLabel = pb.weight !== null && pb.reps !== null
@@ -471,6 +477,14 @@ export const Exercising: React.FC<ExercisingProps> = ({
         >
           Ver técnica
         </button>
+
+        <button
+          onClick={() => setShowSkipConfirm(true)}
+          className="w-full text-center text-xs transition-opacity active:opacity-60"
+          style={{ color: "rgba(255,255,255,0.3)" }}
+        >
+          Saltear ejercicio
+        </button>
       </div>
       <QueueSheet
         isOpen={showQueue}
@@ -487,6 +501,12 @@ export const Exercising: React.FC<ExercisingProps> = ({
         isOpen={showExit}
         onContinue={() => setShowExit(false)}
         onAbandon={onAbandon}
+        onPause={onPause}
+      />
+      <SkipConfirmModal
+        isOpen={showSkipConfirm}
+        onConfirm={() => { setShowSkipConfirm(false); onSkip(); }}
+        onCancel={() => setShowSkipConfirm(false)}
       />
     </div>
   );

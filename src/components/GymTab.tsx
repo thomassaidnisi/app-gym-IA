@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion } from "../types";
+import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion, PausedSession } from "../types";
 import { WorkoutSession } from "./WorkoutSession";
 import {
   Dumbbell, Clock, Play, Youtube, Check, FileText,
-  PersonStanding, Footprints, Bike, Moon, Zap, Flame, CalendarDays, ChevronDown, X,
+  PersonStanding, Footprints, Bike, Moon, Zap, Flame, CalendarDays, ChevronDown, X, RotateCcw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRestTimer } from "./RestTimerContext";
@@ -70,7 +70,35 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
   const [daysSinceLastWorkout, setDaysSinceLastWorkout] = useState<number | null>(null);
 
   const [sessionDay, setSessionDay] = useState<DayPlan | null>(null);
+  const [resumeState, setResumeState] = useState<PausedSession | null>(null);
   const [statsRefreshKey, setStatsRefreshKey] = useState(0);
+
+  const [pausedSession, setPausedSession] = useState<PausedSession | null>(() => {
+    try {
+      const raw = localStorage.getItem("paused_session");
+      return raw ? (JSON.parse(raw) as PausedSession) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const handleResumeSession = () => {
+    if (!pausedSession) return;
+    const matchDay = plan.days.find((d) => d.name === pausedSession.dayName);
+    localStorage.removeItem("paused_session");
+    if (!matchDay) {
+      setPausedSession(null);
+      return;
+    }
+    setResumeState(pausedSession);
+    setPausedSession(null);
+    setSessionDay(matchDay);
+  };
+
+  const handleDismissPausedSession = () => {
+    localStorage.removeItem("paused_session");
+    setPausedSession(null);
+  };
 
   const [heroExpanded, setHeroExpanded] = useState<boolean>(() => {
     const saved = localStorage.getItem("healty_hero_expanded");
@@ -268,6 +296,45 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
 
   return (
     <div className="w-full">
+
+      {/* ── SESIÓN PAUSADA ── */}
+      {pausedSession && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 rounded-2xl p-4 flex items-center gap-3"
+          style={{
+            backgroundColor: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+            style={{ backgroundColor: "rgba(200,241,53,0.10)" }}
+          >
+            <RotateCcw className="w-4 h-4" style={{ color: "#c8f135" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold" style={{ color: T.textPri }}>Tenés una sesión pausada</p>
+            <p className="text-xs truncate" style={{ color: T.textSec }}>{pausedSession.dayName} — ¿Retomar?</p>
+          </div>
+          <button
+            onClick={handleResumeSession}
+            className="px-4 h-9 rounded-xl text-xs font-bold uppercase shrink-0"
+            style={{ backgroundColor: "#c8f135", color: "#000" }}
+          >
+            Retomar
+          </button>
+          <button
+            onClick={handleDismissPausedSession}
+            className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+            style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+            aria-label="Descartar sesión pausada"
+          >
+            <X className="w-3.5 h-3.5" style={{ color: T.textTer }} />
+          </button>
+        </motion.div>
+      )}
 
       {/* ── COACH PROACTIVO ── */}
       {showCoachSuggestions && (
@@ -775,7 +842,11 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
 
       {/* WorkoutSession portal */}
       {sessionDay && (
-        <WorkoutSession day={sessionDay} onClose={() => { setSessionDay(null); setStatsRefreshKey((k) => k + 1); }} />
+        <WorkoutSession
+          day={sessionDay}
+          resume={resumeState}
+          onClose={() => { setSessionDay(null); setResumeState(null); setStatsRefreshKey((k) => k + 1); }}
+        />
       )}
 
       {/* Toast */}

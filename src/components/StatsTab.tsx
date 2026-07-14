@@ -1,9 +1,35 @@
 import React, { useState, useEffect, useRef } from "react";
-import { DailyStats, ExerciseLog } from "../types";
-import { BarChart2, Check, Droplet, Award, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { DailyStats, ExerciseLog, WorkoutLog, CompletedSet } from "../types";
+import { BarChart2, Check, Droplet, Award, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus, Dumbbell, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "./AuthContext";
-import { saveDailyMetric, loadDailyMetrics, saveGymAttendance, deleteGymAttendance, loadGymAttendance } from "../lib/db";
+import { saveDailyMetric, loadDailyMetrics, saveGymAttendance, deleteGymAttendance, loadGymAttendance, loadWorkoutLogsMerged } from "../lib/db";
+
+const WEEKDAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const MONTH_NAMES_LOWER = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+function formatSessionDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  if (!y || !m || !d) return dateStr;
+  const dateObj = new Date(y, m - 1, d);
+  return `${WEEKDAY_NAMES[dateObj.getDay()]} ${d} de ${MONTH_NAMES_LOWER[m - 1]}`;
+}
+
+function groupSetsByExercise(sets: CompletedSet[]): { name: string; sets: CompletedSet[] }[] {
+  const order: string[] = [];
+  const map: Record<string, CompletedSet[]> = {};
+  for (const s of sets) {
+    if (!map[s.exerciseName]) {
+      order.push(s.exerciseName);
+      map[s.exerciseName] = [];
+    }
+    map[s.exerciseName].push(s);
+  }
+  return order.map((name) => ({ name, sets: map[name] }));
+}
 
 const T = {
   bg:      "var(--bg-primary)",
@@ -80,6 +106,8 @@ export const StatsTab: React.FC = () => {
   const [recentLogs, setRecentLogs] = useState<ExerciseLog[]>([]);
   const [exerciseProgress, setExerciseProgress] = useState<ExerciseProgress[]>([]);
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
+  const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([]);
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
 
@@ -108,6 +136,10 @@ export const StatsTab: React.FC = () => {
     loadMonthAttendance();
     setExerciseProgress(loadExerciseProgress());
   }, [selectedDate, currentYear, currentMonth]);
+
+  useEffect(() => {
+    loadWorkoutLogsMerged(user?.id ?? null).then(setWorkoutLogs).catch(() => {});
+  }, [user]);
 
   const applyStatsForDate = (
     dateStr: string,
@@ -408,6 +440,110 @@ export const StatsTab: React.FC = () => {
             );
           })}
         </div>
+      </div>
+
+      {/* Historial de sesiones */}
+      <div className="rounded-3xl p-5 mb-6 shadow-sm" style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}>
+        <h4 className="text-xs uppercase tracking-wider font-bold mb-1 select-none" style={{ color: T.textPri }}>
+          Historial de sesiones
+        </h4>
+        <p className="text-[10px] mb-4 select-none" style={{ color: T.textSec }}>
+          Tocá una sesión para ver el detalle completo
+        </p>
+
+        {workoutLogs.length === 0 ? (
+          <div className="text-center py-6 rounded-2xl" style={{ backgroundColor: T.bgSec, border: `1px dashed ${T.border}` }}>
+            <Dumbbell className="w-8 h-8 block mx-auto mb-2" style={{ color: T.textTer }} />
+            <p className="text-xs leading-relaxed max-w-[220px] mx-auto select-none" style={{ color: T.textSec }}>
+              Aún no completaste ninguna sesión de entrenamiento.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {[...workoutLogs]
+              .sort((a, b) => b.date.localeCompare(a.date))
+              .map((log) => {
+                const isOpen = expandedLogId === log.id;
+                const exercisesGrouped = groupSetsByExercise(log.completedSets);
+
+                return (
+                  <div
+                    key={log.id}
+                    className="rounded-2xl overflow-hidden"
+                    style={{ border: `1px solid ${T.border}` }}
+                  >
+                    <button
+                      onClick={() => setExpandedLogId(isOpen ? null : log.id)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left transition-opacity active:opacity-70"
+                      style={{ backgroundColor: T.bgSec }}
+                    >
+                      <div
+                        className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: T.bg }}
+                      >
+                        <Dumbbell className="w-4 h-4" style={{ color: T.brand }} />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold truncate" style={{ color: T.textPri }}>
+                          {formatSessionDate(log.date)}
+                        </p>
+                        <p className="text-[10px] mt-0.5 flex items-center gap-1.5" style={{ color: T.textSec }}>
+                          <span>{exercisesGrouped.length} ejercicios · {log.completedSets.length} series</span>
+                          <span style={{ color: T.textTer }}>·</span>
+                          <span className="flex items-center gap-0.5">
+                            <Clock className="w-3 h-3" /> {log.durationMinutes} min
+                          </span>
+                        </p>
+                      </div>
+
+                      <div className="shrink-0" style={{ color: T.textTer }}>
+                        {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </div>
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          key="detail"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                          style={{ backgroundColor: T.bg, borderTop: `1px solid ${T.border}` }}
+                        >
+                          <div className="p-4 space-y-3">
+                            {exercisesGrouped.map((ex) => (
+                              <div key={ex.name}>
+                                <p className="text-xs font-bold mb-1.5" style={{ color: T.textPri }}>{ex.name}</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {ex.sets.map((s, i) => (
+                                    <span
+                                      key={i}
+                                      className="text-[10px] font-semibold rounded-full px-2.5 py-1"
+                                      style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}
+                                    >
+                                      Serie {s.setNumber}: {s.weight !== null ? `${s.weight} kg` : "S/D"} × {s.reps} reps
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                            {log.notes && (
+                              <p className="text-[10px] italic pt-1" style={{ color: T.textTer, borderTop: `1px solid ${T.border}` }}>
+                                "{log.notes}"
+                              </p>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+          </div>
+        )}
       </div>
 
       {/* Exercise progression */}

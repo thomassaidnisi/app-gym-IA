@@ -6,12 +6,14 @@ interface ExitSheetProps {
   isOpen: boolean;
   onContinue: () => void;
   onAbandon: () => void;
+  onPause: () => void;
 }
 
 export const ExitSheet: React.FC<ExitSheetProps> = ({
   isOpen,
   onContinue,
   onAbandon,
+  onPause,
 }) => {
   return createPortal(
     <AnimatePresence>
@@ -86,6 +88,18 @@ export const ExitSheet: React.FC<ExitSheetProps> = ({
                 style={{ backgroundColor: "#c8f135", height: 52 }}
               >
                 Seguir entrenando
+              </motion.button>
+
+              <motion.button
+                whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
+                onClick={onPause}
+                className="w-full h-12 rounded-2xl text-sm font-semibold"
+                style={{
+                  color: "rgba(255,255,255,0.7)",
+                  border: "1px solid rgba(255,255,255,0.16)",
+                }}
+              >
+                Pausar y salir
               </motion.button>
 
               <motion.button

@@ -1,7 +1,7 @@
 import React from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
-import { DayPlan } from "../../types";
+import { DayPlan, PausedSession } from "../../types";
 import { useWakeLock } from "../../hooks/useWakeLock";
 import { useWorkoutSession } from "../../hooks/useWorkoutSession";
 import { Intro } from "./phases/Intro";
@@ -13,9 +13,10 @@ import { Summary } from "./phases/Summary";
 interface WorkoutSessionProps {
   day: DayPlan;
   onClose: () => void;
+  resume?: PausedSession | null;
 }
 
-export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose }) => {
+export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose, resume }) => {
   useWakeLock();
 
   const {
@@ -29,11 +30,19 @@ export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose }) 
     startSession,
     goToSummary,
     completeSet,
+    skipExercise,
+    pauseSession,
     advanceFromResting,
     advanceFromTransition,
     reorderUpcoming,
     suggestWeight,
-  } = useWorkoutSession(day);
+  } = useWorkoutSession(day, resume);
+
+  const handlePause = () => {
+    const paused = pauseSession();
+    if (paused) localStorage.setItem("paused_session", JSON.stringify(paused));
+    onClose();
+  };
 
   const content = (
     <motion.div
@@ -68,8 +77,10 @@ export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose }) 
               totalExercises={totalExercises}
               progress={progress}
               onCompleteSet={completeSet}
+              onSkip={skipExercise}
               onReorder={reorderUpcoming}
               onAbandon={goToSummary}
+              onPause={handlePause}
               onExit={onClose}
               suggestWeight={suggestWeight}
             />
