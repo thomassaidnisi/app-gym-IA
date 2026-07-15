@@ -193,6 +193,19 @@ export async function loadNutritionGuide(userId: string): Promise<NutritionGuide
   return (data.guide_json as NutritionGuide) ?? null;
 }
 
+export async function savePushSubscription(userId: string, subscription: PushSubscription) {
+  const json = subscription.toJSON();
+  return supabase.from("push_subscriptions").upsert(
+    {
+      user_id: userId,
+      endpoint: json.endpoint,
+      p256dh: json.keys?.p256dh,
+      auth: json.keys?.auth,
+    },
+    { onConflict: "user_id,endpoint" }
+  );
+}
+
 /** Merges Supabase logs with localStorage logs (localStorage wins on same date for backwards compat) */
 export async function loadWorkoutLogsMerged(userId: string | null): Promise<WorkoutLog[]> {
   const local: WorkoutLog[] = (() => {

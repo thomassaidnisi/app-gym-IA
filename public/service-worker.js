@@ -28,6 +28,41 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+self.addEventListener('push', e => {
+  if (!e.data) return;
+
+  let payload = {};
+  try {
+    payload = e.data.json();
+  } catch {
+    payload = { title: 'Healty App', body: e.data.text() };
+  }
+
+  const { title = 'Healty App', body = '', url = '/' } = payload;
+
+  e.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      data: { url },
+    })
+  );
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/';
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsList => {
+      for (const client of clientsList) {
+        if (client.url === url && 'focus' in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(url);
+    })
+  );
+});
+
 self.addEventListener('fetch', e => {
   if (IS_DEV) {
     e.respondWith(fetch(e.request));

@@ -5,8 +5,23 @@ import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import multer from "multer";
 import * as xlsx from "xlsx";
+import webpush from "web-push";
+import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
+
+webpush.setVapidDetails(
+  process.env.VAPID_EMAIL || "mailto:admin@example.com",
+  process.env.VAPID_PUBLIC_KEY || "",
+  process.env.VAPID_PRIVATE_KEY || ""
+);
+
+// Server-side Supabase client — uses the service key when available (bypasses RLS
+// to read other users' push_subscriptions rows), falling back to the anon key.
+const supabaseAdmin = createClient(
+  process.env.VITE_SUPABASE_URL || "",
+  process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY || ""
+);
 
 // Shared Gemini lazy initialization function
 let genAiClient: GoogleGenAI | null = null;
@@ -790,6 +805,54 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
     } catch (error: any) {
       console.error("Error in /api/exercise-library:", error);
       return res.status(500).json({ error: error.message || "Error fetching exercise library" });
+    }
+  });
+
+  // Send Web Push Notification Endpoint
+  app.post("/api/send-push-notification", async (req, res) => {
+    try {
+      const { userId, title, body, url } = req.body;
+
+      if (!userId || !title || !body) {
+        return res.status(400).json({ error: "Faltan datos requeridos (userId, title, body)." });
+      }
+
+      const { data: subscriptions, error } = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth")
+        .eq("user_id", userId);
+
+      if (error) throw error;
+
+      if (!subscriptions || subscriptions.length === 0) {
+        return res.json({ sent: 0, total: 0, message: "El usuario no tiene suscripciones push activas." });
+      }
+
+      const payload = JSON.stringify({ title, body, url: url || "/" });
+      let sent = 0;
+
+      await Promise.all(
+        subscriptions.map(async (sub) => {
+          try {
+            await webpush.sendNotification(
+              { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+              payload
+            );
+            sent++;
+          } catch (err: any) {
+            if (err.statusCode === 410) {
+              await supabaseAdmin.from("push_subscriptions").delete().eq("id", sub.id);
+            } else {
+              console.error("Error sending push notification to endpoint:", sub.endpoint, err);
+            }
+          }
+        })
+      );
+
+      return res.json({ sent, total: subscriptions.length });
+    } catch (error: any) {
+      console.error("Error in /api/send-push-notification:", error);
+      return res.status(500).json({ error: error.message || "Error al enviar la notificación push." });
     }
   });
 

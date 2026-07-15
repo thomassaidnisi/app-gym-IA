@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "./ThemeContext";
 import { useAuth } from "./AuthContext";
 import { saveProfile } from "../lib/db";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 
 interface ProfileTabProps {
   plan: FullTrainingPlan;
@@ -31,6 +32,17 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 }) => {
   const { user, signOut } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const { isSupported: pushSupported, permission: pushPermission, subscribe: subscribePush } = usePushNotifications();
+  const [pushSubscribing, setPushSubscribing] = useState(false);
+
+  const handleEnablePush = async () => {
+    setPushSubscribing(true);
+    try {
+      await subscribePush();
+    } finally {
+      setPushSubscribing(false);
+    }
+  };
   const { pref, setTheme } = useTheme();
   const cycleTheme = () =>
     setTheme(pref === "light" ? "dark" : pref === "dark" ? "auto" : "light");
@@ -298,6 +310,34 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               {plan.medical_note}
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Notifications */}
+      {pushSupported && (
+        <div
+          className="rounded-3xl p-5 mb-6 shadow-sm"
+          style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}
+        >
+          <h4 className="text-xs uppercase tracking-wider font-bold mb-3 select-none" style={{ color: T.textPri }}>
+            Notificaciones
+          </h4>
+          {pushPermission === "granted" ? (
+            <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: T.textPri }}>
+              <Check className="w-4 h-4" style={{ color: "#c8f135" }} />
+              Notificaciones activas
+            </div>
+          ) : (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={handleEnablePush}
+              disabled={pushSubscribing}
+              className="w-full h-11 rounded-2xl text-sm font-bold disabled:opacity-50 transition-opacity"
+              style={{ backgroundColor: "#c8f135", color: "#000" }}
+            >
+              {pushSubscribing ? "Activando..." : "Activar notificaciones"}
+            </motion.button>
+          )}
         </div>
       )}
 
