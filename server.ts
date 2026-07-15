@@ -877,12 +877,18 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
         return res.status(401).json({ error: "No autorizado." });
       }
 
+      console.log("[cron] using service key:", !!process.env.SUPABASE_SERVICE_KEY);
+
       const { data: subs, error: subsError } = await supabaseAdmin
         .from("push_subscriptions")
         .select("user_id");
       if (subsError) throw subsError;
 
+      console.log("[cron] push_subscriptions rows found:", subs?.length ?? 0, subs);
+
       const userIds = Array.from(new Set((subs || []).map((s: any) => s.user_id)));
+
+      console.log("[cron] unique userIds:", userIds);
 
       const weekdayFormatter = new Intl.DateTimeFormat("en-US", {
         timeZone: "America/Argentina/Buenos_Aires",
@@ -890,23 +896,32 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
       });
       const todayKey = weekdayFormatter.format(new Date()).toLowerCase();
 
+      console.log("[cron] todayKey (Argentina):", todayKey);
+
       let sent = 0;
       let skipped = 0;
 
       await Promise.all(
         userIds.map(async (userId) => {
-          const { data: planRow } = await supabaseAdmin
+          const { data: planRow, error: planError } = await supabaseAdmin
             .from("plans")
             .select("plan_json")
             .eq("user_id", userId)
             .single();
+
+          if (planError) {
+            console.log("[cron] user", userId, "— error loading plan:", planError.message);
+          }
 
           const plan = planRow?.plan_json as
             | { weekly_schedule?: Record<string, string>; days?: { name: string; focus: string }[] }
             | undefined;
           const scheduledName = plan?.weekly_schedule?.[todayKey];
 
+          console.log("[cron] user", userId, "— scheduledName:", scheduledName, "| has plan:", !!plan);
+
           if (!scheduledName || /rest|descanso/i.test(scheduledName)) {
+            console.log("[cron] user", userId, "— SKIPPED (rest day or no schedule)");
             skipped++;
             return;
           }
@@ -920,10 +935,15 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
             `Hoy es tu día de ${focusLabel}. ¡A darle!`,
             "/"
           );
+
+          console.log("[cron] user", userId, "— sendPushToUser result:", result);
+
           if (result.sent > 0) sent++;
           else skipped++;
         })
       );
+
+      console.log("[cron] final summary — sent:", sent, "skipped:", skipped);
 
       return res.json({ sent, skipped });
     } catch (error: any) {
