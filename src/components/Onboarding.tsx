@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { UserProfile, FullTrainingPlan } from "../types";
-import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target } from "lucide-react";
+import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PlanUpload } from "./PlanUpload";
 import { useAuth } from "./AuthContext";
 import { saveProfile, savePlan } from "../lib/db";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 
 interface OnboardingProps {
   onPlanGenerated: (plan: FullTrainingPlan, profile: UserProfile) => void;
@@ -18,7 +19,36 @@ type StepId =
 
 export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
   const { user } = useAuth();
+  const { isSupported: pushSupported, subscribe: subscribePush } = usePushNotifications();
   const [step, setStep] = useState(1);
+  const [pendingPlanResult, setPendingPlanResult] = useState<{ plan: FullTrainingPlan; profile: UserProfile } | null>(null);
+  const [pushPromptLoading, setPushPromptLoading] = useState(false);
+
+  const handlePlanReady = (plan: FullTrainingPlan, profile: UserProfile) => {
+    if (!pushSupported) {
+      onPlanGenerated(plan, profile);
+      return;
+    }
+    setPendingPlanResult({ plan, profile });
+  };
+
+  const handleEnablePushAndContinue = async () => {
+    if (!pendingPlanResult) return;
+    setPushPromptLoading(true);
+    try {
+      await subscribePush();
+    } catch (e) {
+      console.error("Failed to subscribe to push notifications:", e);
+    } finally {
+      setPushPromptLoading(false);
+      onPlanGenerated(pendingPlanResult.plan, pendingPlanResult.profile);
+    }
+  };
+
+  const handleSkipPushAndContinue = () => {
+    if (!pendingPlanResult) return;
+    onPlanGenerated(pendingPlanResult.plan, pendingPlanResult.profile);
+  };
 
   // --- Existing state ---
   const [name, setName] = useState("");
@@ -291,7 +321,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
       if (user) {
         await Promise.all([saveProfile(user.id, payload), savePlan(user.id, generatedPlan)]);
       }
-      onPlanGenerated(generatedPlan, payload);
+      handlePlanReady(generatedPlan, payload);
     } catch (e: any) {
       console.error(e);
       setErrorMsg(e.message || "Fallo al conectar con el servidor. Intenta de nuevo.");
@@ -357,6 +387,39 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
     );
   }
 
+  // --- Push notification prompt (after plan is ready, before entering the app) ---
+  if (pendingPlanResult) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 px-6 text-center select-none">
+        <div
+          className="w-20 h-20 rounded-3xl flex items-center justify-center mb-8"
+          style={{ backgroundColor: "rgba(200,241,53,0.10)", border: "1px solid rgba(200,241,53,0.25)" }}
+        >
+          <Bell className="w-9 h-9 text-brand" />
+        </div>
+        <h2 className="text-2xl font-bold tracking-tight text-white mb-2">¡Tu plan está listo! 🎉</h2>
+        <p className="text-white/50 text-sm mb-8 max-w-xs leading-relaxed">
+          ¿Querés que te recordemos cuando tenés que entrenar?
+        </p>
+        <motion.button
+          whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
+          onClick={handleEnablePushAndContinue}
+          disabled={pushPromptLoading}
+          className="w-full max-w-xs bg-brand hover:bg-lime-400 text-black font-semibold py-4 rounded-xl shadow-lg transition-all disabled:opacity-50 text-base"
+        >
+          {pushPromptLoading ? "Activando..." : "Sí, activar recordatorios"}
+        </motion.button>
+        <button
+          onClick={handleSkipPushAndContinue}
+          disabled={pushPromptLoading}
+          className="w-full max-w-xs text-white/40 hover:text-white text-sm mt-4 disabled:opacity-50 transition-opacity"
+        >
+          Ahora no
+        </button>
+      </div>
+    );
+  }
+
   // --- Upload flow ---
   if (onboardingFlow === "upload") {
     const profilePayload: UserProfile = {
@@ -376,7 +439,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
           if (user) {
             await Promise.all([saveProfile(user.id, profilePayload), savePlan(user.id, plan)]);
           }
-          onPlanGenerated(plan, profilePayload);
+          handlePlanReady(plan, profilePayload);
         }}
       />
     );
