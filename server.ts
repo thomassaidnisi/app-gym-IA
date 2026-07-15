@@ -23,6 +23,47 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY || ""
 );
 
+// Shared push-sending logic — used by both the manual endpoint and the cron reminder.
+async function sendPushToUser(
+  userId: string,
+  title: string,
+  body: string,
+  url?: string
+): Promise<{ sent: number; total: number }> {
+  const { data: subscriptions, error } = await supabaseAdmin
+    .from("push_subscriptions")
+    .select("id, endpoint, p256dh, auth")
+    .eq("user_id", userId);
+
+  if (error) throw error;
+  if (!subscriptions || subscriptions.length === 0) {
+    return { sent: 0, total: 0 };
+  }
+
+  const payload = JSON.stringify({ title, body, url: url || "/" });
+  let sent = 0;
+
+  await Promise.all(
+    subscriptions.map(async (sub) => {
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          payload
+        );
+        sent++;
+      } catch (err: any) {
+        if (err.statusCode === 410) {
+          await supabaseAdmin.from("push_subscriptions").delete().eq("id", sub.id);
+        } else {
+          console.error("Error sending push notification to endpoint:", sub.endpoint, err);
+        }
+      }
+    })
+  );
+
+  return { sent, total: subscriptions.length };
+}
+
 // Shared Gemini lazy initialization function
 let genAiClient: GoogleGenAI | null = null;
 function getGeminiClient(): GoogleGenAI {
@@ -817,42 +858,77 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
         return res.status(400).json({ error: "Faltan datos requeridos (userId, title, body)." });
       }
 
-      const { data: subscriptions, error } = await supabaseAdmin
-        .from("push_subscriptions")
-        .select("id, endpoint, p256dh, auth")
-        .eq("user_id", userId);
-
-      if (error) throw error;
-
-      if (!subscriptions || subscriptions.length === 0) {
-        return res.json({ sent: 0, total: 0, message: "El usuario no tiene suscripciones push activas." });
+      const result = await sendPushToUser(userId, title, body, url);
+      if (result.total === 0) {
+        return res.json({ ...result, message: "El usuario no tiene suscripciones push activas." });
       }
-
-      const payload = JSON.stringify({ title, body, url: url || "/" });
-      let sent = 0;
-
-      await Promise.all(
-        subscriptions.map(async (sub) => {
-          try {
-            await webpush.sendNotification(
-              { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-              payload
-            );
-            sent++;
-          } catch (err: any) {
-            if (err.statusCode === 410) {
-              await supabaseAdmin.from("push_subscriptions").delete().eq("id", sub.id);
-            } else {
-              console.error("Error sending push notification to endpoint:", sub.endpoint, err);
-            }
-          }
-        })
-      );
-
-      return res.json({ sent, total: subscriptions.length });
+      return res.json(result);
     } catch (error: any) {
       console.error("Error in /api/send-push-notification:", error);
       return res.status(500).json({ error: error.message || "Error al enviar la notificación push." });
+    }
+  });
+
+  // Cron: Morning Training Reminder
+  app.post("/api/cron/morning-reminder", async (req, res) => {
+    try {
+      const cronSecret = req.header("x-cron-secret");
+      if (!cronSecret || cronSecret !== process.env.CRON_SECRET) {
+        return res.status(401).json({ error: "No autorizado." });
+      }
+
+      const { data: subs, error: subsError } = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("user_id");
+      if (subsError) throw subsError;
+
+      const userIds = Array.from(new Set((subs || []).map((s: any) => s.user_id)));
+
+      const weekdayFormatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Argentina/Buenos_Aires",
+        weekday: "long",
+      });
+      const todayKey = weekdayFormatter.format(new Date()).toLowerCase();
+
+      let sent = 0;
+      let skipped = 0;
+
+      await Promise.all(
+        userIds.map(async (userId) => {
+          const { data: planRow } = await supabaseAdmin
+            .from("plans")
+            .select("plan_json")
+            .eq("user_id", userId)
+            .single();
+
+          const plan = planRow?.plan_json as
+            | { weekly_schedule?: Record<string, string>; days?: { name: string; focus: string }[] }
+            | undefined;
+          const scheduledName = plan?.weekly_schedule?.[todayKey];
+
+          if (!scheduledName || /rest|descanso/i.test(scheduledName)) {
+            skipped++;
+            return;
+          }
+
+          const matchedDay = plan?.days?.find((d) => d.name === scheduledName);
+          const focusLabel = matchedDay?.focus || scheduledName;
+
+          const result = await sendPushToUser(
+            userId,
+            "¡Hoy entrenás! 💪",
+            `Hoy es tu día de ${focusLabel}. ¡A darle!`,
+            "/"
+          );
+          if (result.sent > 0) sent++;
+          else skipped++;
+        })
+      );
+
+      return res.json({ sent, skipped });
+    } catch (error: any) {
+      console.error("Error in /api/cron/morning-reminder:", error);
+      return res.status(500).json({ error: error.message || "Error al ejecutar el recordatorio matutino." });
     }
   });
 
