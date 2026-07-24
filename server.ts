@@ -3,7 +3,6 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
-import multer from "multer";
 import * as xlsx from "xlsx";
 import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
@@ -89,12 +88,6 @@ const EXERCISE_DB_URL = "https://raw.githubusercontent.com/yuhonas/free-exercise
 const EXERCISE_IMAGE_BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
 let exerciseLibraryCache: any[] | null = null;
 
-// Multer and Excel utility helper functions
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
-});
-
 function sanitizeJsonText(text: string): string {
   return text
     .replace(/\/\*[\s\S]*?\*\//g, "") // block comments
@@ -135,7 +128,7 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json({ limit: "5mb" }));
+  app.use(express.json({ limit: "20mb" }));
 
   // API Health Check
   app.get("/api/health", (req, res) => {
@@ -476,40 +469,14 @@ Devolvé ÚNICAMENTE un JSON válido RFC 8259. Sin comentarios, sin trailing com
     }
   });
 
-  // Wraps multer's upload.single so busboy parse errors (e.g. "Unexpected end of
-  // form" from a multipart body truncated by a service worker on iOS Safari) reach
-  // the client as a clean 400 instead of an unhandled middleware error.
-  const uploadSingle = upload.single("file");
-  function handleUpload(req: express.Request, res: express.Response, next: express.NextFunction) {
-    uploadSingle(req, res, (err: any) => {
-      if (err) {
-        console.error("Error uploading file in parse-plan-document API:", err);
-        if (typeof err?.message === "string" && err.message.includes("Unexpected end of form")) {
-          return res.status(400).json({
-            success: false,
-            parsed_plan: null,
-            inconsistency_warning: null,
-            error: "La subida del archivo se cortó antes de completarse. Cerrá y volvé a abrir la app, y probá subir el archivo de nuevo."
-          });
-        }
-        return res.status(400).json({
-          success: false,
-          parsed_plan: null,
-          inconsistency_warning: null,
-          error: "No pudimos subir el archivo. Por favor intenta de nuevo."
-        });
-      }
-      next();
-    });
-  }
-
   // POST /api/parse-plan-document endpoint to read uploaded plans
-  app.post("/api/parse-plan-document", handleUpload, async (req, res) => {
+  // Uploads are sent as base64 JSON (not multipart) since multipart bodies get
+  // truncated by the service worker on iOS Safari, causing "Unexpected end of form".
+  app.post("/api/parse-plan-document", async (req, res) => {
     try {
-      const file = req.file;
-      const profileStr = req.body.profile;
+      const { fileBase64, fileName, mimeType, profile } = req.body || {};
 
-      if (!file) {
+      if (!fileBase64 || !fileName) {
         return res.status(400).json({
           success: false,
           parsed_plan: null,
@@ -518,16 +485,23 @@ Devolvé ÚNICAMENTE un JSON válido RFC 8259. Sin comentarios, sin trailing com
         });
       }
 
-      let profile: any = {};
-      if (profileStr) {
-        try {
-          profile = JSON.parse(profileStr);
-        } catch (e) {
-          console.error("Error parsing profile in request:", e);
-        }
+      const fileBuffer = Buffer.from(fileBase64, "base64");
+      const file = {
+        buffer: fileBuffer,
+        originalname: fileName,
+        mimetype: mimeType || "application/octet-stream"
+      };
+
+      if (fileBuffer.length > 10 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          parsed_plan: null,
+          inconsistency_warning: null,
+          error: "El archivo supera el límite de 10MB. Sube un archivo más liviano."
+        });
       }
 
-      const name = profile.name || "Atleta";
+      const name = (profile && profile.name) || "Atleta";
       const age = profile.age || "No especificada";
       const weight = profile.weight || "No especificado";
       const height = profile.height || "No especificada";

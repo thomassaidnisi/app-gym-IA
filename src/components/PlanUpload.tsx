@@ -107,20 +107,37 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
     setSubState("confirm");
   };
 
+  // Reads a File as a base64 string (without the "data:...;base64," prefix)
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(",")[1] || "");
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Core API call: Send file to backend
   const handleUploadAndProcess = async () => {
     if (!selectedFile) return;
     setSubState("processing");
     setErrorMsg(null);
 
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("profile", JSON.stringify(profile));
-
     try {
+      const fileBase64 = await readFileAsBase64(selectedFile);
+
       const res = await fetch("/api/parse-plan-document", {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileBase64,
+          fileName: selectedFile.name,
+          mimeType: selectedFile.type,
+          profile
+        })
       });
 
       if (!res.ok) {
