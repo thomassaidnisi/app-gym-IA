@@ -662,6 +662,12 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
 
     } catch (error: any) {
       console.error("Error in parse-plan-document API:", error);
+      console.error("Error details:", {
+        message: error?.message,
+        stack: error?.stack,
+        response: error?.response?.data ?? error?.response,
+        cause: error?.cause,
+      });
       let errorMsg = "No pudimos procesar el archivo. Por favor intenta de nuevo con un formato compatible.";
       if (error.message && error.message.includes("JSON")) {
         errorMsg = "Este documento no parece tener un plan de entrenamiento con una estructura reconocible. ¿Es el archivo correcto?";
