@@ -71,6 +71,14 @@ self.addEventListener('fetch', e => {
 
   const { request } = e;
 
+  // Non-GET requests (API calls, file uploads) → always straight to network.
+  // Routing them through cache.match/put touches the Request body, which
+  // corrupts multipart/form-data streams on iOS Safari ("Unexpected end of form").
+  if (request.method !== 'GET') {
+    e.respondWith(fetch(request));
+    return;
+  }
+
   // Navigation requests (HTML) → network-first so users always get the latest shell
   if (request.mode === 'navigate') {
     e.respondWith(
