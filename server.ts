@@ -476,8 +476,35 @@ Devolvé ÚNICAMENTE un JSON válido RFC 8259. Sin comentarios, sin trailing com
     }
   });
 
+  // Wraps multer's upload.single so busboy parse errors (e.g. "Unexpected end of
+  // form" from a multipart body truncated by a service worker on iOS Safari) reach
+  // the client as a clean 400 instead of an unhandled middleware error.
+  const uploadSingle = upload.single("file");
+  function handleUpload(req: express.Request, res: express.Response, next: express.NextFunction) {
+    uploadSingle(req, res, (err: any) => {
+      if (err) {
+        console.error("Error uploading file in parse-plan-document API:", err);
+        if (typeof err?.message === "string" && err.message.includes("Unexpected end of form")) {
+          return res.status(400).json({
+            success: false,
+            parsed_plan: null,
+            inconsistency_warning: null,
+            error: "La subida del archivo se cortó antes de completarse. Cerrá y volvé a abrir la app, y probá subir el archivo de nuevo."
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          parsed_plan: null,
+          inconsistency_warning: null,
+          error: "No pudimos subir el archivo. Por favor intenta de nuevo."
+        });
+      }
+      next();
+    });
+  }
+
   // POST /api/parse-plan-document endpoint to read uploaded plans
-  app.post("/api/parse-plan-document", upload.single("file"), async (req, res) => {
+  app.post("/api/parse-plan-document", handleUpload, async (req, res) => {
     try {
       const file = req.file;
       const profileStr = req.body.profile;
@@ -668,6 +695,7 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
         response: error?.response?.data ?? error?.response,
         cause: error?.cause,
       });
+
       let errorMsg = "No pudimos procesar el archivo. Por favor intenta de nuevo con un formato compatible.";
       if (error.message && error.message.includes("JSON")) {
         errorMsg = "Este documento no parece tener un plan de entrenamiento con una estructura reconocible. ¿Es el archivo correcto?";

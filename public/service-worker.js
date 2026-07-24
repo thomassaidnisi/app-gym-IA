@@ -3,7 +3,9 @@ const IS_DEV = self.location.hostname === 'localhost' || self.location.hostname 
 // __BUILD_TS__ is replaced at build time by the Vite plugin with a real timestamp.
 // In dev (public/ served as-is) it stays as the literal string, which is fine because
 // IS_DEV bypasses all caching anyway.
-const CACHE = 'healty-app-__BUILD_TS__';
+// v2: bumped after the multipart-upload-corruption fix below, so iOS Safari clients
+// running the old SW byte-compare this file as different and install the new one.
+const CACHE = 'healty-app-v2-__BUILD_TS__';
 
 const ASSETS = [
   './manifest.json',
