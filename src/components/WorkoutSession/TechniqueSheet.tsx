@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Youtube, AlertTriangle, Lightbulb } from "lucide-react";
@@ -6,15 +6,26 @@ import { Exercise } from "../../types";
 
 interface TechniqueSheetProps {
   isOpen: boolean;
-  exercise: Exercise;
+  /** 1 exercise for a normal block, 2-3 for a superset — tabs appear when there's more than one. */
+  exercises: Exercise[];
   onClose: () => void;
 }
 
 export const TechniqueSheet: React.FC<TechniqueSheetProps> = ({
   isOpen,
-  exercise,
+  exercises,
   onClose,
 }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Reset to the first exercise every time the sheet is (re)opened.
+  useEffect(() => {
+    if (isOpen) setActiveIndex(0);
+  }, [isOpen]);
+
+  const exercise = exercises[activeIndex] ?? exercises[0];
+  if (!exercise) return null;
+
   return createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -88,6 +99,30 @@ export const TechniqueSheet: React.FC<TechniqueSheetProps> = ({
                 <X className="w-4 h-4 text-white" strokeWidth={2} />
               </button>
             </div>
+
+            {/* Exercise tabs (superset only) */}
+            {exercises.length > 1 && (
+              <div className="flex gap-2 px-5 pb-3 shrink-0 overflow-x-auto">
+                {exercises.map((ex, idx) => (
+                  <button
+                    key={`${ex.name}-${idx}`}
+                    onClick={() => setActiveIndex(idx)}
+                    className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-opacity active:opacity-60"
+                    style={
+                      idx === activeIndex
+                        ? { backgroundColor: "#c8f135", color: "#000" }
+                        : {
+                            backgroundColor: "rgba(255,255,255,0.08)",
+                            color: "rgba(255,255,255,0.5)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                          }
+                    }
+                  >
+                    {ex.name}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Scrollable content */}
             <div className="overflow-y-auto flex-1 px-5 pb-2 space-y-3">

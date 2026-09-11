@@ -4,12 +4,16 @@ import { motion, AnimatePresence } from "motion/react";
 
 interface SkipConfirmModalProps {
   isOpen: boolean;
+  title?: string;
+  description?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
 export const SkipConfirmModal: React.FC<SkipConfirmModalProps> = ({
   isOpen,
+  title = "¿Saltear este ejercicio?",
+  description = "No vas a registrar ninguna serie y no va a aparecer en tu resumen final.",
   onConfirm,
   onCancel,
 }) => {
@@ -56,13 +60,13 @@ export const SkipConfirmModal: React.FC<SkipConfirmModalProps> = ({
             }}
           >
             <p className="text-base font-black text-white mb-1 text-center">
-              ¿Saltear este ejercicio?
+              {title}
             </p>
             <p
               className="text-sm text-center mb-5 leading-snug"
               style={{ color: "rgba(255,255,255,0.4)" }}
             >
-              No vas a registrar ninguna serie y no va a aparecer en tu resumen final.
+              {description}
             </p>
             <div className="flex flex-col gap-3">
               <motion.button

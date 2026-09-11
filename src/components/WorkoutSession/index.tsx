@@ -30,7 +30,9 @@ export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose, re
     startSession,
     goToSummary,
     completeSet,
+    completeSupersetRound,
     skipExercise,
+    skipSupersetRound,
     pauseSession,
     advanceFromResting,
     advanceFromTransition,
@@ -77,7 +79,9 @@ export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose, re
               totalExercises={totalExercises}
               progress={progress}
               onCompleteSet={completeSet}
+              onCompleteSupersetRound={completeSupersetRound}
               onSkip={skipExercise}
+              onSkipSupersetRound={skipSupersetRound}
               onReorder={reorderUpcoming}
               onAbandon={goToSummary}
               onPause={handlePause}

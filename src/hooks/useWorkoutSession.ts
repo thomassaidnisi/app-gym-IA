@@ -153,6 +153,58 @@ export function useWorkoutSession(day: DayPlan, resume?: PausedSession | null) {
     });
   };
 
+  /**
+   * Complete one round of a superset block: records one set for every sibling
+   * exercise of the current block (found by scanning upcomingQueue for the same
+   * block reference, since buildQueue emits superset exercises contiguously).
+   * `entries` must be in the same order as [currentItem, ...siblings in upcomingQueue].
+   */
+  const completeSupersetRound = (entries: { weight: number | null; reps: number }[]) => {
+    setSession((s) => {
+      if (!s.currentItem) return s;
+      const block = s.currentItem.block;
+
+      const siblingItems: QueueItem[] = [s.currentItem];
+      let i = 0;
+      while (i < s.upcomingQueue.length && s.upcomingQueue[i].block === block) {
+        siblingItems.push(s.upcomingQueue[i]);
+        i++;
+      }
+      const remainingUpcoming = s.upcomingQueue.slice(i);
+
+      const newSets: CompletedSet[] = siblingItems.map((item, idx) => ({
+        exerciseId: item.id,
+        exerciseName: item.exercise.name,
+        setNumber: s.currentSet,
+        weight: entries[idx]?.weight ?? null,
+        reps: entries[idx]?.reps ?? 0,
+        completedAt: new Date(),
+      }));
+      const completedSets = [...s.completedSets, ...newSets];
+
+      if (s.currentSet < s.totalSets) {
+        const restSecs = getRestSeconds(block, s.currentItem.exercise);
+        return {
+          ...s,
+          completedSets,
+          currentSet: s.currentSet + 1,
+          restSeconds: restSecs,
+          restRemaining: restSecs,
+          phase: "resting" as const,
+        };
+      }
+
+      // Last round — the whole superset group is done at once.
+      return {
+        ...s,
+        completedSets,
+        completedQueue: [...s.completedQueue, ...siblingItems],
+        upcomingQueue: remainingUpcoming,
+        phase: "transition" as const,
+      };
+    });
+  };
+
   const goToSummary = () => {
     setSession((s) => ({ ...s, phase: "summary" as const }));
   };
@@ -189,6 +241,33 @@ export function useWorkoutSession(day: DayPlan, resume?: PausedSession | null) {
       if (!s.currentItem) return s;
       const [next, ...remaining] = s.upcomingQueue;
       if (!next) return { ...s, phase: "summary" as const };
+
+      return {
+        ...s,
+        phase: "exercising" as const,
+        currentItem: next,
+        upcomingQueue: remaining,
+        currentSet: 1,
+        totalSets: next.exercise.sets,
+        restSeconds: getRestSeconds(next.block, next.exercise),
+        restRemaining: 0,
+      };
+    });
+  };
+
+  /**
+   * Skip an entire superset block — all sibling exercises of the current block,
+   * found the same way completeSupersetRound finds them. No sets are recorded
+   * and none of them enter completedQueue.
+   */
+  const skipSupersetRound = () => {
+    setSession((s) => {
+      if (!s.currentItem) return s;
+      const block = s.currentItem.block;
+      let i = 0;
+      while (i < s.upcomingQueue.length && s.upcomingQueue[i].block === block) i++;
+      const [next, ...remaining] = s.upcomingQueue.slice(i);
+      if (!next) return { ...s, phase: "summary" as const, upcomingQueue: [] };
 
       return {
         ...s,
@@ -291,7 +370,9 @@ export function useWorkoutSession(day: DayPlan, resume?: PausedSession | null) {
     startSession,
     goToSummary,
     completeSet,
+    completeSupersetRound,
     skipExercise,
+    skipSupersetRound,
     pauseSession,
     advanceFromResting,
     addRestTime,

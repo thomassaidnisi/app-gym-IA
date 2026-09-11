@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Minus, Plus, ListOrdered } from "lucide-react";
-import { ExerciseBlock, Exercise, SessionState } from "../../../types";
+import { ExerciseBlock, Exercise, QueueItem, SessionState } from "../../../types";
 import { SuggestedWeight } from "../../../hooks/useWorkoutSession";
 import { QueueSheet } from "../QueueSheet";
 import { TechniqueSheet } from "../TechniqueSheet";
@@ -16,7 +16,9 @@ interface ExercisingProps {
   totalExercises: number;
   progress: number;
   onCompleteSet: (weight: number | null, reps: number) => void;
+  onCompleteSupersetRound: (entries: { weight: number | null; reps: number }[]) => void;
   onSkip: () => void;
+  onSkipSupersetRound: () => void;
   onReorder: (newIds: string[]) => void;
   onAbandon: () => void;
   onPause: () => void;
@@ -54,6 +56,71 @@ function getPersonalBest(exerciseName: string): { weight: number | null; reps: n
   return { weight: bestWeight, reps: bestReps };
 }
 
+interface SupersetRowState {
+  weight: number;
+  reps: number;
+}
+
+/** One exercise row inside a superset screen: name, target, and a compact weight/reps stepper. */
+const SupersetRow: React.FC<{
+  exercise: Exercise;
+  value: SupersetRowState;
+  onChange: (value: SupersetRowState) => void;
+}> = ({ exercise, value, onChange }) => {
+  return (
+    <div
+      className="w-full rounded-2xl p-4"
+      style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <p className="text-sm font-bold text-white truncate">{exercise.name}</p>
+      <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
+        {exercise.sets} × {exercise.reps}
+      </p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onChange({ ...value, weight: Math.max(0, parseFloat((value.weight - 2.5).toFixed(1))) })}
+            className="w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
+            style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+          >
+            <Minus className="w-3.5 h-3.5 text-white" strokeWidth={2} />
+          </button>
+          <span className="text-lg font-black tabular-nums w-14 text-center" style={{ color: "#c8f135" }}>
+            {value.weight % 1 === 0 ? value.weight : value.weight.toFixed(1)}
+            <span className="text-xs font-semibold" style={{ color: "rgba(200,241,53,0.4)" }}> kg</span>
+          </span>
+          <button
+            onClick={() => onChange({ ...value, weight: parseFloat((value.weight + 2.5).toFixed(1)) })}
+            className="w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
+            style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+          >
+            <Plus className="w-3.5 h-3.5 text-white" strokeWidth={2} />
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onChange({ ...value, reps: Math.max(0, value.reps - 1) })}
+            className="w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
+            style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+          >
+            <Minus className="w-3.5 h-3.5 text-white" strokeWidth={2} />
+          </button>
+          <span className="text-lg font-black tabular-nums w-10 text-center text-white">
+            {value.reps}
+          </span>
+          <button
+            onClick={() => onChange({ ...value, reps: value.reps + 1 })}
+            className="w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
+            style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+          >
+            <Plus className="w-3.5 h-3.5 text-white" strokeWidth={2} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const Exercising: React.FC<ExercisingProps> = ({
   session,
   currentBlock,
@@ -62,7 +129,9 @@ export const Exercising: React.FC<ExercisingProps> = ({
   totalExercises,
   progress,
   onCompleteSet,
+  onCompleteSupersetRound,
   onSkip,
+  onSkipSupersetRound,
   onReorder,
   onAbandon,
   onPause,
@@ -157,6 +226,49 @@ export const Exercising: React.FC<ExercisingProps> = ({
 
   const blockLabel = currentBlock.title || currentBlock.label || "Bloque";
 
+  // ── Superset handling ────────────────────────────────────────────────────
+  // buildQueue emits superset exercises as contiguous QueueItems sharing the
+  // same block reference, so the siblings are: currentItem + the run of
+  // upcomingQueue items pointing at the same block.
+  const isSuperset = currentBlock.is_superset && currentBlock.exercises.length > 1;
+
+  const supersetItems: QueueItem[] = useMemo(() => {
+    if (!isSuperset || !session.currentItem) return [];
+    const items = [session.currentItem];
+    for (const item of session.upcomingQueue) {
+      if (item.block !== currentBlock) break;
+      items.push(item);
+    }
+    return items;
+  }, [isSuperset, session.currentItem, session.upcomingQueue, currentBlock]);
+
+  const [rowState, setRowState] = useState<Record<string, SupersetRowState>>({});
+
+  // Seed defaults for any superset item that doesn't have a row yet (new block, or
+  // resume). Values persist across rounds — only reset when the block changes.
+  useEffect(() => {
+    if (!isSuperset) return;
+    setRowState((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const item of supersetItems) {
+        if (next[item.id]) continue;
+        const s = suggestWeight(item.exercise.name, item.exercise.weight);
+        next[item.id] = { weight: s.weight, reps: parseReps(item.exercise.reps) };
+        changed = true;
+      }
+      return changed ? next : prev;
+    });
+  }, [isSuperset, supersetItems, suggestWeight]);
+
+  const handleCompleteRound = () => {
+    const entries = supersetItems.map((item) => {
+      const row = rowState[item.id];
+      return { weight: row?.weight ?? null, reps: row?.reps ?? 0 };
+    });
+    onCompleteSupersetRound(entries);
+  };
+
   return (
     <div className="flex flex-col h-full" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
 
@@ -220,6 +332,46 @@ export const Exercising: React.FC<ExercisingProps> = ({
       </div>
 
       {/* ── MAIN CONTENT ── */}
+      {isSuperset ? (
+        <div className="flex-1 flex flex-col items-center justify-start px-6 pb-4 pt-2 overflow-y-auto">
+          <p
+            className="text-[10px] uppercase tracking-widest font-semibold"
+            style={{ color: "rgba(200,241,53,0.6)" }}
+          >
+            Superserie
+          </p>
+          <h3 className="text-base font-bold text-white mb-4">{currentBlock.label}</h3>
+
+          <div className="flex items-end gap-2 mb-5">
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={session.currentSet}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                className="text-5xl font-black text-white tabular-nums leading-none"
+              >
+                {session.currentSet}
+              </motion.span>
+            </AnimatePresence>
+            <span className="text-xl font-light mb-1 tabular-nums" style={{ color: "rgba(255,255,255,0.2)" }}>
+              /{session.totalSets} ronda{session.totalSets > 1 ? "s" : ""}
+            </span>
+          </div>
+
+          <div className="w-full space-y-3">
+            {supersetItems.map((item) => (
+              <SupersetRow
+                key={item.id}
+                exercise={item.exercise}
+                value={rowState[item.id] ?? { weight: 0, reps: parseReps(item.exercise.reps) }}
+                onChange={(value) => setRowState((prev) => ({ ...prev, [item.id]: value }))}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-4">
 
         {/* Serie counter */}
@@ -434,6 +586,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
           )}
         </div>
       </div>
+      )}
 
       {/* ── NEXT UP ── */}
       {session.upcomingQueue.length > 0 && (
@@ -460,11 +613,11 @@ export const Exercising: React.FC<ExercisingProps> = ({
       >
         <motion.button
           whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-          onClick={() => onCompleteSet(weight, reps)}
+          onClick={() => (isSuperset ? handleCompleteRound() : onCompleteSet(weight, reps))}
           className="w-full h-14 rounded-2xl font-black text-base text-black"
           style={{ backgroundColor: "#c8f135" }}
         >
-          Terminé la serie ✓
+          {isSuperset ? "Terminé la ronda ✓" : "Terminé la serie ✓"}
         </motion.button>
 
         <button
@@ -483,7 +636,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
           className="w-full text-center text-xs transition-opacity active:opacity-60"
           style={{ color: "rgba(255,255,255,0.3)" }}
         >
-          Saltear ejercicio
+          {isSuperset ? "Saltear superserie" : "Saltear ejercicio"}
         </button>
       </div>
       <QueueSheet
@@ -494,7 +647,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
       />
       <TechniqueSheet
         isOpen={showTechnique}
-        exercise={currentExercise}
+        exercises={isSuperset ? supersetItems.map((item) => item.exercise) : [currentExercise]}
         onClose={() => setShowTechnique(false)}
       />
       <ExitSheet
@@ -505,7 +658,13 @@ export const Exercising: React.FC<ExercisingProps> = ({
       />
       <SkipConfirmModal
         isOpen={showSkipConfirm}
-        onConfirm={() => { setShowSkipConfirm(false); onSkip(); }}
+        title={isSuperset ? "¿Saltear esta superserie?" : undefined}
+        description={
+          isSuperset
+            ? "No vas a registrar ninguna serie de estos ejercicios y no van a aparecer en tu resumen final."
+            : undefined
+        }
+        onConfirm={() => { setShowSkipConfirm(false); isSuperset ? onSkipSupersetRound() : onSkip(); }}
         onCancel={() => setShowSkipConfirm(false)}
       />
     </div>
