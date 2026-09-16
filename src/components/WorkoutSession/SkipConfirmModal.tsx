@@ -37,58 +37,61 @@ export const SkipConfirmModal: React.FC<SkipConfirmModalProps> = ({
             }}
           />
 
-          {/* Modal card */}
-          <motion.div
-            key="modal"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            style={{
-              position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 81,
-              width: "min(320px, calc(100vw - 48px))",
-              background: "rgba(24,24,24,0.95)",
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 20,
-              padding: 20,
-            }}
+          {/* Centering layer */}
+          <div
+            className="fixed inset-0 flex items-center justify-center px-4"
+            style={{ zIndex: 81 }}
+            onClick={onCancel}
           >
-            <p className="text-base font-black text-white mb-1 text-center">
-              {title}
-            </p>
-            <p
-              className="text-sm text-center mb-5 leading-snug"
-              style={{ color: "rgba(255,255,255,0.4)" }}
+            {/* Modal card */}
+            <motion.div
+              key="modal"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm mx-4"
+              style={{
+                background: "rgba(24,24,24,0.95)",
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: 20,
+                padding: 20,
+              }}
             >
-              {description}
-            </p>
-            <div className="flex flex-col gap-3">
-              <motion.button
-                whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-                onClick={onConfirm}
-                className="w-full h-12 rounded-2xl font-black text-sm text-black"
-                style={{ backgroundColor: "#c8f135" }}
+              <p className="text-base font-black text-white mb-1 text-center">
+                {title}
+              </p>
+              <p
+                className="text-sm text-center mb-5 leading-snug"
+                style={{ color: "rgba(255,255,255,0.4)" }}
               >
-                Sí, saltear
-              </motion.button>
-              <button
-                onClick={onCancel}
-                className="w-full h-11 rounded-2xl text-sm font-semibold"
-                style={{
-                  color: "rgba(255,255,255,0.45)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                }}
-              >
-                Cancelar
-              </button>
-            </div>
-          </motion.div>
+                {description}
+              </p>
+              <div className="flex flex-col gap-3">
+                <motion.button
+                  whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
+                  onClick={onConfirm}
+                  className="w-full h-12 rounded-2xl font-black text-sm text-black"
+                  style={{ backgroundColor: "#c8f135" }}
+                >
+                  Sí, saltear
+                </motion.button>
+                <button
+                  onClick={onCancel}
+                  className="w-full h-11 rounded-2xl text-sm font-semibold"
+                  style={{
+                    color: "rgba(255,255,255,0.45)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>,

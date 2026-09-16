@@ -683,7 +683,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                         >
                           <div onClick={() => toggleExpand(ex.name)} className="p-4 flex items-center justify-between gap-3.5">
                             <div className="flex-1 min-w-0">
-                              <h6 className="text-sm font-semibold leading-snug line-clamp-2 break-words" style={{ color: T.textPri }}>
+                              <h6 className="text-sm font-semibold leading-snug break-words" style={{ color: T.textPri }}>
                                 {ex.name}
                               </h6>
                               <div className="flex flex-wrap gap-1 mt-2">
@@ -703,7 +703,10 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                                   {loggedWeight ? `Hoy: ${loggedWeight}` : ex.weight}
                                 </div>
                               </div>
-                              <span className="text-[10px] transition-transform shrink-0" style={{ color: isExpanded ? T.textPri : T.textTer, transform: isExpanded ? "rotate(90deg)" : "none" }}>▶</span>
+                              <ChevronDown
+                                className={`w-4 h-4 shrink-0 text-zinc-500 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                                strokeWidth={2}
+                              />
                             </div>
                           </div>
 
