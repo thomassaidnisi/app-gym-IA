@@ -422,15 +422,17 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/90" />
 
                 <div className="absolute inset-x-0 bottom-0 p-5">
-                  <p className="text-white/80 text-sm font-medium leading-none">
-                    {getGreeting()},
-                  </p>
-                  <h1 className="font-display text-5xl text-white leading-none tracking-wide mt-1.5">
-                    {profile.name || "Atleta"}
-                  </h1>
-                  <p className="text-white/60 text-sm mt-1.5 capitalize">
-                    {getDateString()}
-                  </p>
+                  <div className="inline-block bg-black/40 backdrop-blur-md rounded-2xl px-4 py-3">
+                    <p className="text-white/80 text-sm font-medium leading-none">
+                      {getGreeting()},
+                    </p>
+                    <h1 className="font-display text-5xl text-white leading-none tracking-wide mt-1.5">
+                      {profile.name || "Atleta"}
+                    </h1>
+                    <p className="text-white/60 text-sm mt-1.5 capitalize">
+                      {getDateString()}
+                    </p>
+                  </div>
 
                   {/* Mini-stats chips — sobre la foto, fondo semitransparente para legibilidad */}
                   <div className="grid grid-cols-3 gap-2 mt-4">
@@ -487,7 +489,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="rounded-2xl p-5 mb-3"
+                  className="rounded-3xl p-5 mb-3"
                   style={{ backgroundColor: T.hero, borderColor: T.heroBorder, border: `1px solid ${T.heroBorder}` }}
                 >
                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
@@ -523,7 +525,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="rounded-2xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
+                  className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
                 >
                   <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Hoy</span>
                   <h2 className="text-xl font-bold mt-1 text-white">Día de descanso</h2>
