@@ -410,18 +410,34 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
           >
             <div className="mb-6 pt-2">
 
-              {/* Greeting + Avatar */}
-              <div className="flex items-start justify-between mb-5">
-                <div>
-                  <p className="text-lg font-medium leading-none" style={{ color: T.textSec }}>
+              {/* Hero: foto de fondo + saludo + avatar */}
+              <div className="relative -mx-4 mb-5 h-[280px] rounded-b-3xl overflow-hidden">
+                <img
+                  src="/gym-hero.jpg"
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+
+                <div className="absolute inset-x-0 bottom-0 p-5">
+                  <p className="text-white/80 text-sm font-medium leading-none">
                     {getGreeting()},
                   </p>
-                  <h1 className="text-4xl font-extrabold tracking-tight leading-tight mt-0.5" style={{ color: T.textPri }}>
-                    {profile.name || "Atleta"}.
+                  <h1 className="font-display text-5xl text-white leading-none tracking-wide mt-1.5">
+                    {profile.name || "Atleta"}
                   </h1>
-                  <p className="text-sm mt-1.5 capitalize" style={{ color: T.textTer }}>
+                  <p className="text-white/60 text-sm mt-1.5 capitalize">
                     {getDateString()}
                   </p>
+                </div>
+
+                <div
+                  className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", backdropFilter: "blur(8px)" }}
+                >
+                  <span className="text-white font-bold text-sm">
+                    {(profile.name || "A").charAt(0).toUpperCase()}
+                  </span>
                 </div>
               </div>
 
@@ -467,17 +483,16 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="rounded-2xl p-5 mb-3 shadow-sm"
-                  style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}
+                  className="rounded-2xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: T.textTer }}>Hoy</span>
-                  <h2 className="text-xl font-bold mt-1" style={{ color: T.textPri }}>Día de descanso</h2>
-                  <p className="text-sm mt-2 leading-relaxed" style={{ color: T.textSec }}>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Hoy</span>
+                  <h2 className="text-xl font-bold mt-1 text-white">Día de descanso</h2>
+                  <p className="text-sm mt-2 leading-relaxed text-zinc-400">
                     Día de recuperación. Caminá, hidratate, dormí 8 horas. Tu sistema nervioso se recarga hoy para que mañana rompas marcas.
                   </p>
                   {nextTrainingDay && (
-                    <p className="text-[11px] mt-3" style={{ color: T.textTer }}>
-                      Próxima sesión: <span className="font-semibold" style={{ color: T.textSec }}>{nextTrainingDay}</span>
+                    <p className="text-[11px] mt-3 text-zinc-500">
+                      Próxima sesión: <span className="font-semibold text-zinc-300">{nextTrainingDay}</span>
                     </p>
                   )}
                 </motion.div>
@@ -499,39 +514,37 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
               {/* Mini-stats chips */}
               <div className="grid grid-cols-3 gap-2">
                 <div
-                  className="rounded-xl p-4 flex flex-col items-center gap-1.5 text-center"
-                  style={{
-                    backgroundColor: streak > 0 ? "rgba(200,241,53,0.1)" : T.bgSec,
-                    border: streak > 0 ? "1px solid rgba(200,241,53,0.2)" : `1px solid ${T.border}`,
-                  }}
+                  className={`rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center border ${
+                    streak > 0 ? "bg-brand/10 border-brand/20" : "bg-zinc-900 border-zinc-800"
+                  }`}
                 >
                   <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(249,115,22,0.12)" }}>
                     <Flame className="w-4 h-4 text-orange-500" strokeWidth={1.5} />
                   </div>
-                  <strong className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: streak > 0 ? T.textPri : T.textTer }}>
+                  <strong className={`font-display text-3xl tabular-nums leading-none ${streak > 0 ? "text-white" : "text-zinc-500"}`}>
                     {streak}
                   </strong>
-                  <span className="text-[9px] uppercase tracking-wide font-semibold leading-none" style={{ color: T.textSec }}>
+                  <span className="text-xs tracking-widest font-semibold leading-none uppercase text-zinc-400">
                     {streak === 1 ? "día racha" : "días racha"}
                   </span>
                 </div>
 
-                <div className="rounded-xl p-4 flex flex-col items-center gap-1.5 text-center" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}` }}>
+                <div className="rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center bg-zinc-900 border border-zinc-800">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(14,165,233,0.12)" }}>
                     <CalendarDays className="w-4 h-4 text-sky-500" strokeWidth={1.5} />
                   </div>
-                  <strong className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: T.textPri }}>{weekSessions}</strong>
-                  <span className="text-[9px] uppercase tracking-wide font-semibold leading-none" style={{ color: T.textSec }}>esta semana</span>
+                  <strong className="font-display text-3xl tabular-nums leading-none text-white">{weekSessions}</strong>
+                  <span className="text-xs tracking-widest font-semibold leading-none uppercase text-zinc-400">esta semana</span>
                 </div>
 
-                <div className="rounded-xl p-4 flex flex-col items-center gap-1.5 text-center" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}` }}>
+                <div className="rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center bg-zinc-900 border border-zinc-800">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(139,92,246,0.12)" }}>
                     <Zap className="w-4 h-4 text-violet-500" strokeWidth={1.5} />
                   </div>
-                  <strong className="text-2xl font-extrabold leading-none" style={{ color: T.textPri }}>
+                  <strong className="font-display text-3xl leading-none text-white">
                     {isRestToday ? (nextTrainingDay ?? "—") : "Hoy"}
                   </strong>
-                  <span className="text-[9px] uppercase tracking-wide font-semibold leading-none" style={{ color: T.textSec }}>próx. sesión</span>
+                  <span className="text-xs tracking-widest font-semibold leading-none uppercase text-zinc-400">próx. sesión</span>
                 </div>
               </div>
 
@@ -550,28 +563,26 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
             const scheduleValue: string = (plan.weekly_schedule as any)[day.key] || "Descanso";
             const isRest = scheduleValue.toLowerCase() === "rest" || scheduleValue.toLowerCase().includes("descanso");
             const isGym = !isRest;
+            const isToday = day.key === todayDayKey;
             return (
               <div
                 key={day.key}
                 onClick={() => isGym && selectDayBySchedule(scheduleValue)}
-                className="flex-none w-24 p-3 rounded-2xl text-center transition-all cursor-pointer snap-start flex flex-col items-center justify-between gap-1 shadow-sm"
-                style={{
-                  backgroundColor: T.bg,
-                  border: `1px solid ${T.border}`,
-                  opacity: isRest ? 0.5 : 1,
-                }}
+                className={`flex-none w-24 p-3 rounded-xl text-center transition-all cursor-pointer snap-start flex flex-col items-center justify-between gap-1 border ${
+                  isGym ? "bg-brand border-transparent" : "bg-zinc-900 border-zinc-800"
+                } ${isToday ? "!border-brand/60" : ""}`}
               >
-                <span className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: isGym ? T.textSec : T.textTer }}>
+                <span className={`text-[10px] uppercase tracking-wider font-semibold ${isGym ? "text-black/60" : "text-zinc-500"}`}>
                   {day.name.substring(0, 3)}
                 </span>
-                <div style={{ color: isGym ? T.textPri : T.textTer }}>
+                <div className={isGym ? "text-black" : "text-zinc-500"}>
                   {isGym ? getWorkoutIcon(scheduleValue, "w-4 h-4") : <Moon className="w-4 h-4" strokeWidth={1.5} />}
                 </div>
-                <span className="text-[9px] font-bold block max-w-full truncate px-1 leading-tight" style={{ color: isGym ? T.textPri : T.textTer }}>
+                <span className={`text-[9px] font-bold block max-w-full truncate px-1 leading-tight ${isGym ? "text-black" : "text-zinc-500"}`}>
                   {isGym ? shortName(scheduleValue) : "Rest"}
                 </span>
                 {profile.trainingLocation === "both" && isGym && (profile.locationByDay as any)?.[day.key] && (
-                  <span className="text-[9px] opacity-50 leading-none">
+                  <span className="text-[9px] opacity-60 leading-none">
                     {(profile.locationByDay as any)[day.key] === "gym" ? "🏋️" : "🏠"}
                   </span>
                 )}
@@ -602,21 +613,21 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
       {activeDay ? (
         <div>
           {/* Day Header */}
-          <div className="rounded-2xl p-5 mb-6 shadow-sm" style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}>
+          <div className="rounded-2xl p-5 mb-6 bg-zinc-900 border border-zinc-800">
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-bold text-xl select-none" style={{ color: T.textPri }}>
+              <span className="font-bold text-xl select-none text-white">
                 {activeDay.name} — {activeDay.day_of_week}
               </span>
-              <span className="text-[9px] font-medium px-2 py-0.5 rounded-full select-none" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}>
+              <span className="text-[9px] font-medium px-2 py-0.5 rounded-full select-none bg-zinc-800 border border-zinc-700 text-zinc-400">
                 {activeDay.duration}
               </span>
               {(activeDay as any).location && (
-                <span className="text-[9px] font-medium px-2 py-0.5 rounded-full select-none" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}>
+                <span className="text-[9px] font-medium px-2 py-0.5 rounded-full select-none bg-zinc-800 border border-zinc-700 text-zinc-400">
                   {(activeDay as any).location === "gym" ? "🏋️ Gym" : "🏠 Casa"}
                 </span>
               )}
             </div>
-            <p className="text-sm font-medium" style={{ color: T.textSec }}>{activeDay.focus}</p>
+            <p className="text-sm font-medium text-zinc-400">{activeDay.focus}</p>
           </div>
 
           {/* Calentamiento */}
@@ -624,18 +635,18 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3 px-1 select-none">
                 <Clock className="w-4 h-4 text-brand" />
-                <h4 className="text-xs uppercase tracking-widest font-bold" style={{ color: T.textTer }}>
+                <h4 className="text-xs uppercase tracking-widest font-bold text-zinc-500">
                   Calentamiento específico
                 </h4>
               </div>
-              <div className="rounded-2xl p-4 shadow-sm" style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}>
-                <div style={{ borderColor: T.border }} className="divide-y">
+              <div className="rounded-2xl p-5 bg-zinc-900 border border-zinc-800">
+                <div className="divide-y divide-zinc-800">
                   {activeDay.warmup.map((warm, wIdx) => (
                     <div key={wIdx} className="py-2.5 first:pt-0 last:pb-0 flex items-start gap-3">
-                      <span className="text-xs font-semibold select-none mt-0.5" style={{ color: T.textPri }}>{warm.sets_reps}</span>
+                      <span className="text-xs font-semibold select-none mt-0.5 text-white">{warm.sets_reps}</span>
                       <div>
-                        <h5 className="text-xs font-semibold" style={{ color: T.textPri }}>{warm.name}</h5>
-                        <p className="text-[11px] leading-normal mt-0.5" style={{ color: T.textSec }}>{warm.note}</p>
+                        <h5 className="text-xs font-semibold text-white">{warm.name}</h5>
+                        <p className="text-[11px] leading-normal mt-0.5 text-zinc-400">{warm.note}</p>
                       </div>
                     </div>
                   ))}
@@ -649,18 +660,18 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
             <div className="mb-8 space-y-4">
               <div className="flex items-center gap-2 mb-1 px-1 select-none">
                 <Dumbbell className="w-4 h-4 text-brand" />
-                <h4 className="text-xs uppercase tracking-widest font-bold" style={{ color: T.textTer }}>
+                <h4 className="text-xs uppercase tracking-widest font-bold text-zinc-500">
                   Bloques de entrenamiento
                 </h4>
               </div>
 
               {activeDay.blocks.map((block, bIdx) => (
-                <div key={bIdx} className="rounded-2xl p-4 shadow-sm" style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}>
+                <div key={bIdx} className="rounded-2xl p-5 bg-zinc-900 border border-zinc-800">
                   <div className="flex items-center gap-2 mb-4 select-none">
-                    <span className="text-[9px] font-bold tracking-wider px-2 py-0.5 rounded" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}>
+                    <span className="text-[9px] font-bold tracking-wider px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-400">
                       {block.is_superset ? "Superserie" : block.label || "Ejercicio"}
                     </span>
-                    <h5 className="text-xs font-bold truncate max-w-[70%]" style={{ color: T.textSec }}>{block.title}</h5>
+                    <h5 className="text-xs font-bold truncate max-w-[70%] text-zinc-400">{block.title}</h5>
                   </div>
 
                   <div className="space-y-3">
@@ -674,21 +685,18 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: eIdx * 0.05, duration: 0.25 }}
-                          className="rounded-2xl overflow-hidden cursor-pointer"
-                          style={{
-                            background: isExpanded ? T.bg : "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                            boxShadow: isExpanded ? "0 2px 8px rgba(0,0,0,0.08)" : "none",
-                          }}
+                          className={`rounded-2xl overflow-hidden cursor-pointer border border-zinc-800 ${
+                            isExpanded ? "bg-zinc-900" : "bg-zinc-900/60"
+                          }`}
                         >
-                          <div onClick={() => toggleExpand(ex.name)} className="p-4 flex items-center justify-between gap-3.5">
+                          <div onClick={() => toggleExpand(ex.name)} className="p-5 flex items-center justify-between gap-3.5">
                             <div className="flex-1 min-w-0">
-                              <h6 className="text-sm font-semibold leading-snug break-words" style={{ color: T.textPri }}>
+                              <h6 className="text-sm font-semibold leading-snug break-words text-white">
                                 {ex.name}
                               </h6>
                               <div className="flex flex-wrap gap-1 mt-2">
                                 {ex.muscles.map((m, mIdx) => (
-                                  <span key={mIdx} className="text-[8px] tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: T.bg, border: `1px solid ${T.border}`, color: T.textSec }}>
+                                  <span key={mIdx} className="text-[8px] tracking-wider px-1.5 py-0.5 rounded bg-black/40 border border-zinc-800 text-zinc-500">
                                     {m}
                                   </span>
                                 ))}
@@ -696,10 +704,10 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                             </div>
                             <div className="flex items-center gap-3 shrink-0 max-w-[44%]">
                               <div className="text-right select-none">
-                                <span className={`font-bold tabular-nums leading-snug block break-words ${(`${ex.sets}x${ex.reps}`).length > 15 ? "text-base" : "text-xl"}`} style={{ color: T.textPri }}>
+                                <span className={`font-bold tabular-nums leading-snug block break-words text-white ${(`${ex.sets}x${ex.reps}`).length > 15 ? "text-base" : "text-xl"}`}>
                                   {ex.sets}x{ex.reps}
                                 </span>
-                                <div className="text-[9px] mt-1 block" style={{ color: T.textSec }}>
+                                <div className="text-[9px] mt-1 block text-zinc-400">
                                   {loggedWeight ? `Hoy: ${loggedWeight}` : ex.weight}
                                 </div>
                               </div>
@@ -719,7 +727,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                                 transition={{ type: "spring", stiffness: 400, damping: 35 }}
                                 className="overflow-hidden"
                               >
-                                <div className="p-4" style={{ borderTop: `1px solid ${T.border}`, backgroundColor: T.bg }}>
+                                <div className="p-5 border-t border-zinc-800 bg-zinc-900">
                                   <div className="grid grid-cols-4 gap-2 mb-4 text-center select-none">
                                     {[
                                       { label: "Series", value: ex.sets },
@@ -727,9 +735,9 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                                       { label: "Peso Rec", value: ex.weight },
                                       { label: "Descanso", value: `${ex.rest_seconds}s` },
                                     ].map(({ label, value }) => (
-                                      <div key={label} className="p-2 rounded-xl" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}` }}>
-                                        <span className="text-[8px] block uppercase mb-0.5" style={{ color: T.textTer }}>{label}</span>
-                                        <strong className="text-xs block truncate leading-tight font-bold tabular-nums" style={{ color: T.textPri }}>{value}</strong>
+                                      <div key={label} className="p-2 rounded-xl bg-black/30 border border-zinc-800">
+                                        <span className="text-[8px] block uppercase mb-0.5 text-zinc-500">{label}</span>
+                                        <strong className="text-xs block truncate leading-tight font-bold tabular-nums text-white">{value}</strong>
                                       </div>
                                     ))}
                                   </div>
@@ -749,8 +757,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                                         target="_blank"
                                         referrerPolicy="no-referrer"
                                         onClick={(e) => e.stopPropagation()}
-                                        className="text-xs font-medium px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
-                                        style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}
+                                        className="text-xs font-medium px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-zinc-800 border border-zinc-700 text-zinc-400"
                                       >
                                         <Youtube className="w-4 h-4 text-red-500 fill-red-500" />
                                         Técnica
@@ -758,15 +765,14 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                                     )}
                                   </div>
 
-                                  <div className="pt-3 flex items-center gap-2" style={{ borderTop: `1px solid ${T.border}` }}>
+                                  <div className="pt-3 flex items-center gap-2 border-t border-zinc-800">
                                     <input
                                       type="text"
                                       value={logInputs[ex.name] || ""}
                                       onClick={(e) => e.stopPropagation()}
                                       onChange={(e) => setLogInputs({ ...logInputs, [ex.name]: e.target.value })}
                                       placeholder={loggedWeight ? `Peso: ${loggedWeight}` : "Peso (ej: 50 kg)"}
-                                      className="flex-1 min-w-0 rounded-xl px-3 py-2 text-xs focus:outline-none min-w-0"
-                                      style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textPri }}
+                                      className="flex-1 min-w-0 rounded-xl px-3 py-2 text-xs focus:outline-none min-w-0 bg-black/40 border border-zinc-800 text-white"
                                     />
                                     <input
                                       type="number"
@@ -776,25 +782,23 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                                       onClick={(e) => e.stopPropagation()}
                                       onChange={(e) => setRepsInputs({ ...repsInputs, [ex.name]: e.target.value })}
                                       placeholder={loggedReps ? loggedReps : "Reps"}
-                                      className="flex-1 min-w-0 rounded-xl px-3 py-2 text-xs focus:outline-none text-center"
-                                      style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textPri }}
+                                      className="flex-1 min-w-0 rounded-xl px-3 py-2 text-xs focus:outline-none text-center bg-black/40 border border-zinc-800 text-white"
                                     />
                                     <motion.button
                                       whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                                       onClick={(e) => { e.stopPropagation(); handleSaveWeight(ex.name); }}
-                                      className="p-2 rounded-xl text-xs flex items-center justify-center gap-1 min-w-[56px] shrink-0"
-                                      style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}
+                                      className="p-2 rounded-xl text-xs flex items-center justify-center gap-1 min-w-[56px] shrink-0 bg-zinc-800 border border-zinc-700 text-zinc-300"
                                     >
                                       <Check className="w-3.5 h-3.5" />
                                       <span>Grabar</span>
                                     </motion.button>
                                   </div>
 
-                                  <div className="mt-3 p-3 rounded-xl text-[11px] leading-relaxed select-text space-y-1" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}` }}>
-                                    <p style={{ color: T.textSec }}>
-                                      <strong style={{ color: T.textPri }}>Técnica:</strong> {ex.technique_tip}
+                                  <div className="mt-3 p-3 rounded-xl text-[11px] leading-relaxed select-text space-y-1 bg-black/30 border border-zinc-800">
+                                    <p className="text-zinc-400">
+                                      <strong className="text-white">Técnica:</strong> {ex.technique_tip}
                                     </p>
-                                    <p style={{ color: T.textSec }}>
+                                    <p className="text-zinc-400">
                                       <strong className="text-red-500">Evitar:</strong> {ex.common_error}
                                     </p>
                                   </div>
@@ -816,16 +820,16 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3 px-1 select-none">
                 <FileText className="w-4 h-4 text-brand" />
-                <h4 className="text-xs uppercase tracking-widest font-bold" style={{ color: T.textTer }}>
+                <h4 className="text-xs uppercase tracking-widest font-bold text-zinc-500">
                   Enfriamiento y Flexibilidad
                 </h4>
               </div>
-              <div className="rounded-2xl p-4 shadow-sm" style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}>
-                <div style={{ borderColor: T.border }} className="divide-y">
+              <div className="rounded-2xl p-5 bg-zinc-900 border border-zinc-800">
+                <div className="divide-y divide-zinc-800">
                   {activeDay.cooldown.map((cool, cIdx) => (
                     <div key={cIdx} className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
-                      <h5 className="text-xs font-semibold" style={{ color: T.textPri }}>{cool.name}</h5>
-                      <span className="font-semibold text-xs select-none shrink-0" style={{ color: T.textSec }}>{cool.duration}</span>
+                      <h5 className="text-xs font-semibold text-white">{cool.name}</h5>
+                      <span className="font-semibold text-xs select-none shrink-0 text-zinc-400">{cool.duration}</span>
                     </div>
                   ))}
                 </div>
@@ -834,10 +838,10 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
           )}
         </div>
       ) : (
-        <div className="text-center py-20 rounded-2xl p-8 shadow-sm select-none" style={{ backgroundColor: T.bg, border: `1px dashed ${T.border}` }}>
-          <Dumbbell className="w-12 h-12 block mx-auto mb-4" style={{ color: T.textTer }} />
-          <h4 className="font-semibold" style={{ color: T.textPri }}>Sin rutina para este día</h4>
-          <p className="text-xs mt-1.5 max-w-xs mx-auto leading-relaxed" style={{ color: T.textSec }}>
+        <div className="text-center py-20 rounded-2xl p-8 select-none bg-zinc-900 border border-dashed border-zinc-800">
+          <Dumbbell className="w-12 h-12 block mx-auto mb-4 text-zinc-500" />
+          <h4 className="font-semibold text-white">Sin rutina para este día</h4>
+          <p className="text-xs mt-1.5 max-w-xs mx-auto leading-relaxed text-zinc-400">
             Este día no tiene entrenamiento asignado en tu plan.
           </p>
         </div>

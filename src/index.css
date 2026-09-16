@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
   --font-mono: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
 
   /* Only brand color stays in @theme — generates bg-brand, text-brand utilities */
@@ -85,6 +85,7 @@ html[data-theme="light"] {
 /* ── UTILITIES ───────────────────────────────────────────────────────────── */
 .safe-pt { padding-top: env(safe-area-inset-top); }
 .safe-pb { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+.font-display { font-family: 'Bebas Neue', sans-serif; }
 
 @keyframes pulse-slow {
   0%, 100% { opacity: 1; }
