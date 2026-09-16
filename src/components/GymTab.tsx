@@ -15,6 +15,7 @@ interface GymTabProps {
   profile: UserProfile;
   coachSuggestions?: ProgressionSuggestion[];
   onOpenCoach?: (initialMessage: string) => void;
+  onOpenProfile?: () => void;
 }
 
 const DAY_KEYS = [
@@ -45,7 +46,7 @@ const getWorkoutIcon = (routineName: string, className = "w-4 h-4"): React.React
 
 const shortName = (name: string) => name.split("—")[0].split("-")[0].trim();
 
-export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach }) => {
+export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach, onOpenProfile }) => {
   const { startTimer } = useRestTimer();
   const { user } = useAuth();
 
@@ -410,14 +411,18 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
           >
             <div className="mb-6 pt-2">
 
-              {/* Hero: foto de fondo + saludo + avatar */}
-              <div className="relative -mx-4 mb-5 h-[280px] rounded-b-3xl overflow-hidden">
+              {/* Hero: foto de fondo full-bleed + saludo + avatar */}
+              <div className="relative -mx-4 mb-5 h-[280px] overflow-hidden">
                 <img
                   src="/gym-hero.jpg"
                   alt=""
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                {/* Degradé: transparente arriba → negro abajo, funde el hero con el fondo de la página */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/80" />
+
+                {/* Blur solo en la zona inferior donde va el texto */}
+                <div className="absolute inset-x-0 bottom-0 h-[60%] backdrop-blur-sm" />
 
                 <div className="absolute inset-x-0 bottom-0 p-5">
                   <p className="text-white/80 text-sm font-medium leading-none">
@@ -431,14 +436,15 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   </p>
                 </div>
 
-                <div
+                <button
+                  onClick={onOpenProfile}
                   className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center shrink-0"
                   style={{ backgroundColor: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", backdropFilter: "blur(8px)" }}
                 >
                   <span className="text-white font-bold text-sm">
                     {(profile.name || "A").charAt(0).toUpperCase()}
                   </span>
-                </div>
+                </button>
               </div>
 
               {/* Today card */}

@@ -117,17 +117,19 @@ if (!user || isPasswordRecovery) {
           }}
         >
           <main className="relative max-w-lg mx-auto pb-28 pt-4">
- {/* Profile button — global, visible en todos los tabs */}
-            <button
-              onClick={() => setActiveTab("profile")}
-              className="absolute top-5 right-0 z-20 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold select-none transition-all"
-              style={{
-                backgroundColor: activeTab === "profile" ? "var(--color-brand)" : "var(--text-primary)",
-                color: activeTab === "profile" ? "#000" : "var(--bg-primary)",
-              }}
-            >
-              {(profile.name || "A").charAt(0).toUpperCase()}
-            </button>
+ {/* Profile button — global, visible en todos los tabs excepto Gym (que ya muestra el avatar en su hero) */}
+            {activeTab !== "gym" && (
+              <button
+                onClick={() => setActiveTab("profile")}
+                className="absolute top-5 right-0 z-20 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold select-none transition-all"
+                style={{
+                  backgroundColor: activeTab === "profile" ? "var(--color-brand)" : "var(--text-primary)",
+                  color: activeTab === "profile" ? "#000" : "var(--bg-primary)",
+                }}
+              >
+                {(profile.name || "A").charAt(0).toUpperCase()}
+              </button>
+            )}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -142,6 +144,7 @@ if (!user || isPasswordRecovery) {
                     profile={profile}
                     coachSuggestions={coachSuggestions}
                     onOpenCoach={handleOpenCoachWithMessage}
+                    onOpenProfile={() => setActiveTab("profile")}
                   />
                 )}
                 {activeTab === "library" && <LibraryTab />}
