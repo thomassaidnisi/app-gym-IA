@@ -411,18 +411,15 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
           >
             <div className="mb-6 pt-2">
 
-              {/* Hero: foto de fondo full-bleed + saludo + avatar */}
-              <div className="relative -mx-4 mb-5 h-[280px] overflow-hidden">
+              {/* Hero: foto de fondo full-bleed, se extiende hasta cubrir las stats cards */}
+              <div className="relative -mx-4 mb-5 h-[420px] overflow-hidden">
                 <img
                   src="/gym-hero.jpg"
                   alt=""
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                {/* Degradé: transparente arriba → negro abajo, funde el hero con el fondo de la página */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/80" />
-
-                {/* Blur solo en la zona inferior donde va el texto */}
-                <div className="absolute inset-x-0 bottom-0 h-[60%] backdrop-blur-sm" />
+                {/* Degradé: transparente arriba → oscuro (no opaco) abajo, funde el hero con el fondo de la página */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/90" />
 
                 <div className="absolute inset-x-0 bottom-0 p-5">
                   <p className="text-white/80 text-sm font-medium leading-none">
@@ -434,6 +431,43 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   <p className="text-white/60 text-sm mt-1.5 capitalize">
                     {getDateString()}
                   </p>
+
+                  {/* Mini-stats chips — sobre la foto, fondo semitransparente para legibilidad */}
+                  <div className="grid grid-cols-3 gap-2 mt-4">
+                    <div
+                      className={`rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center border backdrop-blur-sm ${
+                        streak > 0 ? "bg-brand/15 border-brand/30" : "bg-black/40 border-white/10"
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(249,115,22,0.12)" }}>
+                        <Flame className="w-4 h-4 text-orange-500" strokeWidth={1.5} />
+                      </div>
+                      <strong className={`font-display text-3xl tabular-nums leading-none ${streak > 0 ? "text-white" : "text-zinc-400"}`}>
+                        {streak}
+                      </strong>
+                      <span className="text-xs tracking-widest font-semibold leading-none uppercase text-zinc-300">
+                        {streak === 1 ? "día racha" : "días racha"}
+                      </span>
+                    </div>
+
+                    <div className="rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center bg-black/40 backdrop-blur-sm border border-white/10">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(14,165,233,0.12)" }}>
+                        <CalendarDays className="w-4 h-4 text-sky-500" strokeWidth={1.5} />
+                      </div>
+                      <strong className="font-display text-3xl tabular-nums leading-none text-white">{weekSessions}</strong>
+                      <span className="text-xs tracking-widest font-semibold leading-none uppercase text-zinc-300">esta semana</span>
+                    </div>
+
+                    <div className="rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center bg-black/40 backdrop-blur-sm border border-white/10">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(139,92,246,0.12)" }}>
+                        <Zap className="w-4 h-4 text-violet-500" strokeWidth={1.5} />
+                      </div>
+                      <strong className="font-display text-3xl leading-none text-white">
+                        {isRestToday ? (nextTrainingDay ?? "—") : "Hoy"}
+                      </strong>
+                      <span className="text-xs tracking-widest font-semibold leading-none uppercase text-zinc-300">próx. sesión</span>
+                    </div>
+                  </div>
                 </div>
 
                 <button
@@ -516,43 +550,6 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   </p>
                 </div>
               )}
-
-              {/* Mini-stats chips */}
-              <div className="grid grid-cols-3 gap-2">
-                <div
-                  className={`rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center border ${
-                    streak > 0 ? "bg-brand/10 border-brand/20" : "bg-zinc-900 border-zinc-800"
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(249,115,22,0.12)" }}>
-                    <Flame className="w-4 h-4 text-orange-500" strokeWidth={1.5} />
-                  </div>
-                  <strong className={`font-display text-3xl tabular-nums leading-none ${streak > 0 ? "text-white" : "text-zinc-500"}`}>
-                    {streak}
-                  </strong>
-                  <span className="text-xs tracking-widest font-semibold leading-none uppercase text-zinc-400">
-                    {streak === 1 ? "día racha" : "días racha"}
-                  </span>
-                </div>
-
-                <div className="rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center bg-zinc-900 border border-zinc-800">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(14,165,233,0.12)" }}>
-                    <CalendarDays className="w-4 h-4 text-sky-500" strokeWidth={1.5} />
-                  </div>
-                  <strong className="font-display text-3xl tabular-nums leading-none text-white">{weekSessions}</strong>
-                  <span className="text-xs tracking-widest font-semibold leading-none uppercase text-zinc-400">esta semana</span>
-                </div>
-
-                <div className="rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center bg-zinc-900 border border-zinc-800">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(139,92,246,0.12)" }}>
-                    <Zap className="w-4 h-4 text-violet-500" strokeWidth={1.5} />
-                  </div>
-                  <strong className="font-display text-3xl leading-none text-white">
-                    {isRestToday ? (nextTrainingDay ?? "—") : "Hoy"}
-                  </strong>
-                  <span className="text-xs tracking-widest font-semibold leading-none uppercase text-zinc-400">próx. sesión</span>
-                </div>
-              </div>
 
             </div>
           </motion.div>
