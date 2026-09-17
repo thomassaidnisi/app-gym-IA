@@ -422,7 +422,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/90" />
 
                 <div className="absolute inset-x-0 bottom-0 p-5">
-                  <div className="inline-block bg-black/40 backdrop-blur-md rounded-3xl px-4 py-3">
+                  <div className="inline-block bg-black/40 backdrop-blur-md rounded-[32px] px-4 py-3">
                     <p className="text-white/80 text-sm font-medium leading-none">
                       {getGreeting()},
                     </p>
