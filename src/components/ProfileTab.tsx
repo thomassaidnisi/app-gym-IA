@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { FullTrainingPlan, UserProfile } from "../types";
-import { ShieldAlert, Clock, Dumbbell, Compass, Check, X, Edit2, Sun, Moon, Monitor } from "lucide-react";
+import { ShieldAlert, Clock, Dumbbell, Compass, Check, X, Edit2, Sun, Moon, Monitor, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "./ThemeContext";
 import { useAuth } from "./AuthContext";
@@ -196,31 +196,25 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}
       >
         <div className="flex items-center gap-4 mb-6">
-          <div
-            className="w-14 h-14 text-white rounded-2xl flex items-center justify-center text-2xl font-bold tracking-tight shrink-0 overflow-hidden"
-            style={{ backgroundColor: T.hero }}
+          <button
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={uploadingAvatar}
+            className="relative w-14 h-14 shrink-0 disabled:opacity-50"
+            aria-label="Cambiar foto de perfil"
           >
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              profile.name ? profile.name.substring(0, 1).toUpperCase() : "U"
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="font-bold text-xl leading-tight" style={{ color: T.textPri }}>
-              {profile.name || "Atleta Healty"}
-            </h2>
-            <span className="text-xs tracking-wider block mt-0.5" style={{ color: T.textSec }}>
-              {plan.plan_name}
-            </span>
-            <button
-              onClick={() => avatarInputRef.current?.click()}
-              disabled={uploadingAvatar}
-              className="text-[10px] font-semibold mt-1.5 underline disabled:opacity-50"
-              style={{ color: T.textSec }}
+            <div
+              className="w-14 h-14 text-white rounded-2xl flex items-center justify-center text-2xl font-bold tracking-tight overflow-hidden"
+              style={{ backgroundColor: T.hero }}
             >
-              {uploadingAvatar ? "Subiendo..." : "Cambiar foto"}
-            </button>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                profile.name ? profile.name.substring(0, 1).toUpperCase() : "U"
+              )}
+            </div>
+            <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center bg-brand border-2" style={{ borderColor: T.bg }}>
+              <Pencil className="w-3 h-3 text-black" />
+            </div>
             <input
               ref={avatarInputRef}
               type="file"
@@ -228,6 +222,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               className="hidden"
               onChange={handleAvatarChange}
             />
+          </button>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-bold text-xl leading-tight" style={{ color: T.textPri }}>
+              {profile.name || "Atleta Healty"}
+            </h2>
+            <span className="text-xs tracking-wider block mt-0.5" style={{ color: T.textSec }}>
+              {plan.plan_name}
+            </span>
             <div className="flex flex-wrap gap-1.5 mt-2">
               {((profile.goals && profile.goals.length > 0)
                 ? profile.goals
