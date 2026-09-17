@@ -128,7 +128,7 @@ if (!user || isPasswordRecovery) {
                 }}
               >
                 {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover rounded-full" />
                 ) : (
                   (profile.name || "A").charAt(0).toUpperCase()
                 )}

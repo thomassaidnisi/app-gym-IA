@@ -478,7 +478,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   style={{ backgroundColor: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", backdropFilter: "blur(8px)" }}
                 >
                   {profile.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover rounded-full" />
                   ) : (
                     <span className="text-white font-bold text-sm">
                       {(profile.name || "A").charAt(0).toUpperCase()}

@@ -75,9 +75,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         .upload(path, file, { upsert: true, contentType: file.type });
       if (uploadError) throw uploadError;
       url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
-    } catch {
+      console.log("[avatar] subido a Supabase Storage:", url);
+    } catch (err) {
       // Supabase Storage no configurado (bucket inexistente, etc.) — guardamos la imagen inline.
+      console.warn("[avatar] Storage falló, usando fallback base64:", err);
       url = await readFileAsDataURL(file);
+      console.log("[avatar] avatar_url guardado como base64, largo:", url.length);
     }
 
     setAvatarUrl(url);
@@ -203,11 +206,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             aria-label="Cambiar foto de perfil"
           >
             <div
-              className="w-14 h-14 text-white rounded-2xl flex items-center justify-center text-2xl font-bold tracking-tight overflow-hidden"
+              className="w-14 h-14 text-white rounded-full flex items-center justify-center text-2xl font-bold tracking-tight overflow-hidden"
               style={{ backgroundColor: T.hero }}
             >
               {avatarUrl ? (
-                <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                <img src={avatarUrl} alt="" className="w-full h-full object-cover rounded-full" />
               ) : (
                 profile.name ? profile.name.substring(0, 1).toUpperCase() : "U"
               )}
