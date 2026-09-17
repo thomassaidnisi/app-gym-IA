@@ -17,6 +17,34 @@ function readFileAsDataURL(file: File): Promise<string> {
   });
 }
 
+function isHeicFile(file: File): boolean {
+  return (
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    /\.hei[cf]$/i.test(file.name)
+  );
+}
+
+/** iOS no puede decodificar HEIC/HEIF en <canvas> — este flujo es solo para formatos que el navegador sabe pintar. */
+function fileToJpegDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      URL.revokeObjectURL(objectUrl);
+      if (!ctx) { reject(new Error("No se pudo obtener contexto de canvas")); return; }
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/jpeg", 0.9));
+    };
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("No se pudo decodificar la imagen")); };
+    img.src = objectUrl;
+  });
+}
+
 interface ProfileTabProps {
   plan: FullTrainingPlan;
   profile: UserProfile;
@@ -59,7 +87,17 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showAvatarSheet, setShowAvatarSheet] = useState(false);
+  const [showAvatarFullscreen, setShowAvatarFullscreen] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const persistAvatar = (url: string) => {
+    setAvatarUrl(url);
+    const updated: UserProfile = { ...profile, avatar_url: url };
+    localStorage.setItem("healty_profile", JSON.stringify(updated));
+    if (user) saveProfile(user.id, updated).catch(console.error);
+    onProfileUpdated(updated);
+  };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,28 +105,36 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
     if (!file || !user) return;
 
     setUploadingAvatar(true);
-    let url: string;
     try {
-      const path = `${user.id}/avatar.jpg`;
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { upsert: true, contentType: file.type });
-      if (uploadError) throw uploadError;
-      url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
-      console.log("[avatar] subido a Supabase Storage:", url);
-    } catch (err) {
-      // Supabase Storage no configurado (bucket inexistente, etc.) — guardamos la imagen inline.
-      console.warn("[avatar] Storage falló, usando fallback base64:", err);
-      url = await readFileAsDataURL(file);
-      console.log("[avatar] avatar_url guardado como base64, largo:", url.length);
-    }
+      if (isHeicFile(file)) {
+        // iOS guarda un preview JPEG accesible vía FileReader aunque el tipo declarado sea HEIC/HEIF.
+        const url = await readFileAsDataURL(file);
+        console.log("[avatar] HEIC/HEIF detectado, guardado directo como base64, largo:", url.length);
+        persistAvatar(url);
+        return;
+      }
 
-    setAvatarUrl(url);
-    const updated: UserProfile = { ...profile, avatar_url: url };
-    localStorage.setItem("healty_profile", JSON.stringify(updated));
-    saveProfile(user.id, updated).catch(console.error);
-    onProfileUpdated(updated);
-    setUploadingAvatar(false);
+      const jpegDataUrl = await fileToJpegDataURL(file);
+      let url: string;
+      try {
+        const blob = await (await fetch(jpegDataUrl)).blob();
+        const path = `${user.id}/avatar.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+        if (uploadError) throw uploadError;
+        url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+        console.log("[avatar] subido a Supabase Storage:", url);
+      } catch (err) {
+        // Supabase Storage no configurado (bucket inexistente, etc.) — guardamos la imagen inline.
+        console.warn("[avatar] Storage falló, usando fallback base64:", err);
+        url = jpegDataUrl;
+        console.log("[avatar] avatar_url guardado como base64, largo:", url.length);
+      }
+      persistAvatar(url);
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const [name, setName] = useState(profile.name || "");
@@ -200,10 +246,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       >
         <div className="flex items-center gap-4 mb-6">
           <button
-            onClick={() => avatarInputRef.current?.click()}
+            onClick={() => setShowAvatarSheet(true)}
             disabled={uploadingAvatar}
             className="relative w-14 h-14 shrink-0 disabled:opacity-50"
-            aria-label="Cambiar foto de perfil"
+            aria-label="Opciones de foto de perfil"
           >
             <div
               className="w-14 h-14 text-white rounded-full flex items-center justify-center text-2xl font-bold tracking-tight overflow-hidden"
@@ -422,6 +468,75 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           Cerrar sesión
         </button>
       </div>
+
+      {/* Avatar action sheet */}
+      <AnimatePresence>
+        {showAvatarSheet && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
+            onClick={() => setShowAvatarSheet(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 400, damping: 35 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-t-3xl p-4 space-y-2"
+              style={{ backgroundColor: T.bg, paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
+            >
+              {avatarUrl && (
+                <button
+                  onClick={() => { setShowAvatarSheet(false); setShowAvatarFullscreen(true); }}
+                  className="w-full py-3.5 rounded-2xl text-sm font-semibold"
+                  style={{ backgroundColor: T.bgSec, color: T.textPri }}
+                >
+                  Ver foto
+                </button>
+              )}
+              <button
+                onClick={() => { setShowAvatarSheet(false); avatarInputRef.current?.click(); }}
+                className="w-full py-3.5 rounded-2xl text-sm font-semibold"
+                style={{ backgroundColor: T.bgSec, color: T.textPri }}
+              >
+                Cambiar foto
+              </button>
+              <button
+                onClick={() => setShowAvatarSheet(false)}
+                className="w-full py-3.5 rounded-2xl text-sm font-semibold"
+                style={{ color: T.textSec }}
+              >
+                Cancelar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Avatar fullscreen viewer */}
+      <AnimatePresence>
+        {showAvatarFullscreen && avatarUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+          >
+            <button
+              onClick={() => setShowAvatarFullscreen(false)}
+              className="absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+              aria-label="Cerrar"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+            <img src={avatarUrl} alt="" className="max-w-full max-h-full object-contain" />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Edit Modal */}
       <AnimatePresence>
