@@ -121,13 +121,17 @@ if (!user || isPasswordRecovery) {
             {activeTab !== "gym" && (
               <button
                 onClick={() => setActiveTab("profile")}
-                className="absolute top-5 right-0 z-20 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold select-none transition-all"
+                className="absolute top-5 right-0 z-20 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold select-none transition-all overflow-hidden"
                 style={{
                   backgroundColor: activeTab === "profile" ? "var(--color-brand)" : "var(--text-primary)",
                   color: activeTab === "profile" ? "#000" : "var(--bg-primary)",
                 }}
               >
-                {(profile.name || "A").charAt(0).toUpperCase()}
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  (profile.name || "A").charAt(0).toUpperCase()
+                )}
               </button>
             )}
             <AnimatePresence mode="wait">

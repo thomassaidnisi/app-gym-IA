@@ -1,11 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { FullTrainingPlan, UserProfile } from "../types";
 import { ShieldAlert, Clock, Dumbbell, Compass, Check, X, Edit2, Sun, Moon, Monitor } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "./ThemeContext";
 import { useAuth } from "./AuthContext";
 import { saveProfile } from "../lib/db";
+import { supabase } from "../lib/supabase";
 import { usePushNotifications } from "../hooks/usePushNotifications";
+
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 interface ProfileTabProps {
   plan: FullTrainingPlan;
@@ -46,6 +56,37 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   const { pref, setTheme } = useTheme();
   const cycleTheme = () =>
     setTheme(pref === "light" ? "dark" : pref === "dark" ? "auto" : "light");
+
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user) return;
+
+    setUploadingAvatar(true);
+    let url: string;
+    try {
+      const path = `${user.id}/avatar.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+      url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+    } catch {
+      // Supabase Storage no configurado (bucket inexistente, etc.) — guardamos la imagen inline.
+      url = await readFileAsDataURL(file);
+    }
+
+    setAvatarUrl(url);
+    const updated: UserProfile = { ...profile, avatar_url: url };
+    localStorage.setItem("healty_profile", JSON.stringify(updated));
+    saveProfile(user.id, updated).catch(console.error);
+    onProfileUpdated(updated);
+    setUploadingAvatar(false);
+  };
 
   const [name, setName] = useState(profile.name || "");
   const [age, setAge] = useState(profile.age || 30);
@@ -156,18 +197,37 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       >
         <div className="flex items-center gap-4 mb-6">
           <div
-            className="w-14 h-14 text-white rounded-2xl flex items-center justify-center text-2xl font-bold tracking-tight shrink-0"
+            className="w-14 h-14 text-white rounded-2xl flex items-center justify-center text-2xl font-bold tracking-tight shrink-0 overflow-hidden"
             style={{ backgroundColor: T.hero }}
           >
-            {profile.name ? profile.name.substring(0, 1).toUpperCase() : "U"}
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              profile.name ? profile.name.substring(0, 1).toUpperCase() : "U"
+            )}
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h2 className="font-bold text-xl leading-tight" style={{ color: T.textPri }}>
               {profile.name || "Atleta Healty"}
             </h2>
             <span className="text-xs tracking-wider block mt-0.5" style={{ color: T.textSec }}>
               {plan.plan_name}
             </span>
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="text-[10px] font-semibold mt-1.5 underline disabled:opacity-50"
+              style={{ color: T.textSec }}
+            >
+              {uploadingAvatar ? "Subiendo..." : "Cambiar foto"}
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
             <div className="flex flex-wrap gap-1.5 mt-2">
               {((profile.goals && profile.goals.length > 0)
                 ? profile.goals

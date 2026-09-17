@@ -28,6 +28,7 @@ export async function saveProfile(userId: string, profile: UserProfile) {
     home_equipment: profile.homeEquipment ?? null,
     gym_cardio_equipment: profile.gymCardioEquipment ?? null,
     gym_strength_equipment: profile.gymStrengthEquipment ?? null,
+    avatar_url: profile.avatar_url ?? null,
     updated_at: new Date().toISOString(),
   });
 }
@@ -74,6 +75,7 @@ export async function loadUserData(userId: string): Promise<{
       homeEquipment: profileRow.home_equipment ?? [],
       gymCardioEquipment: profileRow.gym_cardio_equipment ?? [],
       gymStrengthEquipment: profileRow.gym_strength_equipment ?? [],
+      avatar_url: profileRow.avatar_url ?? undefined,
     } as UserProfile;
   }
 

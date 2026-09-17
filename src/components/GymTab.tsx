@@ -422,7 +422,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/90" />
 
                 <div className="absolute inset-x-0 bottom-0 p-5">
-                  <div className="inline-block bg-black/40 backdrop-blur-md rounded-2xl px-4 py-3">
+                  <div className="inline-block bg-black/40 backdrop-blur-md rounded-3xl px-4 py-3">
                     <p className="text-white/80 text-sm font-medium leading-none">
                       {getGreeting()},
                     </p>
@@ -474,12 +474,16 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
 
                 <button
                   onClick={onOpenProfile}
-                  className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+                  className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
                   style={{ backgroundColor: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", backdropFilter: "blur(8px)" }}
                 >
-                  <span className="text-white font-bold text-sm">
-                    {(profile.name || "A").charAt(0).toUpperCase()}
-                  </span>
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-white font-bold text-sm">
+                      {(profile.name || "A").charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </button>
               </div>
 
