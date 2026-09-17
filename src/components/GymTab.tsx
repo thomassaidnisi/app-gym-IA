@@ -412,7 +412,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
             <div className="mb-6 pt-2">
 
               {/* Hero: foto de fondo full-bleed, se extiende hasta cubrir las stats cards */}
-              <div className="relative -mx-4 mb-5 h-[420px] rounded-3xl overflow-hidden">
+              <div className="relative mx-0 mb-5 h-[420px] rounded-3xl overflow-hidden">
                 <img
                   src="/gym-hero.jpg"
                   alt=""
@@ -474,7 +474,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
 
                 <button
                   onClick={onOpenProfile}
-                  className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+                  className="absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
                   style={{ backgroundColor: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", backdropFilter: "blur(8px)" }}
                 >
                   {profile.avatar_url ? (
