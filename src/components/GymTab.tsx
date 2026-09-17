@@ -412,7 +412,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
             <div className="mb-6 pt-2">
 
               {/* Hero: foto de fondo full-bleed, se extiende hasta cubrir las stats cards */}
-              <div className="relative -mx-4 mb-5 h-[420px] overflow-hidden">
+              <div className="relative -mx-4 mb-5 h-[420px] rounded-3xl overflow-hidden">
                 <img
                   src="/gym-hero.jpg"
                   alt=""
