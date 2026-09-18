@@ -212,85 +212,83 @@ export const NutritionTab: React.FC<NutritionTabProps> = ({ profile }) => {
 
   return (
     <div className="flex flex-col gap-5 pb-4">
-      {/* Calorías destacadas */}
-      <div
-        className="rounded-3xl p-6 flex flex-col items-center text-center"
-        style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}` }}
-      >
-        <div className="flex items-center gap-1.5 mb-1" style={{ color: T.textTer }}>
-          <Flame className="w-3.5 h-3.5" />
-          <span className="text-[10px] uppercase tracking-widest font-semibold">Calorías diarias</span>
-        </div>
-        <span className="text-6xl font-black tabular-nums" style={{ color: T.brand }}>
-          {guide.calorias_diarias}
-        </span>
-        <span className="text-xs mt-1" style={{ color: T.textTer }}>
-          TMB {guide.tmb_calculada} kcal · TDEE {guide.tdee_calculado} kcal · {guide.objetivo}
-        </span>
-      </div>
+      {/* Hero: calorías + macros sobre foto de fondo */}
+      <div className="relative rounded-3xl overflow-hidden mb-6">
+        <img src="/nutrition-hero.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-black/60" />
 
-      {/* Aviso datos faltantes */}
-      {guide.datos_faltantes.length > 0 && (
-        <div
-          className="rounded-2xl p-4 flex items-start gap-3"
-          style={{ backgroundColor: "rgba(234,179,8,0.10)", border: "1px solid rgba(234,179,8,0.25)" }}
-        >
-          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#eab308" }} />
-          <div className="text-xs" style={{ color: "#eab308" }}>
-            {guide.datos_faltantes.map((d, i) => <p key={i}>{d}</p>)}
+        <div className="relative z-10 flex flex-col gap-5 p-6">
+          {/* Calorías destacadas */}
+          <div className="flex flex-col items-center text-center">
+            <div className="flex items-center gap-1.5 mb-1 text-white/70">
+              <Flame className="w-3.5 h-3.5" />
+              <span className="text-[10px] uppercase tracking-widest font-semibold">Calorías diarias</span>
+            </div>
+            <span className="text-6xl font-black tabular-nums" style={{ color: T.brand }}>
+              {guide.calorias_diarias}
+            </span>
+            <span className="text-xs mt-1 text-white/70">
+              TMB {guide.tmb_calculada} kcal · TDEE {guide.tdee_calculado} kcal · {guide.objetivo}
+            </span>
+          </div>
+
+          {/* Aviso datos faltantes */}
+          {guide.datos_faltantes.length > 0 && (
+            <div
+              className="rounded-2xl p-4 flex items-start gap-3"
+              style={{ backgroundColor: "rgba(234,179,8,0.10)", border: "1px solid rgba(234,179,8,0.25)" }}
+            >
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#eab308" }} />
+              <div className="text-xs" style={{ color: "#eab308" }}>
+                {guide.datos_faltantes.map((d, i) => <p key={i}>{d}</p>)}
+              </div>
+            </div>
+          )}
+
+          {/* Macros */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              {
+                label: "Proteína",
+                value: guide.macros.proteina_g,
+                Icon: Beef,
+                kcalPerG: 4,
+                color: "#818cf8",
+              },
+              {
+                label: "Carbos",
+                value: guide.macros.carbohidratos_g,
+                Icon: Wheat,
+                kcalPerG: 4,
+                color: "#f59e0b",
+              },
+              {
+                label: "Grasas",
+                value: guide.macros.grasas_g,
+                Icon: Droplet,
+                kcalPerG: 9,
+                color: "#10b981",
+              },
+            ].map((m) => {
+              const pct = guide.calorias_diarias > 0
+                ? Math.round((m.value * m.kcalPerG * 100) / guide.calorias_diarias)
+                : 0;
+              return (
+                <div
+                  key={m.label}
+                  className="rounded-2xl p-4 flex flex-col items-center text-center bg-[rgba(255,255,255,0.08)] backdrop-blur-md border border-white/10"
+                >
+                  <m.Icon className="w-5 h-5 mb-1.5" style={{ color: m.color }} />
+                  <span className="text-2xl font-black tabular-nums text-white">{m.value}g</span>
+                  <span className="text-[10px] uppercase tracking-wider font-semibold mt-1 text-white/70">
+                    {m.label}
+                  </span>
+                  <span className="text-[10px] mt-0.5 text-white/70">{pct}% kcal</span>
+                </div>
+              );
+            })}
           </div>
         </div>
-      )}
-
-      {/* Macros */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          {
-            label: "Proteína",
-            value: guide.macros.proteina_g,
-            Icon: Beef,
-            kcalPerG: 4,
-            bg: "rgba(99,102,241,0.15)",
-            border: "rgba(99,102,241,0.3)",
-            color: "#818cf8",
-          },
-          {
-            label: "Carbos",
-            value: guide.macros.carbohidratos_g,
-            Icon: Wheat,
-            kcalPerG: 4,
-            bg: "rgba(245,158,11,0.15)",
-            border: "rgba(245,158,11,0.3)",
-            color: "#f59e0b",
-          },
-          {
-            label: "Grasas",
-            value: guide.macros.grasas_g,
-            Icon: Droplet,
-            kcalPerG: 9,
-            bg: "rgba(16,185,129,0.15)",
-            border: "rgba(16,185,129,0.3)",
-            color: "#10b981",
-          },
-        ].map((m) => {
-          const pct = guide.calorias_diarias > 0
-            ? Math.round((m.value * m.kcalPerG * 100) / guide.calorias_diarias)
-            : 0;
-          return (
-            <div
-              key={m.label}
-              className="rounded-2xl p-4 flex flex-col items-center text-center"
-              style={{ backgroundColor: m.bg, border: `1px solid ${m.border}` }}
-            >
-              <m.Icon className="w-5 h-5 mb-1.5" style={{ color: m.color }} />
-              <span className="text-2xl font-black tabular-nums" style={{ color: T.textPri }}>{m.value}g</span>
-              <span className="text-[10px] uppercase tracking-wider font-semibold mt-1" style={{ color: T.textSec }}>
-                {m.label}
-              </span>
-              <span className="text-[10px] mt-0.5" style={{ color: T.textTer }}>{pct}% kcal</span>
-            </div>
-          );
-        })}
       </div>
 
       {/* Distribución */}
