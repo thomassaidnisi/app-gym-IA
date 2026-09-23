@@ -495,28 +495,8 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                 />
                 {/* Degradé: transparente arriba → oscuro (no opaco) abajo, funde el hero con el fondo de la página */}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/90" />
-                {/* Segundo degradé, más concentrado en la base, para legibilidad extra de la descripción del día */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                 <div className="absolute inset-x-0 bottom-0 p-5">
-                  {todayDesc && (
-                    <div className="mb-3">
-                      {DAY_TYPE_STYLES[todayDesc.type] && (
-                        <span
-                          className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5"
-                          style={{ backgroundColor: DAY_TYPE_STYLES[todayDesc.type].bg, color: DAY_TYPE_STYLES[todayDesc.type].text }}
-                        >
-                          {DAY_TYPE_STYLES[todayDesc.type].label}
-                        </span>
-                      )}
-                      <h3 className="text-white font-bold text-lg leading-tight">{todayDesc.title}</h3>
-                      <p className="text-white/60 text-xs mt-0.5">{todayDesc.duration}</p>
-                      {todayDesc.note && (
-                        <p className="text-white/50 text-xs italic mt-1 leading-snug line-clamp-2">{todayDesc.note}</p>
-                      )}
-                    </div>
-                  )}
-
                   <div className="inline-block bg-black/40 backdrop-blur-md rounded-[32px] px-4 py-3">
                     <p className="text-white/80 text-sm font-medium leading-none">
                       {getGreeting()},
