@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { UserProfile, FullTrainingPlan, DayDescriptions, ActivityDetail } from "../types";
-import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target, Bell, HelpCircle, X } from "lucide-react";
+import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target, Bell, HelpCircle, X, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PlanUpload } from "./PlanUpload";
 import { useAuth } from "./AuthContext";
@@ -9,6 +9,7 @@ import { usePushNotifications } from "../hooks/usePushNotifications";
 
 interface OnboardingProps {
   onPlanGenerated: (plan: FullTrainingPlan, profile: UserProfile) => void;
+  onSignOut?: () => void;
 }
 
 type StepId =
@@ -82,8 +83,13 @@ const TooltipModal: React.FC<{ text: string; onClose: () => void }> = ({ text, o
   </div>
 );
 
-export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
-  const { user } = useAuth();
+export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignOut }) => {
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    onSignOut?.();
+  };
   const { isSupported: pushSupported, subscribe: subscribePush } = usePushNotifications();
   const [step, setStep] = useState(1);
   const [pendingPlanResult, setPendingPlanResult] = useState<{ plan: FullTrainingPlan; profile: UserProfile } | null>(null);
@@ -724,6 +730,14 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
                   style={{ userSelect: "none", pointerEvents: "none" }}
                 />
                 <div className="absolute inset-0 bg-black/50" />
+                <button
+                  onClick={handleSignOut}
+                  className="absolute right-6 bg-white/20 backdrop-blur-sm rounded-full p-2 z-10"
+                  style={{ top: "max(24px, env(safe-area-inset-top, 24px))" }}
+                  aria-label="Cerrar sesión"
+                >
+                  <LogOut className="text-white" size={18} />
+                </button>
                 <div
                   className="relative flex flex-col justify-end h-full px-6 pb-12"
                   style={{
