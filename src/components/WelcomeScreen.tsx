@@ -8,33 +8,32 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onLogin, onSignup }) => {
   return (
-    <div className="relative min-h-[100dvh] w-full overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden">
       {/* Background image */}
       <img
-        src="/auth-bg.png"
+        src="/welcome-bg.jpg"
         alt=""
         aria-hidden
-        className="absolute inset-0 w-full h-full object-cover object-center"
-        style={{ zIndex: 0, userSelect: "none", pointerEvents: "none" }}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ userSelect: "none", pointerEvents: "none" }}
       />
 
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/50" style={{ zIndex: 10 }} />
+      <div className="absolute inset-0 bg-black/40" />
 
       {/* Content */}
       <div
-        className="relative min-h-[100dvh] flex items-end md:items-center md:justify-end px-5 md:pr-16 pb-10 md:pb-0"
+        className="relative z-10 flex flex-col justify-end min-h-screen pb-12 px-6"
         style={{
-          zIndex: 20,
           paddingTop: "env(safe-area-inset-top, 24px)",
-          paddingBottom: "max(40px, env(safe-area-inset-bottom, 24px))",
+          paddingBottom: "max(48px, env(safe-area-inset-bottom, 24px))",
         }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="w-full max-w-sm rounded-3xl px-7 py-8"
+          className="w-full max-w-sm mx-auto rounded-3xl px-7 py-8"
           style={{
             background: "rgba(0,0,0,0.4)",
             border: "1px solid rgba(255,255,255,0.1)",
