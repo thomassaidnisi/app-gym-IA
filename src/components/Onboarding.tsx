@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { UserProfile, FullTrainingPlan, DayDescriptions, ActivityDetail } from "../types";
+import { UserProfile, FullTrainingPlan, DayDescriptions, ActivityDetail, PlanPillar } from "../types";
 import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target, Bell, HelpCircle, X, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PlanUpload } from "./PlanUpload";
@@ -436,8 +436,13 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
         const errorData = await response.json();
         throw new Error(errorData.error || "Ocurrió un error en el servidor.");
       }
-      const generatedPlan = (await response.json()) as FullTrainingPlan & { day_descriptions?: DayDescriptions };
-      const finalProfile: UserProfile = { ...payload, day_descriptions: generatedPlan.day_descriptions };
+      const generatedPlan = (await response.json()) as FullTrainingPlan & { day_descriptions?: DayDescriptions; plan_pillars?: PlanPillar[] };
+      const finalProfile: UserProfile = {
+        ...payload,
+        day_descriptions: generatedPlan.day_descriptions,
+        plan_pillars: generatedPlan.plan_pillars,
+        walkthrough_seen: false,
+      };
       localStorage.setItem("healty_plan", JSON.stringify(generatedPlan));
       localStorage.setItem("healty_profile", JSON.stringify(finalProfile));
       if (user) {

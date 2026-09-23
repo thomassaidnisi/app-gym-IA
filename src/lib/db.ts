@@ -32,8 +32,14 @@ export async function saveProfile(userId: string, profile: UserProfile) {
     other_activities: profile.other_activities ?? null,
     preferred_schedule: profile.preferred_schedule ?? null,
     day_descriptions: profile.day_descriptions ?? null,
+    plan_pillars: profile.plan_pillars ?? null,
+    walkthrough_seen: profile.walkthrough_seen ?? false,
     updated_at: new Date().toISOString(),
   });
+}
+
+export async function markWalkthroughSeen(userId: string) {
+  return supabase.from("profiles").update({ walkthrough_seen: true }).eq("id", userId);
 }
 
 export async function savePlan(userId: string, plan: FullTrainingPlan) {
@@ -82,6 +88,8 @@ export async function loadUserData(userId: string): Promise<{
       other_activities: profileRow.other_activities ?? [],
       preferred_schedule: profileRow.preferred_schedule ?? undefined,
       day_descriptions: profileRow.day_descriptions ?? undefined,
+      plan_pillars: profileRow.plan_pillars ?? undefined,
+      walkthrough_seen: profileRow.walkthrough_seen ?? false,
     } as UserProfile;
   }
 

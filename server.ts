@@ -279,6 +279,12 @@ ${trainingLocation === "both"
    - "duration": duración estimada del día (ej. "50-60 min") o "—" si es descanso total sin actividad.
    - "note": UNA frase personalizada y contextual, máximo 1-2 oraciones. Mencioná actividades reales del usuario cuando corresponda (otras actividades/deportes que practica), condiciones médicas si son relevantes para ese día, y un consejo concreto y específico de ese día (no genérico). Los días de descanso TAMBIÉN necesitan una nota real y útil — nunca los dejes vacíos ni con texto genérico tipo "Descansá hoy".
 
+10. Generá "plan_pillars": un array de 2 a 3 objetos que resuman los pilares centrales de ESTE plan específico.
+   - Los pilares deben surgir naturalmente del perfil de este usuario — NO uses una lista fija de categorías genéricas (no siempre "Fuerza, Cardio, Movilidad"). Elegilos según lo que realmente define su programa: puede ser un pilar de fuerza, uno ligado a su deporte extra, uno de manejo de una condición médica, uno de movilidad si tiene trabajo sedentario, etc.
+   - "nombre": nombre corto del pilar (1-2 palabras, ej. "Fuerza", "Tenis + Prevención", "Cardio Zona 2").
+   - "frecuencia": frecuencia concreta (ej. "≥ 2x/sem", "Todos los días de gym", "3x/sem").
+   - "descripcion": texto LARGO (mínimo 3 párrafos, separados por \\n\\n) que explique POR QUÉ este pilar es importante para ESTE usuario específico. Tiene que sonar como un coach que lo conoce hace meses, no un texto genérico de fitness. Mencioná detalles concretos y reales del perfil: su objetivo específico, sus actividades extra por nombre (ej. "tu tenis dos veces por semana" si juega al tenis), sus condiciones médicas si aplican y cómo se relacionan con este pilar (ej. mencionar la hipertensión en el contexto de cardio), su nivel de experiencia, sus días y horario disponibles. Nunca suene genérico — cada pilar debe leerse como si estuviera escrito específicamente para esta persona. Incluí recomendaciones prácticas concretas, no solo teoría.
+
 Deberás responder EN IDIOMA ESPAÑOL.
 RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto adicional de introducción ni de cierre:
 
@@ -356,7 +362,14 @@ RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
     "viernes": { "type": "...", "title": "...", "duration": "...", "note": "..." },
     "sábado": { "type": "...", "title": "...", "duration": "...", "note": "..." },
     "domingo": { "type": "...", "title": "...", "duration": "...", "note": "..." }
-  }
+  },
+  "plan_pillars": [
+    {
+      "nombre": "Fuerza",
+      "frecuencia": "≥ 2x/sem",
+      "descripcion": "Texto largo y personalizado (mínimo 3 párrafos separados por \\n\\n) explicando por qué este pilar es clave para este usuario específico, mencionando detalles concretos de su perfil."
+    }
+  ]
 }`;
 
       const ai = getGeminiClient();

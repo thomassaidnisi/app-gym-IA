@@ -33,6 +33,14 @@ export interface UserProfile {
   other_activities?: ActivityDetail[];
   preferred_schedule?: string;
   day_descriptions?: DayDescriptions;
+  plan_pillars?: PlanPillar[];
+  walkthrough_seen?: boolean;
+}
+
+export interface PlanPillar {
+  nombre: string;
+  frecuencia: string;
+  descripcion: string;
 }
 
 export interface ActivityDetail {

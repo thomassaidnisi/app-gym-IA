@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Onboarding } from "./components/Onboarding";
 import { WelcomeScreen } from "./components/WelcomeScreen";
+import { PlanWalkthrough } from "./components/PlanWalkthrough";
 import { GymTab } from "./components/GymTab";
 import { LibraryTab } from "./components/LibraryTab";
 import { NutritionTab } from "./components/NutritionTab";
@@ -280,6 +281,13 @@ if (dataLoading) {
           </div>
 
           <RestTimerOverlay />
+
+          {profile.plan_pillars && profile.plan_pillars.length > 0 && !profile.walkthrough_seen && (
+            <PlanWalkthrough
+              pillars={profile.plan_pillars}
+              onClose={() => setProfile((p) => (p ? { ...p, walkthrough_seen: true } : p))}
+            />
+          )}
         </div>
       </RestTimerProvider>
     </ThemeProvider>
