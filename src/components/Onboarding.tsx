@@ -751,7 +751,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                   <h1 className="text-4xl font-extrabold tracking-tight text-white leading-tight mb-3">
                     Vamos a crear tu plan
                   </h1>
-                  <p className="text-sm leading-relaxed mb-8" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  <p className="text-sm text-white/90 bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-2 inline-block mb-8">
                     Respondé algunas preguntas para personalizar tu experiencia al máximo.
                   </p>
                   <motion.button
