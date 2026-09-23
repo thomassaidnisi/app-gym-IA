@@ -204,12 +204,13 @@ if (dataLoading) {
           </main>
 
          <div
-  className="fixed bottom-0 left-0 right-0 z-40 px-4 select-none pb-safe"
+  className="fixed bottom-0 left-0 right-0 z-40 px-4 select-none"
   style={{
     background: "var(--nav-bg)",
     backdropFilter: "blur(20px)",
     WebkitBackdropFilter: "blur(20px)",
     borderTop: "1px solid var(--nav-border)",
+    paddingBottom: "env(safe-area-inset-bottom)",
   }}
 >
  <nav className="max-w-lg mx-auto h-16 grid grid-cols-5 items-center justify-items-center">
