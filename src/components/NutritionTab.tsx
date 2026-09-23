@@ -180,32 +180,37 @@ export const NutritionTab: React.FC<NutritionTabProps> = ({ profile }) => {
 
   if (!guide) {
     return (
-      <div className="flex flex-col items-center justify-center text-center px-6 py-20 gap-4">
-        <div
-          className="w-16 h-16 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: "rgba(200,241,53,0.10)" }}
-        >
-          <Apple className="w-7 h-7" style={{ color: T.brand }} />
+      <div className="relative min-h-screen">
+        <img src="/nutrition-empty-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-white/40" />
+
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-20 gap-4">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: "rgba(200,241,53,0.10)" }}
+          >
+            <Apple className="w-7 h-7" style={{ color: T.brand }} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold" style={{ color: T.textPri }}>Guía nutricional</h2>
+            <p className="text-sm mt-1" style={{ color: T.textSec }}>
+              Generá una guía personalizada de calorías y macros basada en tu perfil.
+            </p>
+          </div>
+          {errorMsg && (
+            <p className="text-sm" style={{ color: "#ef4444" }}>{errorMsg}</p>
+          )}
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            className="h-12 px-6 rounded-2xl font-black text-sm text-black flex items-center gap-2"
+            style={{ backgroundColor: T.brand, opacity: isGenerating ? 0.6 : 1 }}
+          >
+            {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Apple className="w-4 h-4" />}
+            {isGenerating ? "Generando..." : "Generar mi guía nutricional"}
+          </motion.button>
         </div>
-        <div>
-          <h2 className="text-lg font-bold" style={{ color: T.textPri }}>Guía nutricional</h2>
-          <p className="text-sm mt-1" style={{ color: T.textSec }}>
-            Generá una guía personalizada de calorías y macros basada en tu perfil.
-          </p>
-        </div>
-        {errorMsg && (
-          <p className="text-sm" style={{ color: "#ef4444" }}>{errorMsg}</p>
-        )}
-        <motion.button
-          whileTap={{ scale: 0.96 }}
-          onClick={handleGenerate}
-          disabled={isGenerating}
-          className="h-12 px-6 rounded-2xl font-black text-sm text-black flex items-center gap-2"
-          style={{ backgroundColor: T.brand, opacity: isGenerating ? 0.6 : 1 }}
-        >
-          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Apple className="w-4 h-4" />}
-          {isGenerating ? "Generando..." : "Generar mi guía nutricional"}
-        </motion.button>
       </div>
     );
   }

@@ -30,9 +30,15 @@ export interface UserProfile {
   gymCardioEquipment?: string[];
   gymStrengthEquipment?: string[];
   avatar_url?: string;
-  other_activities?: string[];
+  other_activities?: ActivityDetail[];
   preferred_schedule?: string;
   day_descriptions?: DayDescriptions;
+}
+
+export interface ActivityDetail {
+  name: string;
+  frequency: string; // "1 vez", "2 veces", "3 veces", "+3 veces"
+  days: string[];     // ["lunes", "martes"]
 }
 
 export interface DayDescription {

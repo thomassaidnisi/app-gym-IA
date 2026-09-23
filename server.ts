@@ -156,7 +156,7 @@ async function startServer() {
         injuriesOrLimitations = "",
         specificGoal = "",
         muscle_focus = [] as string[],
-        other_activities = [] as string[],
+        other_activities = [] as { name: string; frequency: string; days: string[] }[],
         preferred_schedule = "",
         trainingLocation = "gym",
         locationByDay = {} as Record<string, string>,
@@ -175,6 +175,15 @@ async function startServer() {
       const imc = (wNum / ((hNum / 100) * (hNum / 100))).toFixed(1);
 
       const userGoalsStr = (goals && goals.length > 0) ? goals.join(", ") : (objective || "No especificado");
+
+      const formatDayList = (days: string[]) =>
+        days.length <= 1 ? days.join("") : `${days.slice(0, -1).join(", ")} y ${days[days.length - 1]}`;
+
+      const otherActivitiesStr = other_activities.length > 0
+        ? other_activities
+            .map((a) => `- ${a.name}${a.frequency ? `: ${a.frequency} por semana` : ""}${a.days.length > 0 ? ` (${formatDayList(a.days)})` : ""}`)
+            .join("\n")
+        : "";
 
       const prompt = `Eres un fisiólogo del ejercicio y entrenador personal experto. 
 Diseñá un plan de entrenamiento personalizado y completo basado en este perfil:
@@ -197,7 +206,7 @@ PERFIL DEL USUARIO:
 - Lesiones o limitaciones: ${injuriesOrLimitations || "Ninguna"}
 ${specificGoal ? `- Objetivo o evento específico: "${specificGoal}". Considerá esto al diseñar el plan — si menciona un deporte, incluí trabajo complementario relevante (movilidad, potencia, resistencia específica); si menciona una fecha límite, tené en cuenta el tiempo disponible para progresar.` : ""}
 ${muscle_focus.length > 0 && !muscle_focus.includes("⚖️ Full body") ? `- Zonas musculares a priorizar: ${muscle_focus.join(", ")}. Aumentá el volumen de trabajo en estos grupos.` : ""}
-${other_activities.length > 0 ? `- Otras actividades/deportes que practica fuera del gym: ${other_activities.join(", ")}. Considerá esto para trabajo complementario, prevención de lesiones específicas de ese deporte, y evitar interferencia excesiva con el volumen de fuerza.` : ""}
+${otherActivitiesStr ? `- Actividades extra:\n${otherActivitiesStr}\n  Evitá programar fuerza de piernas (o el grupo muscular más solicitado por esa actividad) los mismos días, y administrá la carga en los días previos y posteriores para que no interfiera con el rendimiento en esa actividad ni la recuperación.` : ""}
 ${preferred_schedule && preferred_schedule !== "Sin preferencia" ? `- Horario preferido de entrenamiento: ${preferred_schedule}. Tené en cuenta esto para las recomendaciones de timing (ej. pautas de nutrición pre/post entreno, tipo de calentamiento según hora del día).` : ""}
 ${trainingLocation === "both"
   ? `- Ubicación de entrenamiento: AMBOS lugares según este calendario semanal: ${JSON.stringify(locationByDay)}

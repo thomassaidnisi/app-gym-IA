@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { UserProfile, FullTrainingPlan, DayDescriptions } from "../types";
+import { UserProfile, FullTrainingPlan, DayDescriptions, ActivityDetail } from "../types";
 import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target, Bell, HelpCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PlanUpload } from "./PlanUpload";
@@ -29,6 +29,18 @@ const OTHER_ACTIVITY_OPTIONS = [
 ];
 
 const SCHEDULE_OPTIONS = ["Mañana (6-12h)", "Tarde (12-18h)", "Noche (18-23h)", "Sin preferencia"];
+
+const FREQUENCY_OPTIONS = ["1 vez", "2 veces", "3 veces", "+3 veces"];
+
+const ACTIVITY_DAY_OPTIONS = [
+  { short: "L", key: "lunes" },
+  { short: "M", key: "martes" },
+  { short: "X", key: "miércoles" },
+  { short: "J", key: "jueves" },
+  { short: "V", key: "viernes" },
+  { short: "S", key: "sábado" },
+  { short: "D", key: "domingo" },
+];
 
 const TooltipButton: React.FC<{ tooltipKey: string; onOpen: (key: string) => void }> = ({ tooltipKey, onOpen }) => (
   <button
@@ -123,6 +135,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
   const [specificGoal, setSpecificGoal] = useState("");
   const [otherActivitiesChips, setOtherActivitiesChips] = useState<string[]>([]);
   const [otherActivityText, setOtherActivityText] = useState("");
+  const [activityDetails, setActivityDetails] = useState<Record<string, { frequency: string; days: string[] }>>({});
   const [preferredSchedule, setPreferredSchedule] = useState("");
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
 
@@ -214,8 +227,12 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
         setPreferredSchedule(p.preferred_schedule || "");
         if (p.other_activities) {
           const known = new Set(OTHER_ACTIVITY_OPTIONS);
-          setOtherActivitiesChips(p.other_activities.filter((a) => known.has(a)));
-          setOtherActivityText(p.other_activities.filter((a) => !known.has(a)).join(", "));
+          const chipActivities = p.other_activities.filter((a) => known.has(a.name));
+          setOtherActivitiesChips(chipActivities.map((a) => a.name));
+          setActivityDetails(
+            Object.fromEntries(chipActivities.map((a) => [a.name, { frequency: a.frequency, days: a.days }]))
+          );
+          setOtherActivityText(p.other_activities.filter((a) => !known.has(a.name)).map((a) => a.name).join(", "));
         }
         setTrainingLocation(p.trainingLocation || "");
         if (p.locationByDay) {
@@ -309,6 +326,23 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
     );
   };
 
+  const setActivityFrequency = (activity: string, frequency: string) => {
+    setActivityDetails((prev) => ({
+      ...prev,
+      [activity]: { frequency, days: prev[activity]?.days ?? [] },
+    }));
+  };
+
+  const toggleActivityDay = (activity: string, dayKey: string) => {
+    setActivityDetails((prev) => {
+      const currentDays = prev[activity]?.days ?? [];
+      const days = currentDays.includes(dayKey)
+        ? currentDays.filter((d) => d !== dayKey)
+        : [...currentDays, dayKey];
+      return { ...prev, [activity]: { frequency: prev[activity]?.frequency ?? "", days } };
+    });
+  };
+
   const toggleHomeEquipment = (equip: string) => {
     setHomeEquipment((prev) =>
       prev.includes(equip) ? prev.filter((e) => e !== equip) : [...prev, equip]
@@ -354,9 +388,13 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
       activeMedicalList.push(otherMedical.trim());
     }
 
-    const activeOtherActivities = [...otherActivitiesChips];
-    if (otherActivityText.trim() && !activeOtherActivities.includes(otherActivityText.trim())) {
-      activeOtherActivities.push(otherActivityText.trim());
+    const activeOtherActivities: ActivityDetail[] = otherActivitiesChips.map((name) => ({
+      name,
+      frequency: activityDetails[name]?.frequency ?? "",
+      days: activityDetails[name]?.days ?? [],
+    }));
+    if (otherActivityText.trim() && !activeOtherActivities.some((a) => a.name === otherActivityText.trim())) {
+      activeOtherActivities.push({ name: otherActivityText.trim(), frequency: "", days: [] });
     }
 
     // Days left unassigned are excluded — server treats them as Rest
@@ -975,6 +1013,48 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
                     </button>
                   ))}
                 </div>
+
+                {otherActivitiesChips.length > 0 && (
+                  <div className="flex flex-col gap-4 mb-6">
+                    {otherActivitiesChips.map((activity) => {
+                      const detail = activityDetails[activity] ?? { frequency: "", days: [] };
+                      return (
+                        <div key={activity} className="bg-white/5 border border-white/10 rounded-xl p-4">
+                          <h4 className="text-sm font-bold text-white mb-3">{activity}</h4>
+
+                          <label className="block text-xs font-semibold text-white/40 uppercase mb-2">
+                            ¿Cuántas veces por semana hacés {activity}?
+                          </label>
+                          <div className="grid grid-cols-4 gap-2 mb-4">
+                            {FREQUENCY_OPTIONS.map((freq) => (
+                              <button
+                                key={freq}
+                                onClick={() => setActivityFrequency(activity, freq)}
+                                className={`py-2.5 rounded-lg text-[11px] font-bold transition-all border ${
+                                  detail.frequency === freq ? "bg-white text-black border-white shadow-md" : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+                                }`}
+                              >{freq}</button>
+                            ))}
+                          </div>
+
+                          <label className="block text-xs font-semibold text-white/40 uppercase mb-2">¿Qué días?</label>
+                          <div className="grid grid-cols-7 gap-1.5">
+                            {ACTIVITY_DAY_OPTIONS.map(({ short, key }) => (
+                              <button
+                                key={key}
+                                onClick={() => toggleActivityDay(activity, key)}
+                                className={`py-2.5 rounded-lg text-xs font-bold transition-all border ${
+                                  detail.days.includes(key) ? "bg-white text-black border-white shadow-md" : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+                                }`}
+                              >{short}</button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <label className="flex items-center text-xs font-semibold text-white/40 uppercase mb-2">
                   Otro
                   <TooltipButton tooltipKey="activity" onOpen={setActiveTooltip} />
@@ -985,7 +1065,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
                 />
                 <button
                   type="button"
-                  onClick={() => { setOtherActivitiesChips([]); setOtherActivityText(""); handleNext(); }}
+                  onClick={() => { setOtherActivitiesChips([]); setOtherActivityText(""); setActivityDetails({}); handleNext(); }}
                   className="w-full text-center text-white/40 hover:text-white/70 text-xs font-semibold uppercase tracking-wider transition-colors py-2"
                 >
                   Saltar
