@@ -32,7 +32,16 @@ export interface UserProfile {
   avatar_url?: string;
   other_activities?: string[];
   preferred_schedule?: string;
+  day_descriptions?: DayDescriptions;
 }
+
+export interface DayDescription {
+  type: 'fuerza' | 'cardio' | 'movilidad' | 'cancha' | 'descanso' | 'recuperacion' | 'mixto';
+  title: string;
+  duration: string;
+  note: string;
+}
+export type DayDescriptions = Record<string, DayDescription>;
 
 export interface WarmupItem {
   name: string;

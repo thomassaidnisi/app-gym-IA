@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { UserProfile, FullTrainingPlan } from "../types";
+import { UserProfile, FullTrainingPlan, DayDescriptions } from "../types";
 import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target, Bell, HelpCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PlanUpload } from "./PlanUpload";
@@ -392,13 +392,14 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
         const errorData = await response.json();
         throw new Error(errorData.error || "Ocurrió un error en el servidor.");
       }
-      const generatedPlan: FullTrainingPlan = await response.json();
+      const generatedPlan = (await response.json()) as FullTrainingPlan & { day_descriptions?: DayDescriptions };
+      const finalProfile: UserProfile = { ...payload, day_descriptions: generatedPlan.day_descriptions };
       localStorage.setItem("healty_plan", JSON.stringify(generatedPlan));
-      localStorage.setItem("healty_profile", JSON.stringify(payload));
+      localStorage.setItem("healty_profile", JSON.stringify(finalProfile));
       if (user) {
-        await Promise.all([saveProfile(user.id, payload), savePlan(user.id, generatedPlan)]);
+        await Promise.all([saveProfile(user.id, finalProfile), savePlan(user.id, generatedPlan)]);
       }
-      handlePlanReady(generatedPlan, payload);
+      handlePlanReady(generatedPlan, finalProfile);
     } catch (e: any) {
       console.error(e);
       setErrorMsg(e.message || "Fallo al conectar con el servidor. Intenta de nuevo.");

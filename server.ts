@@ -264,6 +264,12 @@ ${trainingLocation === "both"
 
 8. Incluí una GUÍA DE PROGRESIÓN específica para este usuario.
 
+9. Generá "day_descriptions": un objeto con los 7 días de la semana en minúscula (lunes, martes, miércoles, jueves, viernes, sábado, domingo) como claves — incluí TODOS los 7, sin excepción. Para cada día:
+   - "type": una de estas categorías EXACTAS según lo que corresponda a ese día — "fuerza", "cardio", "movilidad", "cancha", "descanso", "recuperacion", "mixto". Usá "cancha" para días donde el usuario practica un deporte propio (tenis, fútbol, etc.), "recuperacion" para días de descanso activo, "descanso" para descanso total.
+   - "title": nombre corto del día, 2 a 4 palabras (ej. "Tren superior", "Descanso total", "Tenis + movilidad").
+   - "duration": duración estimada del día (ej. "50-60 min") o "—" si es descanso total sin actividad.
+   - "note": UNA frase personalizada y contextual, máximo 1-2 oraciones. Mencioná actividades reales del usuario cuando corresponda (otras actividades/deportes que practica), condiciones médicas si son relevantes para ese día, y un consejo concreto y específico de ese día (no genérico). Los días de descanso TAMBIÉN necesitan una nota real y útil — nunca los dejes vacíos ni con texto genérico tipo "Descansá hoy".
+
 Deberás responder EN IDIOMA ESPAÑOL.
 RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto adicional de introducción ni de cierre:
 
@@ -327,7 +333,21 @@ RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
         }
       ]
     }
-  ]
+  ],
+  "day_descriptions": {
+    "lunes": {
+      "type": "fuerza" o "cardio" o "movilidad" o "cancha" o "descanso" o "recuperacion" o "mixto",
+      "title": "nombre corto del día (2-4 palabras)",
+      "duration": "50-60 min" o "—" si es descanso total,
+      "note": "frase personalizada y contextual, 1-2 oraciones máximo"
+    },
+    "martes": { "type": "...", "title": "...", "duration": "...", "note": "..." },
+    "miércoles": { "type": "...", "title": "...", "duration": "...", "note": "..." },
+    "jueves": { "type": "...", "title": "...", "duration": "...", "note": "..." },
+    "viernes": { "type": "...", "title": "...", "duration": "...", "note": "..." },
+    "sábado": { "type": "...", "title": "...", "duration": "...", "note": "..." },
+    "domingo": { "type": "...", "title": "...", "duration": "...", "note": "..." }
+  }
 }`;
 
       const ai = getGeminiClient();

@@ -31,6 +31,7 @@ export async function saveProfile(userId: string, profile: UserProfile) {
     avatar_url: profile.avatar_url ?? null,
     other_activities: profile.other_activities ?? null,
     preferred_schedule: profile.preferred_schedule ?? null,
+    day_descriptions: profile.day_descriptions ?? null,
     updated_at: new Date().toISOString(),
   });
 }
@@ -80,6 +81,7 @@ export async function loadUserData(userId: string): Promise<{
       avatar_url: profileRow.avatar_url ?? undefined,
       other_activities: profileRow.other_activities ?? [],
       preferred_schedule: profileRow.preferred_schedule ?? undefined,
+      day_descriptions: profileRow.day_descriptions ?? undefined,
     } as UserProfile;
   }
 
