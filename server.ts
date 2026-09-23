@@ -156,6 +156,8 @@ async function startServer() {
         injuriesOrLimitations = "",
         specificGoal = "",
         muscle_focus = [] as string[],
+        other_activities = [] as string[],
+        preferred_schedule = "",
         trainingLocation = "gym",
         locationByDay = {} as Record<string, string>,
         gymCardioEquipment = [] as string[],
@@ -195,6 +197,8 @@ PERFIL DEL USUARIO:
 - Lesiones o limitaciones: ${injuriesOrLimitations || "Ninguna"}
 ${specificGoal ? `- Objetivo o evento específico: "${specificGoal}". Considerá esto al diseñar el plan — si menciona un deporte, incluí trabajo complementario relevante (movilidad, potencia, resistencia específica); si menciona una fecha límite, tené en cuenta el tiempo disponible para progresar.` : ""}
 ${muscle_focus.length > 0 && !muscle_focus.includes("⚖️ Full body") ? `- Zonas musculares a priorizar: ${muscle_focus.join(", ")}. Aumentá el volumen de trabajo en estos grupos.` : ""}
+${other_activities.length > 0 ? `- Otras actividades/deportes que practica fuera del gym: ${other_activities.join(", ")}. Considerá esto para trabajo complementario, prevención de lesiones específicas de ese deporte, y evitar interferencia excesiva con el volumen de fuerza.` : ""}
+${preferred_schedule && preferred_schedule !== "Sin preferencia" ? `- Horario preferido de entrenamiento: ${preferred_schedule}. Tené en cuenta esto para las recomendaciones de timing (ej. pautas de nutrición pre/post entreno, tipo de calentamiento según hora del día).` : ""}
 ${trainingLocation === "both"
   ? `- Ubicación de entrenamiento: AMBOS lugares según este calendario semanal: ${JSON.stringify(locationByDay)}
 - Cardio en GYM: ${gymCardioEquipment.length > 0 ? gymCardioEquipment.join(", ") : "Ninguno"}

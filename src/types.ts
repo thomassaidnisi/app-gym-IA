@@ -30,6 +30,8 @@ export interface UserProfile {
   gymCardioEquipment?: string[];
   gymStrengthEquipment?: string[];
   avatar_url?: string;
+  other_activities?: string[];
+  preferred_schedule?: string;
 }
 
 export interface WarmupItem {

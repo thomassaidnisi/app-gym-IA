@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { UserProfile, FullTrainingPlan } from "../types";
-import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target, Bell } from "lucide-react";
+import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target, Bell, HelpCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PlanUpload } from "./PlanUpload";
 import { useAuth } from "./AuthContext";
@@ -13,9 +13,62 @@ interface OnboardingProps {
 
 type StepId =
   | "welcome" | "name" | "physical" | "goals" | "medical" | "experience"
-  | "location" | "dayAssignment" | "availability"
+  | "location" | "dayAssignment" | "availability" | "otherActivities"
   | "gymCardio" | "gymStrength" | "homeEquipment"
   | "preferences";
+
+const TOOLTIPS: Record<string, string> = {
+  specificGoal: "Sé lo más concreto posible. Ej: 'Quiero ganar músculo en piernas y mejorar resistencia para el tenis'. Cuanto más detalle, mejor el plan.",
+  medical: "Mencioná lesiones, enfermedades crónicas, medicamentos que afecten el ejercicio, o limitaciones físicas. No es obligatorio pero mejora la seguridad del plan.",
+  activity: "Contá todo lo que hacés hoy: gym, deportes, caminatas largas, trabajo físico. Sobreestimarlo puede resultar en un plan demasiado exigente.",
+};
+
+const OTHER_ACTIVITY_OPTIONS = [
+  "Tenis", "Fútbol", "Running", "Ciclismo", "Natación",
+  "Yoga / Pilates", "Artes marciales", "Básquet", "Vóley", "Senderismo",
+];
+
+const SCHEDULE_OPTIONS = ["Mañana (6-12h)", "Tarde (12-18h)", "Noche (18-23h)", "Sin preferencia"];
+
+const TooltipButton: React.FC<{ tooltipKey: string; onOpen: (key: string) => void }> = ({ tooltipKey, onOpen }) => (
+  <button
+    type="button"
+    onClick={() => onOpen(tooltipKey)}
+    className="inline-flex items-center justify-center w-4 h-4 rounded-full text-white/40 hover:text-white/70 transition-colors ml-1.5 align-middle"
+    aria-label="Ayuda"
+  >
+    <HelpCircle className="w-4 h-4" />
+  </button>
+);
+
+const TooltipModal: React.FC<{ text: string; onClose: () => void }> = ({ text, onClose }) => (
+  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-6" onClick={onClose}>
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 10, scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      onClick={(e) => e.stopPropagation()}
+      className="w-full max-w-xs bg-[#141414] border border-white/10 rounded-2xl p-5"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-8 h-8 bg-brand/10 border border-brand/20 rounded-xl flex items-center justify-center">
+          <HelpCircle className="w-4 h-4 text-brand" />
+        </div>
+        <button onClick={onClose} className="text-white/40 hover:text-white/70 transition-colors" aria-label="Cerrar">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+      <p className="text-sm text-white/70 leading-relaxed mb-4">{text}</p>
+      <button
+        onClick={onClose}
+        className="w-full bg-brand hover:bg-lime-400 text-black text-sm font-bold py-2.5 rounded-xl transition-all"
+      >
+        Entendido
+      </button>
+    </motion.div>
+  </div>
+);
 
 export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
   const { user } = useAuth();
@@ -68,6 +121,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
   const [exercisesToAvoid, setExercisesToAvoid] = useState("");
   const [injuriesOrLimitations, setInjuriesOrLimitations] = useState("");
   const [specificGoal, setSpecificGoal] = useState("");
+  const [otherActivitiesChips, setOtherActivitiesChips] = useState<string[]>([]);
+  const [otherActivityText, setOtherActivityText] = useState("");
+  const [preferredSchedule, setPreferredSchedule] = useState("");
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
 
   // --- New location state ---
   const [trainingLocation, setTrainingLocation] = useState<"home" | "gym" | "both" | "">("");
@@ -82,7 +139,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
       "welcome", "name", "physical", "goals", "medical", "experience", "location",
     ];
     if (trainingLocation === "both") s.push("dayAssignment");
-    s.push("availability");
+    s.push("availability", "otherActivities");
     if (trainingLocation === "both") {
       s.push("gymCardio", "gymStrength", "homeEquipment");
     } else {
@@ -154,6 +211,12 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
         setExercisesToAvoid(p.exercisesToAvoid || "");
         setInjuriesOrLimitations(p.injuriesOrLimitations || "");
         setSpecificGoal(p.specificGoal || "");
+        setPreferredSchedule(p.preferred_schedule || "");
+        if (p.other_activities) {
+          const known = new Set(OTHER_ACTIVITY_OPTIONS);
+          setOtherActivitiesChips(p.other_activities.filter((a) => known.has(a)));
+          setOtherActivityText(p.other_activities.filter((a) => !known.has(a)).join(", "));
+        }
         setTrainingLocation(p.trainingLocation || "");
         if (p.locationByDay) {
           setLocationByDay(
@@ -240,6 +303,12 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
     );
   };
 
+  const toggleOtherActivity = (activity: string) => {
+    setOtherActivitiesChips((prev) =>
+      prev.includes(activity) ? prev.filter((a) => a !== activity) : [...prev, activity]
+    );
+  };
+
   const toggleHomeEquipment = (equip: string) => {
     setHomeEquipment((prev) =>
       prev.includes(equip) ? prev.filter((e) => e !== equip) : [...prev, equip]
@@ -266,6 +335,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
       case "location":      return trainingLocation !== "";
       case "dayAssignment": return Object.values(locationByDay).some(v => v === "gym" || v === "home");
       case "availability":  return daysPerWeek >= 2 && daysPerWeek <= 6 && sessionDuration !== "";
+      case "otherActivities": return true;
       case "gymCardio":     return (trainingLocation === "both" ? gymCardioEquipment : cardioEquipment).length > 0;
       case "gymStrength":   return (trainingLocation === "both" ? gymStrengthEquipment : strengthEquipment).length > 0;
       case "homeEquipment": return homeEquipment.length > 0;
@@ -284,6 +354,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
       activeMedicalList.push(otherMedical.trim());
     }
 
+    const activeOtherActivities = [...otherActivitiesChips];
+    if (otherActivityText.trim() && !activeOtherActivities.includes(otherActivityText.trim())) {
+      activeOtherActivities.push(otherActivityText.trim());
+    }
+
     // Days left unassigned are excluded — server treats them as Rest
     const assignedLocationByDay = Object.fromEntries(
       Object.entries(locationByDay).filter(([, v]) => v === "gym" || v === "home")
@@ -295,6 +370,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
       medicalConditions: activeMedicalList, experience, daysPerWeek,
       sessionDuration, cardioEquipment, strengthEquipment,
       exercisesToAvoid, injuriesOrLimitations, specificGoal,
+      other_activities: activeOtherActivities,
+      preferred_schedule: preferredSchedule || undefined,
       trainingLocation: (trainingLocation as "home" | "gym" | "both") || "gym",
       // Only include split-location fields for "both" — avoids empty arrays polluting the payload
       ...(trainingLocation === "both" && {
@@ -743,7 +820,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
                     </button>
                   ))}
                 </div>
-                <label className="block text-xs font-semibold text-white/40 uppercase mb-2">Otra condición</label>
+                <label className="flex items-center text-xs font-semibold text-white/40 uppercase mb-2">
+                  Otra condición
+                  <TooltipButton tooltipKey="medical" onOpen={setActiveTooltip} />
+                </label>
                 <input type="text" value={otherMedical} onChange={(e) => setOtherMedical(e.target.value)}
                   placeholder="Asma, lordosis, etc (opcional)"
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/40 text-sm placeholder-white/20"
@@ -860,7 +940,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
                   ))}
                 </div>
                 <label className="block text-xs font-semibold text-white/40 uppercase mb-2">Duración de cada sesión</label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 gap-2 mb-6">
                   {["45 min","60 min","75 min","90 min"].map((durOption) => (
                     <button key={durOption} onClick={() => setSessionDuration(durOption)}
                       className={`py-3.5 rounded-xl font-bold text-[10px] sm:text-xs transition-all border ${
@@ -869,6 +949,46 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
                     >{durOption}</button>
                   ))}
                 </div>
+                <label className="block text-xs font-semibold text-white/40 uppercase mb-2">¿A qué hora preferís entrenar?</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {SCHEDULE_OPTIONS.map((opt) => (
+                    <button key={opt} onClick={() => setPreferredSchedule(opt)} className={chipBtn(preferredSchedule === opt)}>
+                      <span>{opt}</span>
+                      {preferredSchedule === opt && <Check className="w-3.5 h-3.5 text-white" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Step: Other Activities (NEW) */}
+            {currentStepId === "otherActivities" && (
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-white mb-2">¿Hacés algún deporte o actividad fuera del gym?</h2>
+                <p className="text-white/50 text-sm mb-6 leading-relaxed">Nos ayuda a diseñar trabajo complementario y evitar sobrecarga. Selección múltiple, opcional.</p>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  {OTHER_ACTIVITY_OPTIONS.map((activity) => (
+                    <button key={activity} onClick={() => toggleOtherActivity(activity)} className={chipBtn(otherActivitiesChips.includes(activity))}>
+                      <span>{activity}</span>
+                      {otherActivitiesChips.includes(activity) && <Check className="w-3.5 h-3.5 text-white" />}
+                    </button>
+                  ))}
+                </div>
+                <label className="flex items-center text-xs font-semibold text-white/40 uppercase mb-2">
+                  Otro
+                  <TooltipButton tooltipKey="activity" onOpen={setActiveTooltip} />
+                </label>
+                <input type="text" value={otherActivityText} onChange={(e) => setOtherActivityText(e.target.value)}
+                  placeholder="¿Otro? Ej: padel, golf, crossfit..."
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/40 text-sm placeholder-white/20 mb-4"
+                />
+                <button
+                  type="button"
+                  onClick={() => { setOtherActivitiesChips([]); setOtherActivityText(""); handleNext(); }}
+                  className="w-full text-center text-white/40 hover:text-white/70 text-xs font-semibold uppercase tracking-wider transition-colors py-2"
+                >
+                  Saltar
+                </button>
               </div>
             )}
 
@@ -968,7 +1088,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
                   <div className="w-12 h-12 mx-auto bg-brand/10 border border-brand/20 rounded-2xl flex items-center justify-center mb-3">
                     <Target className="w-6 h-6 text-brand" />
                   </div>
-                  <h3 className="text-base font-bold text-white mb-1">¿Algo más que el plan deba saber?</h3>
+                  <h3 className="flex items-center justify-center text-base font-bold text-white mb-1">
+                    ¿Algo más que el plan deba saber?
+                    <TooltipButton tooltipKey="specificGoal" onOpen={setActiveTooltip} />
+                  </h3>
                   <p className="text-xs text-white/50 mb-4 leading-relaxed">
                     Zonas a priorizar, deportes que practicás, restricciones de movimiento...
                   </p>
@@ -1012,6 +1135,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
           </div>
         )}
       </div>
+      <AnimatePresence>
+        {activeTooltip && (
+          <TooltipModal text={TOOLTIPS[activeTooltip]} onClose={() => setActiveTooltip(null)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
