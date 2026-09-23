@@ -12,7 +12,7 @@ interface OnboardingProps {
 }
 
 type StepId =
-  | "welcome" | "name" | "physical" | "goals" | "medical" | "experience"
+  | "name" | "physical" | "goals" | "medical" | "experience"
   | "location" | "dayAssignment" | "availability" | "otherActivities"
   | "gymCardio" | "gymStrength" | "homeEquipment"
   | "preferences";
@@ -149,7 +149,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
   // --- Step sequence (dynamic for "both" mode) ---
   const stepSequence = useMemo((): StepId[] => {
     const s: StepId[] = [
-      "welcome", "name", "physical", "goals", "medical", "experience", "location",
+      "name", "physical", "goals", "medical", "experience", "location",
     ];
     if (trainingLocation === "both") s.push("dayAssignment");
     s.push("availability", "otherActivities");
@@ -163,7 +163,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
   }, [trainingLocation]);
 
   const totalSteps = stepSequence.length;
-  const currentStepId: StepId = stepSequence[step - 1] ?? "welcome";
+  const currentStepId: StepId = stepSequence[step - 1] ?? "name";
 
   // Safety clamp: if location changes and sequence shrinks, don't leave step out of bounds
   useEffect(() => {
@@ -360,7 +360,6 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
   // --- Validation ---
   const isStepValid = () => {
     switch (currentStepId) {
-      case "welcome":       return true;
       case "name":          return name.trim().length > 0;
       case "physical":      return age !== "" && age > 0 && weight !== "" && weight > 0 && height !== "" && height > 0 && gender !== "";
       case "goals":         return goals.length > 0;
@@ -674,9 +673,19 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
   ];
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-black text-white px-4 md:px-0">
+    <div className="relative min-h-screen w-full bg-black">
+      {/* Background image — cubre todos los pasos del onboarding */}
+      <img
+        src="/onboarding-bg.jpg"
+        alt=""
+        aria-hidden
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ userSelect: "none", pointerEvents: "none" }}
+      />
+      <div className="absolute inset-0 bg-black/60" />
+
+      <div className="relative z-10 w-full max-w-lg mx-auto text-white px-4 md:px-0">
       {/* Progress bar */}
-      {step > 1 && (
         <div className="pt-6 pb-2">
           <div className="flex items-center justify-between text-xs text-white/40 mb-2">
             <span>Paso {step} de {totalSteps}</span>
@@ -691,7 +700,6 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
             />
           </div>
         </div>
-      )}
 
       <div className="py-6 min-h-[50vh] flex flex-col justify-between">
         <AnimatePresence mode="wait">
@@ -702,54 +710,6 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
             exit={{ opacity: 0, x: -20 }}
             transition={{ type: "spring", stiffness: 500, damping: 40 }}
           >
-            {/* Step: Welcome */}
-            {currentStepId === "welcome" && (
-              <div className="fixed inset-0 z-50 overflow-hidden">
-                {/* Background image */}
-                <img
-                  src="/onboarding-bg.png"
-                  alt=""
-                  aria-hidden
-                  className="absolute inset-0 w-full h-full object-cover object-center"
-                  style={{ zIndex: 0, userSelect: "none", pointerEvents: "none" }}
-                />
-                {/* Dark overlay */}
-                <div className="absolute inset-0 bg-black/60" style={{ zIndex: 10 }} />
-                {/* Content */}
-                <div
-                  className="relative flex flex-col items-center text-center justify-center h-full px-6"
-                  style={{ zIndex: 20, paddingTop: "env(safe-area-inset-top, 24px)", paddingBottom: "env(safe-area-inset-bottom, 24px)" }}
-                >
-                  <div className="w-20 h-20 bg-brand/10 border border-brand/20 rounded-3xl flex items-center justify-center mb-8 shadow-inner animate-pulse-slow">
-                    <Dumbbell className="w-10 h-10 text-brand" />
-                  </div>
-                  <h1 className="text-6xl font-extrabold tracking-tight text-white mb-2">
-                    HEALTY <span className="text-brand">APP</span>
-                  </h1>
-                  <p className="text-xl font-light text-white/40 tracking-wide mb-8 italic">
-                    "Entrená · Superá · Vive Mejor"
-                  </p>
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-left max-w-sm mb-10">
-                    <h2 className="text-brand text-sm font-bold uppercase tracking-wider mb-2">
-                      Entrenador Personal con IA
-                    </h2>
-                    <p className="text-white/60 text-sm leading-relaxed">
-                      Diseñamos un plan de fuerza e hipertrofia premium basado en tu nivel, condiciones médicas, equipamiento real y disponibilidad de tiempo.
-                    </p>
-                  </div>
-                  <motion.button
-                    whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-                    onClick={() => setStep(2)}
-                    className="w-full max-w-xs bg-brand hover:bg-lime-400 text-black font-semibold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base"
-                    id="start-onboarding-btn"
-                  >
-                    Empezar Onboarding
-                    <ChevronRight className="w-5 h-5" />
-                  </motion.button>
-                </div>
-              </div>
-            )}
-
             {/* Step: Name */}
             {currentStepId === "name" && (
               <div>
@@ -1190,37 +1150,37 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated }) => {
         </AnimatePresence>
 
         {/* Nav controls */}
-        {step > 1 && (
-          <div className="flex items-center justify-between gap-4 mt-8">
-            <button onClick={handleBack}
-              className="px-6 py-4 rounded-xl font-semibold border border-white/10 hover:bg-white/5 text-white/60 transition-all flex items-center gap-1 text-sm"
-              id="back-step-btn"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Atrás
-            </button>
-            <motion.button
-              whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
-              onClick={handleNext}
-              disabled={!isStepValid()}
-              className={`flex-1 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-1 text-sm text-black ${
-                isStepValid()
-                  ? "bg-brand hover:bg-lime-400 shadow-md cursor-pointer"
-                  : "bg-white/10 border border-white/10 text-white/30 cursor-not-allowed"
-              }`}
-              id="next-step-btn"
-            >
-              {step === totalSteps ? "Generar mi Plan" : "Siguiente"}
-              <ChevronRight className="w-4 h-4" />
-            </motion.button>
-          </div>
-        )}
+        <div className="flex items-center justify-between gap-4 mt-8">
+          <button onClick={handleBack}
+            disabled={step === 1}
+            className="px-6 py-4 rounded-xl font-semibold border border-white/10 hover:bg-white/5 text-white/60 transition-all flex items-center gap-1 text-sm disabled:opacity-0 disabled:pointer-events-none"
+            id="back-step-btn"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Atrás
+          </button>
+          <motion.button
+            whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
+            onClick={handleNext}
+            disabled={!isStepValid()}
+            className={`flex-1 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-1 text-sm text-black ${
+              isStepValid()
+                ? "bg-brand hover:bg-lime-400 shadow-md cursor-pointer"
+                : "bg-white/10 border border-white/10 text-white/30 cursor-not-allowed"
+            }`}
+            id="next-step-btn"
+          >
+            {step === totalSteps ? "Generar mi Plan" : "Siguiente"}
+            <ChevronRight className="w-4 h-4" />
+          </motion.button>
+        </div>
       </div>
       <AnimatePresence>
         {activeTooltip && (
           <TooltipModal text={TOOLTIPS[activeTooltip]} onClose={() => setActiveTooltip(null)} />
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 };

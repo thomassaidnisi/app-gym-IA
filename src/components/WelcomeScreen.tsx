@@ -42,11 +42,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onLogin, onSignup 
           }}
         >
           <div className="mb-8">
-            <p className="text-3xl font-black tracking-tight text-white">
-              healty<span style={{ color: "#c8f135" }}>.</span>
+            <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "#c8f135" }}>
+              Entrenador Personal con IA
             </p>
-            <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Tu entrenador y nutricionista con IA. Entrená, comé mejor, progresá.
+            <p className="text-4xl font-extrabold tracking-tight text-white leading-none">
+              HEALTY <span style={{ color: "#c8f135" }}>APP</span>
+            </p>
+            <p className="text-base font-light italic mt-3" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Entrená · Superá · Vive Mejor
+            </p>
+            <p className="text-sm mt-3 leading-relaxed" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Diseñamos un plan personalizado basado en tu nivel, condiciones médicas, equipamiento real y disponibilidad de tiempo.
             </p>
           </div>
 
@@ -65,7 +71,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onLogin, onSignup 
               className="w-full rounded-2xl font-bold text-base text-white transition-opacity"
               style={{ height: 52, border: "1px solid rgba(255,255,255,0.15)" }}
             >
-              Iniciar sesión
+              Ya tengo cuenta
             </motion.button>
           </div>
         </motion.div>
