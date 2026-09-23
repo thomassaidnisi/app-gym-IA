@@ -226,6 +226,15 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
     : 0;
   const todayBlockCount = todayDayPlan?.blocks.length ?? 0;
 
+  // day_descriptions: la key es el nombre del día en español minúscula (ej. "lunes")
+  const todayDescKey = new Date().toLocaleDateString("es-AR", { weekday: "long" }).toLowerCase();
+  const todayDesc: DayDescription | undefined = profile.day_descriptions?.[todayDescKey];
+  const isRestByDesc = todayDesc
+    ? todayDesc.type === "descanso" || todayDesc.type === "recuperacion"
+    : null;
+  // Sin day_descriptions (o sin entrada para hoy) → cae al fallback existente basado en el plan.
+  const showTodayTraining = isRestByDesc === null ? !!todayDayPlan : (!isRestByDesc && !!todayDayPlan);
+
   const getNextTrainingDayLabel = (): string | null => {
     const dayNamesES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
     const todayIdx = new Date().getDay();
@@ -554,7 +563,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
               </div>
 
               {/* Today card */}
-              {todayDayPlan ? (
+              {showTodayTraining && todayDayPlan ? (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -569,11 +578,14 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                     <span className="text-white/60 shrink-0">
                       {getWorkoutIcon(todayDayPlan.name, "w-5 h-5")}
                     </span>
-                    <h2 className="text-xl font-bold text-white leading-tight">{todayDayPlan.name}</h2>
+                    <h2 className="text-xl font-bold text-white leading-tight">{todayDesc?.title || todayDayPlan.name}</h2>
                   </div>
                   <p className="text-white/60 text-sm mt-0.5">{todayDayPlan.focus}</p>
+                  {todayDesc?.note && (
+                    <p className="text-white/50 text-xs mt-1.5 leading-relaxed italic">{todayDesc.note}</p>
+                  )}
                   <div className="flex flex-wrap gap-2 mt-3">
-                    {[todayDayPlan.duration, `${todayBlockCount} bloques`, `${todayExerciseCount} ejercicios`].map((l) => (
+                    {[todayDesc?.duration || todayDayPlan.duration, `${todayBlockCount} bloques`, `${todayExerciseCount} ejercicios`].map((l) => (
                       <span key={l} className="text-[11px] bg-white/10 border border-white/10 text-white/50 px-2.5 py-1 rounded-full">{l}</span>
                     ))}
                     {(todayDayPlan as any).location && (
@@ -598,9 +610,9 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
                 >
                   <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Hoy</span>
-                  <h2 className="text-xl font-bold mt-1 text-white">Día de descanso</h2>
+                  <h2 className="text-xl font-bold mt-1 text-white">{todayDesc?.title || "Día de descanso"}</h2>
                   <p className="text-sm mt-2 leading-relaxed text-zinc-400">
-                    Día de recuperación. Caminá, hidratate, dormí 8 horas. Tu sistema nervioso se recarga hoy para que mañana rompas marcas.
+                    {todayDesc?.note || "Día de recuperación. Caminá, hidratate, dormí 8 horas. Tu sistema nervioso se recarga hoy para que mañana rompas marcas."}
                   </p>
                   {nextTrainingDay && (
                     <p className="text-[11px] mt-3 text-zinc-500">
