@@ -795,6 +795,7 @@ INSTRUCCIONES:
    - Hacé los cambios en el JSON del plan y devuélvelo completo modificado en "updated_plan". Asegúrate de que todos los campos del JSON sigan perfectamente la estructura de FullTrainingPlan, conservando ejercicios que no se pidan cambiar.
    - Respondé explicando QUÉ cambiaste y POR QUÉ es una buena decisión.
    - Incluí el plan modificado en el campo "updated_plan" de tu respuesta.
+   - Regenerá también "day_descriptions" completo reflejando el plan ya modificado: un objeto con los 7 días de la semana en minúscula (lunes a domingo) como claves, TODOS presentes. Para cada día: "type" (una de "fuerza", "cardio", "movilidad", "cancha", "descanso", "recuperacion", "mixto"), "title" (2-4 palabras), "duration" (ej. "50-60 min" o "—" si es descanso total), y "note" (1-2 oraciones personalizadas y contextuales, nunca genéricas ni vacías incluso en días de descanso). Si el cambio no afecta la estructura semanal (ej. solo cambiaste un ejercicio puntual sin mover días), igual devolvé el objeto completo actualizado para mantenerlo consistente con el nuevo plan.
 3. Si el usuario hace una pregunta sobre entrenamiento, nutrición, técnica, etc.:
    - Respondé de forma clara y concisa (máximo 4 oraciones).
    - NO incluyas "updated_plan" si no hubo cambios al plan.
@@ -815,6 +816,7 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
   "coach_message": "tu respuesta en texto natural para el usuario",
   "plan_modified": true o false,
   "updated_plan": { ...plan completo modificado... } o null,
+  "day_descriptions": { "lunes": { "type": "...", "title": "...", "duration": "...", "note": "..." }, "martes": {...}, "miércoles": {...}, "jueves": {...}, "viernes": {...}, "sábado": {...}, "domingo": {...} } o null (solo si plan_modified es true — omitilo o dejalo null si no modificaste el plan),
   "nutrition_modified": true o false,
   "updated_nutrition_guide": { ...guía nutricional completa modificada... } o null
 }`;
@@ -835,10 +837,12 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
       }
 
       const parsedResponse = JSON.parse(responseText.trim());
+      const planWasModified = !!parsedResponse.plan_modified && !!parsedResponse.updated_plan;
       return res.json({
         coach_message: parsedResponse.coach_message || "¡Hola! ¿En qué puedo ayudarte hoy?",
         plan_modified: !!parsedResponse.plan_modified,
         updated_plan: parsedResponse.updated_plan || null,
+        day_descriptions: planWasModified ? (parsedResponse.day_descriptions || null) : null,
         nutrition_modified: !!parsedResponse.nutrition_modified,
         updated_nutrition_guide: parsedResponse.updated_nutrition_guide || null
       });
@@ -849,6 +853,7 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
         coach_message: "Hubo un error al procesar tu solicitud con el coach. Por favor, intenta de nuevo.",
         plan_modified: false,
         updated_plan: null,
+        day_descriptions: null,
         nutrition_modified: false,
         updated_nutrition_guide: null
       });

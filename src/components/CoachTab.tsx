@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
-import { UserProfile, FullTrainingPlan, NutritionGuide, ChatMessage, CoachResponse } from "../types";
+import { UserProfile, FullTrainingPlan, NutritionGuide, ChatMessage, CoachResponse, DayDescriptions } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { Send, Sparkles, Check, Loader2 } from "lucide-react";
 import { useAuth } from "./AuthContext";
-import { savePlan, loadWorkoutLogsMerged } from "../lib/db";
+import { savePlan, saveProfile, loadWorkoutLogsMerged } from "../lib/db";
 
 interface CoachTabProps {
   plan: FullTrainingPlan | null;
   profile: UserProfile | null;
   onPlanUpdated: (updatedPlan: FullTrainingPlan) => void;
+  onProfileUpdated: (updatedProfile: UserProfile) => void;
   nutritionGuide: NutritionGuide | null;
   onNutritionUpdated: (updatedGuide: NutritionGuide) => void;
   initialMessage?: string;
@@ -23,7 +24,7 @@ const T = {
   border:  "var(--border)",
 };
 
-export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated, nutritionGuide, onNutritionUpdated, initialMessage }) => {
+export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated, onProfileUpdated, nutritionGuide, onNutritionUpdated, initialMessage }) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
@@ -170,7 +171,9 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
       const data: CoachResponse = await res.json();
       const coachMessage: ChatMessage = {
         id: `coach-${Date.now()}`, role: "coach", text: data.coach_message, timestamp: Date.now(),
-        planPatch: data.plan_modified && data.updated_plan ? data.updated_plan : undefined, applied: false,
+        planPatch: data.plan_modified && data.updated_plan ? data.updated_plan : undefined,
+        dayDescriptionsPatch: data.plan_modified && data.updated_plan && data.day_descriptions ? data.day_descriptions : undefined,
+        applied: false,
         nutritionPatch: data.nutrition_modified && data.updated_nutrition_guide ? data.updated_nutrition_guide : undefined, nutritionApplied: false,
       };
       const finalMessages = [...updatedMessages, coachMessage].slice(-20);
@@ -187,13 +190,18 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
     }
   };
 
-  const handleApplyPlanPatch = async (messageId: string, planPatch: FullTrainingPlan) => {
+  const handleApplyPlanPatch = async (messageId: string, planPatch: FullTrainingPlan, dayDescriptionsPatch?: DayDescriptions) => {
     if (applyState[messageId] === "success" || applyState[messageId] === "loading") return;
     setApplyState((prev) => ({ ...prev, [messageId]: "loading" }));
     await new Promise((resolve) => setTimeout(resolve, 800));
     try {
       onPlanUpdated(planPatch);
       if (user) savePlan(user.id, planPatch).catch(console.error);
+      if (dayDescriptionsPatch && profile) {
+        const updatedProfile: UserProfile = { ...profile, day_descriptions: dayDescriptionsPatch };
+        onProfileUpdated(updatedProfile);
+        if (user) saveProfile(user.id, updatedProfile).catch(console.error);
+      }
       const modified = messages.map((msg) => msg.id === messageId ? { ...msg, applied: true } : msg);
       setMessages(modified);
       localStorage.setItem("healty_chat_history", JSON.stringify(modified));
@@ -320,7 +328,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
                     ) : (
                       <motion.button
                         whileTap={{ scale: 0.97 }}
-                        onClick={() => handleApplyPlanPatch(msg.id, msg.planPatch!)}
+                        onClick={() => handleApplyPlanPatch(msg.id, msg.planPatch!, msg.dayDescriptionsPatch)}
                         disabled={applyState[msg.id] === "loading"}
                         className="w-full bg-brand text-black hover:bg-lime-400 py-2.5 rounded-xl text-xs font-semibold uppercase shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                       >

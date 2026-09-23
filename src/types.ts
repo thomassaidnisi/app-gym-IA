@@ -140,6 +140,7 @@ export interface ChatMessage {
   role: 'user' | 'coach';
   text: string;
   planPatch?: FullTrainingPlan;
+  dayDescriptionsPatch?: DayDescriptions;
   nutritionPatch?: NutritionGuide;
   applied?: boolean;
   nutritionApplied?: boolean;
@@ -152,6 +153,7 @@ export interface CoachResponse {
   updated_plan: FullTrainingPlan | null;
   nutrition_modified: boolean;
   updated_nutrition_guide: NutritionGuide | null;
+  day_descriptions?: DayDescriptions | null;
 }
 
 export interface ParsedPlanResponse {

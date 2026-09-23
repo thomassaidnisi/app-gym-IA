@@ -197,6 +197,7 @@ if (dataLoading) {
                     plan={plan}
                     profile={profile}
                     onPlanUpdated={handlePlanUpdated}
+                    onProfileUpdated={handleProfileUpdated}
                     nutritionGuide={nutritionGuide}
                     onNutritionUpdated={handleNutritionUpdated}
                     initialMessage={coachInitialMessage}
@@ -282,6 +283,7 @@ if (dataLoading) {
 
           <RestTimerOverlay />
 
+          {console.log("walkthrough check:", { plan_pillars: profile?.plan_pillars, walkthrough_seen: profile?.walkthrough_seen })}
           {profile.plan_pillars && profile.plan_pillars.length > 0 && !profile.walkthrough_seen && (
             <PlanWalkthrough
               pillars={profile.plan_pillars}
