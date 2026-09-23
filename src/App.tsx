@@ -81,7 +81,18 @@ useEffect(() => {
     if (remotePlan) setPlan(remotePlan);
     if (remoteGuide) setNutritionGuide(remoteGuide);
     setCoachSuggestions(getProgressionSuggestions(exerciseLogs));
-    // Supabase responded but no data → new user, show onboarding (no localStorage fallback)
+
+    // Supabase respondió pero sin perfil/plan — puede ser un usuario nuevo genuino,
+    // o una falla lógica silenciosa (RLS/timing en una sesión recién restaurada; los
+    // métodos de supabase-js no rechazan la promesa en estos casos, solo devuelven
+    // data: null). Si hay caché local, usarla evita mandar a un usuario existente
+    // de vuelta al onboarding.
+    if (!remoteProfile || !remotePlan) {
+      const cp = localStorage.getItem("healty_plan");
+      const cpr = localStorage.getItem("healty_profile");
+      if (!remotePlan && cp) try { setPlan(JSON.parse(cp)); } catch {}
+      if (!remoteProfile && cpr) try { setProfile(JSON.parse(cpr)); } catch {}
+    }
   }).catch(() => {
     // Network/fetch error → fall back to localStorage so existing sessions don't break
     const cp = localStorage.getItem("healty_plan");

@@ -482,6 +482,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   src={profile.gender?.toLowerCase() === "femenino" ? "/gym-hero-female.jpg" : "/gym-hero.jpg"}
                   alt=""
                   className="absolute inset-0 w-full h-full object-cover"
+                  style={profile.gender?.toLowerCase() === "femenino" ? { objectPosition: "20% center" } : undefined}
                 />
                 {/* Degradé: transparente arriba → oscuro (no opaco) abajo, funde el hero con el fondo de la página */}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/90" />
