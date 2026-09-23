@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion, PausedSession } from "../types";
+import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion, PausedSession, DayDescription } from "../types";
 import { WorkoutSession } from "./WorkoutSession";
 import {
   Dumbbell, Clock, Play, Youtube, Check, FileText,
@@ -46,6 +46,77 @@ const getWorkoutIcon = (routineName: string, className = "w-4 h-4"): React.React
 
 const shortName = (name: string) => name.split("—")[0].split("-")[0].trim();
 
+const DAY_TYPE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  fuerza:       { bg: "rgba(34,197,94,0.15)",  text: "#4ade80", label: "Fuerza" },
+  cardio:       { bg: "rgba(59,130,246,0.15)", text: "#60a5fa", label: "Cardio" },
+  movilidad:    { bg: "rgba(168,85,247,0.15)", text: "#c084fc", label: "Movilidad" },
+  cancha:       { bg: "rgba(234,179,8,0.15)",  text: "#facc15", label: "Cancha" },
+  descanso:     { bg: "rgba(161,161,170,0.15)",text: "#a1a1aa", label: "Descanso" },
+  recuperacion: { bg: "rgba(45,212,191,0.15)", text: "#2dd4bf", label: "Recuperación" },
+  mixto:        { bg: "rgba(249,115,22,0.15)", text: "#fb923c", label: "Mixto" },
+};
+
+const DayPopup: React.FC<{
+  dayName: string;
+  description: DayDescription | undefined;
+  onClose: () => void;
+}> = ({ dayName, description, onClose }) => {
+  const typeStyle = description ? DAY_TYPE_STYLES[description.type] : undefined;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/60"
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-sm rounded-3xl p-6 bg-zinc-900/95 backdrop-blur-md border border-zinc-800"
+      >
+        <h3 className="text-xl font-bold text-white mb-1 capitalize">{dayName}</h3>
+
+        {description ? (
+          <>
+            <div className="flex items-center gap-2 mb-3">
+              {typeStyle && (
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: typeStyle.bg, color: typeStyle.text }}
+                >
+                  {typeStyle.label}
+                </span>
+              )}
+              <span className="text-sm text-zinc-400">
+                {description.title} · {description.duration}
+              </span>
+            </div>
+            <p className="text-sm text-zinc-300 leading-relaxed">{description.note}</p>
+          </>
+        ) : (
+          <p className="text-sm text-zinc-400 leading-relaxed mt-2">
+            Regenerá tu plan para ver la descripción de este día.
+          </p>
+        )}
+
+        <button
+          onClick={onClose}
+          className="w-full mt-6 py-3 rounded-2xl text-sm font-bold bg-brand text-black"
+        >
+          Cerrar
+        </button>
+      </motion.div>
+    </div>
+  );
+};
+
 export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach, onOpenProfile }) => {
   const { startTimer } = useRestTimer();
   const { user } = useAuth();
@@ -59,6 +130,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
 
   const validTrainDays = plan.days && plan.days.length > 0 ? plan.days : [];
   const [activeDayIdx, setActiveDayIdx] = useState(0);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const activeDay: DayPlan | undefined = validTrainDays[activeDayIdx];
 
   const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
@@ -272,13 +344,6 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
     { name: "Domingo",   key: "sunday" },
   ];
 
-  const selectDayBySchedule = (routineName: string) => {
-    if (!routineName || routineName.toLowerCase() === "rest" || routineName.toLowerCase().includes("descanso")) return;
-    const idx = validTrainDays.findIndex(
-      (d) => d.name.toLowerCase().trim() === routineName.toLowerCase().trim()
-    );
-    if (idx !== -1) setActiveDayIdx(idx);
-  };
 
   const T = {
     bg:          "var(--bg-primary)",
@@ -576,7 +641,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
             return (
               <div
                 key={day.key}
-                onClick={() => isGym && selectDayBySchedule(scheduleValue)}
+                onClick={() => setSelectedDay(day.name.toLowerCase())}
                 className={`flex-none w-24 p-3 rounded-xl text-center transition-all cursor-pointer snap-start flex flex-col items-center justify-between gap-1 border ${
                   isGym ? "bg-brand border-transparent" : "bg-zinc-900 border-zinc-800"
                 } ${isToday ? "!border-brand/60" : ""}`}
@@ -855,6 +920,17 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
           </p>
         </div>
       )}
+
+      {/* Day description popup */}
+      <AnimatePresence>
+        {selectedDay && (
+          <DayPopup
+            dayName={selectedDay}
+            description={profile.day_descriptions?.[selectedDay]}
+            onClose={() => setSelectedDay(null)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* WorkoutSession portal */}
       {sessionDay && (
