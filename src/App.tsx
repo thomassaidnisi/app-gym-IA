@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Onboarding } from "./components/Onboarding";
+import { WelcomeScreen } from "./components/WelcomeScreen";
 import { GymTab } from "./components/GymTab";
 import { LibraryTab } from "./components/LibraryTab";
 import { NutritionTab } from "./components/NutritionTab";
@@ -26,6 +27,8 @@ function AppContent() {
   const [coachInitialMessage, setCoachInitialMessage] = useState<string | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"gym" | "library" | "nutricion" | "stats" | "profile" | "coach">("gym");
 const [dataLoading, setDataLoading] = useState(true);
+  // Solo relevante mientras no hay sesión: null = WelcomeScreen, si no AuthScreen en ese modo.
+  const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
 
 
 useEffect(() => {
@@ -65,6 +68,10 @@ useEffect(() => {
 
 useEffect(() => {
   if (!user) { setDataLoading(false); return; }
+  // Reset explícito: si veníamos de un render sin usuario (dataLoading ya en false),
+  // sin esto habría un render intermedio con user truthy + dataLoading stale-false +
+  // plan/profile aún null, que caía en la rama de Onboarding — el flash reportado.
+  setDataLoading(true);
   Promise.all([
     loadUserData(user.id),
     loadNutritionGuide(user.id),
@@ -84,12 +91,32 @@ useEffect(() => {
   }).finally(() => setDataLoading(false));
 }, [user]);
 
-if (isLoading || dataLoading) {
+// Mientras se resuelve el estado de auth, no renderizar ninguna pantalla de
+// contenido (ni Welcome, ni Onboarding, ni home) — solo un splash mínimo.
+if (isLoading) {
   return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100vh" }} />;
 }
 
-if (!user || isPasswordRecovery) {
+if (isPasswordRecovery) {
   return <AuthScreen />;
+}
+
+if (!user) {
+  if (authMode) {
+    return <AuthScreen initialMode={authMode} />;
+  }
+  return (
+    <WelcomeScreen
+      onLogin={() => setAuthMode("login")}
+      onSignup={() => setAuthMode("signup")}
+    />
+  );
+}
+
+// Hay sesión: mientras se resuelven perfil/plan del usuario, splash — nunca
+// mostrar Onboarding de forma transitoria mientras esto carga (era el flash reportado).
+if (dataLoading) {
+  return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100vh" }} />;
 }
 
   if (!plan || !profile) {

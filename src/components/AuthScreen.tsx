@@ -9,9 +9,13 @@ type Mode = "login" | "signup" | "forgot" | "verify";
 const inputClass =
   "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white text-base placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors";
 
-export const AuthScreen: React.FC = () => {
+interface AuthScreenProps {
+  initialMode?: "login" | "signup";
+}
+
+export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" }) => {
   const { signIn, signUp, isPasswordRecovery, clearPasswordRecovery } = useAuth();
-  const [mode, setMode] = useState<Mode>("login");
+  const [mode, setMode] = useState<Mode>(initialMode);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
