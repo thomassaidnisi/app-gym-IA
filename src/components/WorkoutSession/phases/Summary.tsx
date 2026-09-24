@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Trophy } from "lucide-react";
-import { SessionState, DayPlan, CompletedSet, WorkoutLog } from "../../../types";
+import { SessionState, DayPlan, FullTrainingPlan, UserProfile, CompletedSet, WorkoutLog } from "../../../types";
 import { useAuth } from "../../AuthContext";
 import { saveWorkoutLog as saveWorkoutLogRemote, saveGymAttendance } from "../../../lib/db";
+import { markDayCompleted } from "../../../lib/streak";
 
 interface SummaryProps {
   session: SessionState;
   day: DayPlan;
+  profile: UserProfile;
+  plan: FullTrainingPlan;
+  onProfileUpdated?: (updated: UserProfile) => void;
   onClose: () => void;
 }
 
@@ -101,7 +105,7 @@ const EditableValue: React.FC<{
   );
 };
 
-export const Summary: React.FC<SummaryProps> = ({ session, day, onClose }) => {
+export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, onProfileUpdated, onClose }) => {
   const { user } = useAuth();
   const [editableSets, setEditableSets] = useState<CompletedSet[]>(
     session.completedSets.map((s) => ({ ...s }))
@@ -168,6 +172,9 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, onClose }) => {
         .then(() => console.log("✅ WorkoutLog guardado en Supabase"))
         .catch((err) => console.error("❌ Error guardando WorkoutLog:", err));
       saveGymAttendance(user.id, todayStr).catch(console.error);
+      markDayCompleted(user.id, todayStr, profile, plan)
+        .then((updated) => onProfileUpdated?.(updated))
+        .catch((err) => console.error("❌ Error actualizando racha:", err));
     }
     onClose();
   };

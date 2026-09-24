@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { DailyStats, ExerciseLog, WorkoutLog, CompletedSet } from "../types";
-import { BarChart2, Check, Droplet, Award, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus, Dumbbell, Clock } from "lucide-react";
+import { DailyStats, ExerciseLog, WorkoutLog, CompletedSet, FullTrainingPlan, UserProfile } from "../types";
+import { BarChart2, Check, Droplet, Award, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus, Dumbbell, Clock, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "./AuthContext";
 import { saveDailyMetric, loadDailyMetrics, saveGymAttendance, deleteGymAttendance, loadGymAttendance, loadWorkoutLogsMerged } from "../lib/db";
+import { markDayCompleted } from "../lib/streak";
 
 const WEEKDAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 const MONTH_NAMES_LOWER = [
@@ -88,7 +89,13 @@ function loadExerciseProgress(): ExerciseProgress[] {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export const StatsTab: React.FC = () => {
+interface StatsTabProps {
+  plan: FullTrainingPlan | null;
+  profile: UserProfile | null;
+  onProfileUpdated: (updated: UserProfile) => void;
+}
+
+export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpdated }) => {
   const { user } = useAuth();
   // Cache remote metrics by date to avoid re-fetching on every date change
   const remoteMetricsRef = useRef<Record<string, { peso?: number; agua?: number; sueno?: number }>>({});
@@ -227,8 +234,16 @@ export const StatsTab: React.FC = () => {
     if (newVal) localStorage.setItem(attendKey, "true"); else localStorage.removeItem(attendKey);
     setAttendance((prev) => { const u = { ...prev }; if (newVal) u[attendKey] = true; else delete u[attendKey]; return u; });
     if (user) {
-      if (newVal) saveGymAttendance(user.id, dateStr).catch(console.error);
-      else deleteGymAttendance(user.id, dateStr).catch(console.error);
+      if (newVal) {
+        saveGymAttendance(user.id, dateStr).catch(console.error);
+        if (plan && profile) {
+          markDayCompleted(user.id, dateStr, profile, plan)
+            .then(onProfileUpdated)
+            .catch((err) => console.error("Error actualizando racha:", err));
+        }
+      } else {
+        deleteGymAttendance(user.id, dateStr).catch(console.error);
+      }
     }
   };
 
@@ -390,6 +405,34 @@ export const StatsTab: React.FC = () => {
               </motion.button>
             );
           })}
+        </div>
+      </div>
+
+      {/* Streak */}
+      <div className="rounded-3xl p-5 mb-6 bg-zinc-900 flex items-center gap-4">
+        <div
+          className="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
+          style={{ backgroundColor: "rgba(249,115,22,0.12)" }}
+        >
+          <Flame className="w-7 h-7 text-orange-500" />
+        </div>
+        <div className="flex-1 min-w-0">
+          {(profile?.current_streak ?? 0) > 0 ? (
+            <>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-3xl font-black tabular-nums text-white">{profile?.current_streak}</span>
+                <span className="text-sm font-semibold text-zinc-400">
+                  {profile?.current_streak === 1 ? "día de racha" : "días de racha"}
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 mt-0.5">Mejor racha: {profile?.longest_streak ?? 0} días</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-bold text-white">¡Completá tu primer entrenamiento!</p>
+              <p className="text-xs text-zinc-500 mt-0.5">Mejor racha: {profile?.longest_streak ?? 0} días</p>
+            </>
+          )}
         </div>
       </div>
 

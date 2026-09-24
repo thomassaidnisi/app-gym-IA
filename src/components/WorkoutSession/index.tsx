@@ -1,7 +1,7 @@
 import React from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
-import { DayPlan, PausedSession } from "../../types";
+import { DayPlan, FullTrainingPlan, UserProfile, PausedSession } from "../../types";
 import { useWakeLock } from "../../hooks/useWakeLock";
 import { useWorkoutSession } from "../../hooks/useWorkoutSession";
 import { Intro } from "./phases/Intro";
@@ -14,9 +14,12 @@ interface WorkoutSessionProps {
   day: DayPlan;
   onClose: () => void;
   resume?: PausedSession | null;
+  profile: UserProfile;
+  plan: FullTrainingPlan;
+  onProfileUpdated?: (updated: UserProfile) => void;
 }
 
-export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose, resume }) => {
+export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose, resume, profile, plan, onProfileUpdated }) => {
   useWakeLock();
 
   const {
@@ -121,7 +124,7 @@ export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose, re
 
         {session.phase === "summary" && (
           <motion.div key="summary" className="flex-1 min-h-0 flex flex-col">
-            <Summary session={session} day={day} onClose={onClose} />
+            <Summary session={session} day={day} profile={profile} plan={plan} onProfileUpdated={onProfileUpdated} onClose={onClose} />
           </motion.div>
         )}
       </AnimatePresence>

@@ -188,6 +188,7 @@ if (dataLoading) {
                     coachSuggestions={coachSuggestions}
                     onOpenCoach={handleOpenCoachWithMessage}
                     onOpenProfile={() => setActiveTab("profile")}
+                    onProfileUpdated={handleProfileUpdated}
                   />
                 )}
                 {activeTab === "library" && <LibraryTab />}
@@ -203,7 +204,9 @@ if (dataLoading) {
                     initialMessage={coachInitialMessage}
                   />
                 )}
-                {activeTab === "stats" && <StatsTab />}
+                {activeTab === "stats" && (
+                  <StatsTab plan={plan} profile={profile} onProfileUpdated={handleProfileUpdated} />
+                )}
                 {activeTab === "profile" && (
                   <ProfileTab
                     plan={plan}

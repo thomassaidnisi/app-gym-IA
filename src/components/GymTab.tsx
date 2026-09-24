@@ -16,6 +16,7 @@ interface GymTabProps {
   coachSuggestions?: ProgressionSuggestion[];
   onOpenCoach?: (initialMessage: string) => void;
   onOpenProfile?: () => void;
+  onProfileUpdated?: (updated: UserProfile) => void;
 }
 
 const DAY_KEYS = [
@@ -117,7 +118,7 @@ const DayPopup: React.FC<{
   );
 };
 
-export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach, onOpenProfile }) => {
+export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach, onOpenProfile, onProfileUpdated }) => {
   const { startTimer } = useRestTimer();
   const { user } = useAuth();
 
@@ -950,6 +951,9 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
         <WorkoutSession
           day={sessionDay}
           resume={resumeState}
+          profile={profile}
+          plan={plan}
+          onProfileUpdated={onProfileUpdated}
           onClose={() => { setSessionDay(null); setResumeState(null); setStatsRefreshKey((k) => k + 1); }}
         />
       )}

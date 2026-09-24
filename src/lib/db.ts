@@ -34,6 +34,9 @@ export async function saveProfile(userId: string, profile: UserProfile) {
     day_descriptions: profile.day_descriptions ?? null,
     plan_pillars: profile.plan_pillars ?? null,
     walkthrough_seen: profile.walkthrough_seen ?? false,
+    completed_days: profile.completed_days ?? null,
+    current_streak: profile.current_streak ?? 0,
+    longest_streak: profile.longest_streak ?? 0,
     updated_at: new Date().toISOString(),
   });
 }
@@ -92,6 +95,9 @@ export async function loadUserData(userId: string): Promise<{
       day_descriptions: profileRow.day_descriptions ?? undefined,
       plan_pillars: profileRow.plan_pillars ?? undefined,
       walkthrough_seen: profileRow.walkthrough_seen ?? false,
+      completed_days: profileRow.completed_days ?? [],
+      current_streak: profileRow.current_streak ?? 0,
+      longest_streak: profileRow.longest_streak ?? 0,
     } as UserProfile;
   }
 

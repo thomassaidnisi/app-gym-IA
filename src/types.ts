@@ -35,6 +35,9 @@ export interface UserProfile {
   day_descriptions?: DayDescriptions;
   plan_pillars?: PlanPillar[];
   walkthrough_seen?: boolean;
+  completed_days?: string[];
+  current_streak?: number;
+  longest_streak?: number;
 }
 
 export interface PlanPillar {
