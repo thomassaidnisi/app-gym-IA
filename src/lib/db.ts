@@ -59,6 +59,8 @@ export async function loadUserData(userId: string): Promise<{
     supabase.from("plans").select("*").eq("user_id", userId).single(),
   ]);
 
+  console.log("day_descriptions cargado:", profileRow?.day_descriptions);
+
   let profile: UserProfile | null = null;
   if (profileRow) {
     profile = {
