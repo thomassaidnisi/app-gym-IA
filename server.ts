@@ -158,6 +158,7 @@ async function startServer() {
         muscle_focus = [] as string[],
         other_activities = [] as { name: string; frequency: string; days: string[] }[],
         preferred_schedule = "",
+        preferred_days = [] as string[],
         trainingLocation = "gym",
         locationByDay = {} as Record<string, string>,
         gymCardioEquipment = [] as string[],
@@ -208,6 +209,9 @@ ${specificGoal ? `- Objetivo o evento específico: "${specificGoal}". Considerá
 ${muscle_focus.length > 0 && !muscle_focus.includes("⚖️ Full body") ? `- Zonas musculares a priorizar: ${muscle_focus.join(", ")}. Aumentá el volumen de trabajo en estos grupos.` : ""}
 ${otherActivitiesStr ? `- Actividades extra:\n${otherActivitiesStr}\n  Evitá programar fuerza de piernas (o el grupo muscular más solicitado por esa actividad) los mismos días, y administrá la carga en los días previos y posteriores para que no interfiera con el rendimiento en esa actividad ni la recuperación.` : ""}
 ${preferred_schedule && preferred_schedule !== "Sin preferencia" ? `- Horario preferido de entrenamiento: ${preferred_schedule}. Tené en cuenta esto para las recomendaciones de timing (ej. pautas de nutrición pre/post entreno, tipo de calentamiento según hora del día).` : ""}
+${preferred_days.length > 0
+  ? `- Días preferidos de entrenamiento en gym: ${formatDayList(preferred_days)} (RESPETAR ESTRICTAMENTE — el plan semanal debe asignar las sesiones de gym exactamente en esos días).`
+  : `- Días preferidos de entrenamiento: no especificado — distribuí los días libremente según daysPerWeek.`}
 ${trainingLocation === "both"
   ? `- Ubicación de entrenamiento: AMBOS lugares según este calendario semanal: ${JSON.stringify(locationByDay)}
 - Cardio en GYM: ${gymCardioEquipment.length > 0 ? gymCardioEquipment.join(", ") : "Ninguno"}
