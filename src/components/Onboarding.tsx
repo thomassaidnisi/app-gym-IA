@@ -14,7 +14,7 @@ interface OnboardingProps {
 
 type StepId =
   | "intro" | "name" | "physical" | "goals" | "medical" | "experience"
-  | "location" | "dayAssignment" | "availability" | "otherActivities"
+  | "location" | "dayAssignment" | "availability" | "preferredDays" | "otherActivities"
   | "gymCardio" | "gymStrength" | "homeEquipment"
   | "preferences";
 
@@ -139,6 +139,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
   const [exercisesToAvoid, setExercisesToAvoid] = useState("");
   const [injuriesOrLimitations, setInjuriesOrLimitations] = useState("");
   const [specificGoal, setSpecificGoal] = useState("");
+  const [preferredDays, setPreferredDays] = useState<string[]>([]);
   const [otherActivitiesChips, setOtherActivitiesChips] = useState<string[]>([]);
   const [otherActivityText, setOtherActivityText] = useState("");
   const [activityDetails, setActivityDetails] = useState<Record<string, { frequency: string; days: string[] }>>({});
@@ -158,7 +159,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
       "intro", "name", "physical", "goals", "medical", "experience", "location",
     ];
     if (trainingLocation === "both") s.push("dayAssignment");
-    s.push("availability", "otherActivities");
+    s.push("availability", "preferredDays", "otherActivities");
     if (trainingLocation === "both") {
       s.push("gymCardio", "gymStrength", "homeEquipment");
     } else {
@@ -231,6 +232,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
         setInjuriesOrLimitations(p.injuriesOrLimitations || "");
         setSpecificGoal(p.specificGoal || "");
         setPreferredSchedule(p.preferred_schedule || "");
+        setPreferredDays(p.preferred_days || []);
         if (p.other_activities) {
           const known = new Set(OTHER_ACTIVITY_OPTIONS);
           const chipActivities = p.other_activities.filter((a) => known.has(a.name));
@@ -326,10 +328,26 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
     );
   };
 
+  const togglePreferredDay = (dayKey: string) => {
+    setPreferredDays((prev) => {
+      if (prev.includes(dayKey)) return prev.filter((d) => d !== dayKey);
+      if (prev.length >= daysPerWeek) return prev; // ya alcanzó el máximo — no-op
+      return [...prev, dayKey];
+    });
+  };
+
   const toggleOtherActivity = (activity: string) => {
     setOtherActivitiesChips((prev) =>
       prev.includes(activity) ? prev.filter((a) => a !== activity) : [...prev, activity]
     );
+  };
+
+  /** Al perder foco con texto libre cargado, lo suma como una actividad más — así abre su sub-form de frecuencia/días igual que los chips predefinidos. */
+  const handleOtherActivityBlur = () => {
+    const text = otherActivityText.trim();
+    if (text && !otherActivitiesChips.includes(text)) {
+      setOtherActivitiesChips((prev) => [...prev, text]);
+    }
   };
 
   const setActivityFrequency = (activity: string, frequency: string) => {
@@ -375,6 +393,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
       case "location":      return trainingLocation !== "";
       case "dayAssignment": return Object.values(locationByDay).some(v => v === "gym" || v === "home");
       case "availability":  return daysPerWeek >= 2 && daysPerWeek <= 6 && sessionDuration !== "";
+      case "preferredDays": return preferredDays.length === daysPerWeek;
       case "otherActivities": return true;
       case "gymCardio":     return (trainingLocation === "both" ? gymCardioEquipment : cardioEquipment).length > 0;
       case "gymStrength":   return (trainingLocation === "both" ? gymStrengthEquipment : strengthEquipment).length > 0;
@@ -416,6 +435,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
       exercisesToAvoid, injuriesOrLimitations, specificGoal,
       other_activities: activeOtherActivities,
       preferred_schedule: preferredSchedule || undefined,
+      preferred_days: preferredDays.length > 0 ? preferredDays : undefined,
       trainingLocation: (trainingLocation as "home" | "gym" | "both") || "gym",
       // Only include split-location fields for "both" — avoids empty arrays polluting the payload
       ...(trainingLocation === "both" && {
@@ -1022,6 +1042,35 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
               </div>
             )}
 
+            {/* Step: Preferred Days (NEW) */}
+            {currentStepId === "preferredDays" && (
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-white mb-2">¿Qué días querés entrenar?</h2>
+                <p className="text-white/50 text-sm mb-6 leading-relaxed">Elegí hasta {daysPerWeek} días. Opcional.</p>
+                <div className="grid grid-cols-7 gap-1.5 mb-2">
+                  {ACTIVITY_DAY_OPTIONS.map(({ short, key }) => (
+                    <button
+                      key={key}
+                      onClick={() => togglePreferredDay(key)}
+                      className={`py-3 rounded-lg text-sm font-bold transition-all border ${
+                        preferredDays.includes(key)
+                          ? "bg-white text-black border-white shadow-md"
+                          : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+                      }`}
+                    >{short}</button>
+                  ))}
+                </div>
+                <p className="text-xs text-zinc-400 mb-4">{preferredDays.length} de {daysPerWeek} días seleccionados</p>
+                <button
+                  type="button"
+                  onClick={() => { setPreferredDays([]); handleNext(); }}
+                  className="w-full text-center text-white/40 hover:text-white/70 text-xs font-semibold uppercase tracking-wider transition-colors py-2"
+                >
+                  No tengo preferencia
+                </button>
+              </div>
+            )}
+
             {/* Step: Other Activities (NEW) */}
             {currentStepId === "otherActivities" && (
               <div>
@@ -1061,16 +1110,29 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
 
                           <label className="block text-xs font-semibold text-white/40 uppercase mb-2">¿Qué días?</label>
                           <div className="grid grid-cols-7 gap-1.5">
-                            {ACTIVITY_DAY_OPTIONS.map(({ short, key }) => (
-                              <button
-                                key={key}
-                                onClick={() => toggleActivityDay(activity, key)}
-                                className={`py-2.5 rounded-lg text-xs font-bold transition-all border ${
-                                  detail.days.includes(key) ? "bg-white text-black border-white shadow-md" : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
-                                }`}
-                              >{short}</button>
-                            ))}
+                            {ACTIVITY_DAY_OPTIONS.map(({ short, key }) => {
+                              const isActive = detail.days.includes(key);
+                              const isConflict = preferredDays.includes(key);
+                              return (
+                                <button
+                                  key={key}
+                                  onClick={() => toggleActivityDay(activity, key)}
+                                  className={`py-2.5 rounded-lg text-xs font-bold transition-all border ${
+                                    isConflict
+                                      ? isActive
+                                        ? "bg-amber-500/25 border-amber-500 text-amber-300"
+                                        : "bg-amber-500/5 border-amber-500/50 text-amber-400"
+                                      : isActive
+                                      ? "bg-white text-black border-white shadow-md"
+                                      : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+                                  }`}
+                                >{short}</button>
+                              );
+                            })}
                           </div>
+                          {detail.days.some((d) => preferredDays.includes(d)) && (
+                            <p className="text-[11px] text-amber-400 mt-2">⚠️ Ya elegiste este día para el gym</p>
+                          )}
                         </div>
                       );
                     })}
@@ -1082,6 +1144,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                   <TooltipButton tooltipKey="activity" onOpen={setActiveTooltip} />
                 </label>
                 <input type="text" value={otherActivityText} onChange={(e) => setOtherActivityText(e.target.value)}
+                  onBlur={handleOtherActivityBlur}
                   placeholder="¿Otro? Ej: padel, golf, crossfit..."
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/40 text-sm placeholder-white/20 mb-4"
                 />

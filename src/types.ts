@@ -33,6 +33,7 @@ export interface UserProfile {
   other_activities?: ActivityDetail[];
   preferred_schedule?: string;
   day_descriptions?: DayDescriptions;
+  preferred_days?: string[];
   plan_pillars?: PlanPillar[];
   walkthrough_seen?: boolean;
   completed_days?: string[];
