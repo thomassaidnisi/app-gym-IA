@@ -1,5 +1,5 @@
 import { UserProfile, FullTrainingPlan, DayDescriptions } from "../types";
-import { saveProfile } from "./db";
+import { saveUserProgress } from "./db";
 
 const WEEKLY_SCHEDULE_KEY_BY_ES: Record<string, keyof FullTrainingPlan["weekly_schedule"]> = {
   lunes: "monday",
@@ -115,13 +115,18 @@ export async function markDayCompleted(
     plan
   );
 
+  const finalLongestStreak = Math.max(longest_streak, profile.longest_streak ?? 0);
   const updatedProfile: UserProfile = {
     ...profile,
     completed_days: nextCompletedDays,
     current_streak,
-    longest_streak: Math.max(longest_streak, profile.longest_streak ?? 0),
+    longest_streak: finalLongestStreak,
   };
 
-  await saveProfile(userId, updatedProfile);
+  await saveUserProgress(userId, {
+    completed_days: nextCompletedDays,
+    current_streak,
+    longest_streak: finalLongestStreak,
+  });
   return updatedProfile;
 }

@@ -4,7 +4,7 @@ import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Spa
 import { motion, AnimatePresence } from "motion/react";
 import { PlanUpload } from "./PlanUpload";
 import { useAuth } from "./AuthContext";
-import { saveProfile, savePlan } from "../lib/db";
+import { saveProfile, saveOnboardingData, savePlanMetadata, savePlan } from "../lib/db";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 
 interface OnboardingProps {
@@ -468,7 +468,44 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
       localStorage.setItem("healty_plan", JSON.stringify(generatedPlan));
       localStorage.setItem("healty_profile", JSON.stringify(finalProfile));
       if (user) {
-        await Promise.all([saveProfile(user.id, finalProfile), savePlan(user.id, generatedPlan)]);
+        await Promise.all([
+          saveProfile(user.id, {
+            name: finalProfile.name,
+            apellido: finalProfile.apellido,
+            age: finalProfile.age,
+            weight: finalProfile.weight,
+            height: finalProfile.height,
+            gender: finalProfile.gender,
+          }),
+          saveOnboardingData(user.id, {
+            goals: finalProfile.goals,
+            objective: finalProfile.objective,
+            muscle_focus: finalProfile.muscle_focus,
+            experience: finalProfile.experience,
+            daysPerWeek: finalProfile.daysPerWeek,
+            medicalConditions: finalProfile.medicalConditions,
+            sessionDuration: finalProfile.sessionDuration,
+            cardioEquipment: finalProfile.cardioEquipment,
+            strengthEquipment: finalProfile.strengthEquipment,
+            exercisesToAvoid: finalProfile.exercisesToAvoid,
+            injuriesOrLimitations: finalProfile.injuriesOrLimitations,
+            specificGoal: finalProfile.specificGoal,
+            trainingLocation: finalProfile.trainingLocation,
+            locationByDay: finalProfile.locationByDay,
+            homeEquipment: finalProfile.homeEquipment,
+            gymCardioEquipment: finalProfile.gymCardioEquipment,
+            gymStrengthEquipment: finalProfile.gymStrengthEquipment,
+            other_activities: finalProfile.other_activities,
+            preferred_schedule: finalProfile.preferred_schedule,
+            preferred_days: finalProfile.preferred_days,
+          }),
+          savePlanMetadata(user.id, {
+            day_descriptions: finalProfile.day_descriptions,
+            plan_pillars: finalProfile.plan_pillars,
+            walkthrough_seen: finalProfile.walkthrough_seen,
+          }),
+          savePlan(user.id, generatedPlan),
+        ]);
       }
       handlePlanReady(generatedPlan, finalProfile);
     } catch (e: any) {
@@ -586,7 +623,31 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
           localStorage.setItem("healty_plan", JSON.stringify(plan));
           localStorage.setItem("healty_profile", JSON.stringify(profilePayload));
           if (user) {
-            await Promise.all([saveProfile(user.id, profilePayload), savePlan(user.id, plan)]);
+            await Promise.all([
+              saveProfile(user.id, {
+                name: profilePayload.name,
+                apellido: profilePayload.apellido,
+                age: profilePayload.age,
+                weight: profilePayload.weight,
+                height: profilePayload.height,
+                gender: profilePayload.gender,
+              }),
+              saveOnboardingData(user.id, {
+                goals: profilePayload.goals,
+                objective: profilePayload.objective,
+                muscle_focus: profilePayload.muscle_focus,
+                experience: profilePayload.experience,
+                daysPerWeek: profilePayload.daysPerWeek,
+                medicalConditions: profilePayload.medicalConditions,
+                sessionDuration: profilePayload.sessionDuration,
+                cardioEquipment: profilePayload.cardioEquipment,
+                strengthEquipment: profilePayload.strengthEquipment,
+                exercisesToAvoid: profilePayload.exercisesToAvoid,
+                injuriesOrLimitations: profilePayload.injuriesOrLimitations,
+                trainingLocation: profilePayload.trainingLocation,
+              }),
+              savePlan(user.id, plan),
+            ]);
           }
           handlePlanReady(plan, profilePayload);
         }}

@@ -3,7 +3,7 @@ import { UserProfile, FullTrainingPlan, NutritionGuide, ChatMessage, CoachRespon
 import { motion, AnimatePresence } from "motion/react";
 import { Send, Sparkles, Check, Loader2 } from "lucide-react";
 import { useAuth } from "./AuthContext";
-import { savePlan, saveProfile, loadWorkoutLogsMerged } from "../lib/db";
+import { savePlan, savePlanMetadata, loadWorkoutLogsMerged } from "../lib/db";
 
 interface CoachTabProps {
   plan: FullTrainingPlan | null;
@@ -200,7 +200,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
       if (dayDescriptionsPatch && profile) {
         const updatedProfile: UserProfile = { ...profile, day_descriptions: dayDescriptionsPatch };
         onProfileUpdated(updatedProfile);
-        if (user) saveProfile(user.id, updatedProfile).catch(console.error);
+        if (user) savePlanMetadata(user.id, { day_descriptions: dayDescriptionsPatch }).catch(console.error);
       }
       const modified = messages.map((msg) => msg.id === messageId ? { ...msg, applied: true } : msg);
       setMessages(modified);

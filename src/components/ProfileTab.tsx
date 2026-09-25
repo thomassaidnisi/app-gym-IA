@@ -4,7 +4,7 @@ import { ShieldAlert, Clock, Dumbbell, Compass, Check, X, Edit2, Sun, Moon, Moni
 import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "./ThemeContext";
 import { useAuth } from "./AuthContext";
-import { saveProfile } from "../lib/db";
+import { saveProfile, saveOnboardingData } from "../lib/db";
 import { supabase } from "../lib/supabase";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 
@@ -95,7 +95,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
     setAvatarUrl(url);
     const updated: UserProfile = { ...profile, avatar_url: url };
     localStorage.setItem("healty_profile", JSON.stringify(updated));
-    if (user) saveProfile(user.id, updated).catch(console.error);
+    if (user) saveProfile(user.id, { avatar_url: url }).catch(console.error);
     onProfileUpdated(updated);
   };
 
@@ -171,7 +171,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       injuriesOrLimitations,
     };
     localStorage.setItem("healty_profile", JSON.stringify(updated));
-    if (user) saveProfile(user.id, updated).catch(console.error);
+    if (user) {
+      // exercisesToAvoid/injuriesOrLimitations son datos del onboarding, no de identidad —
+      // van a onboarding_data, no a profiles.
+      saveProfile(user.id, { name, age: Number(age), weight: Number(weight), height: Number(height), gender }).catch(console.error);
+      saveOnboardingData(user.id, { exercisesToAvoid, injuriesOrLimitations }).catch(console.error);
+    }
     onProfileUpdated(updated);
     setIsEditOpen(false);
   };
