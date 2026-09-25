@@ -20,9 +20,31 @@ import { AuthScreen } from "./components/AuthScreen";
 import { loadUserData, loadNutritionGuide, saveNutritionGuide, loadExerciseLogs } from "./lib/db";
 import { getProgressionSuggestions } from "./lib/progression";
 
+// Optimistic restore: leídos sincrónicamente en el primer render, antes de
+// cualquier llamada a Supabase — así un reinicio de la PWA (ej. iOS matando el
+// proceso en background) muestra el home de inmediato con lo último conocido,
+// en vez de un splash/Onboarding mientras se espera la red.
+function readCachedPlan(): FullTrainingPlan | null {
+  try {
+    const raw = localStorage.getItem("healty_plan");
+    return raw ? (JSON.parse(raw) as FullTrainingPlan) : null;
+  } catch {
+    return null;
+  }
+}
+
+function readCachedProfile(): UserProfile | null {
+  try {
+    const raw = localStorage.getItem("healty_profile");
+    return raw ? (JSON.parse(raw) as UserProfile) : null;
+  } catch {
+    return null;
+  }
+}
+
 function AppContent() {
-  const [plan, setPlan] = useState<FullTrainingPlan | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [plan, setPlan] = useState<FullTrainingPlan | null>(readCachedPlan);
+  const [profile, setProfile] = useState<UserProfile | null>(readCachedProfile);
   const [nutritionGuide, setNutritionGuide] = useState<NutritionGuide | null>(null);
   const [coachSuggestions, setCoachSuggestions] = useState<ProgressionSuggestion[]>([]);
   const [coachInitialMessage, setCoachInitialMessage] = useState<string | undefined>(undefined);
@@ -125,14 +147,18 @@ if (!user) {
   );
 }
 
-// Hay sesión: mientras se resuelven perfil/plan del usuario, splash — nunca
-// mostrar Onboarding de forma transitoria mientras esto carga (era el flash reportado).
-if (dataLoading) {
-  return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100vh" }} />;
-}
-
-  if (!plan || !profile) {
-    return (
+// Restauración optimista: si ya tenemos plan+perfil (de localStorage, leídos
+// sincrónicamente al montar, o de un fetch previo) los mostramos de inmediato
+// y dejamos que Supabase actualice en silencio en background — nunca bloqueamos
+// el home ya conocido esperando a la red (esto es lo que evita la pantalla en
+// blanco / vuelta al Onboarding cuando iOS mata y recarga la PWA).
+if (!plan || !profile) {
+  // Sin plan/perfil todavía (usuario nuevo, o cache local vacía) — ahí sí hace
+  // falta esperar a Supabase antes de decidir Onboarding vs. mostrar datos.
+  if (dataLoading) {
+    return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100vh" }} />;
+  }
+  return (
       <ThemeProvider>
         <div className="w-full min-h-[100dvh] bg-black text-white px-4 md:px-0 safe-pt pb-10">
           <div className="max-w-lg mx-auto">

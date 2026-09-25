@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DayPlan, Exercise, ExerciseBlock, QueueItem, SessionState, CompletedSet, WorkoutLog, PausedSession } from "../types";
 
 export interface SuggestedWeight {
@@ -282,21 +282,35 @@ export function useWorkoutSession(day: DayPlan, resume?: PausedSession | null) {
     });
   };
 
-  /** Snapshot the current progress so it can be restored later via the `resume` param. */
-  const pauseSession = (): PausedSession | null => {
-    if (!session.currentItem) return null;
+  /** Snapshot of the current progress, restorable later via the `resume` param. */
+  const buildSnapshot = (s: SessionState): PausedSession | null => {
+    if (!s.currentItem) return null;
     return {
       dayName: day.name,
-      currentItemId: session.currentItem.id,
-      upcomingQueueIds: session.upcomingQueue.map((item) => item.id),
-      completedQueueIds: session.completedQueue.map((item) => item.id),
-      currentSet: session.currentSet,
-      totalSets: session.totalSets,
-      completedSets: session.completedSets,
-      sessionStartTime: session.sessionStartTime.toISOString(),
+      currentItemId: s.currentItem.id,
+      upcomingQueueIds: s.upcomingQueue.map((item) => item.id),
+      completedQueueIds: s.completedQueue.map((item) => item.id),
+      currentSet: s.currentSet,
+      totalSets: s.totalSets,
+      completedSets: s.completedSets,
+      sessionStartTime: s.sessionStartTime.toISOString(),
       pausedAt: Date.now(),
     };
   };
+
+  const pauseSession = (): PausedSession | null => buildSnapshot(session);
+
+  // Autoguardado: persiste el progreso en cada avance (serie completada, ejercicio
+  // saltado, etc.), no solo cuando el usuario toca "Pausar" — así una sesión no se
+  // pierde si se apaga la pantalla o el SO mata la app en background. Reutiliza la
+  // misma key/forma que el pause manual, así "paused_session" siempre refleja el
+  // último estado conocido y GymTab lo puede ofrecer para retomar al reabrir.
+  useEffect(() => {
+    if (session.phase === "intro" || session.phase === "summary") return;
+    const snapshot = buildSnapshot(session);
+    if (snapshot) localStorage.setItem("paused_session", JSON.stringify(snapshot));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   /**
    * Reorder upcoming exercises by providing the desired sequence of IDs.

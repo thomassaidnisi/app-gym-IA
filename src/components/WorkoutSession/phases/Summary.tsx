@@ -167,6 +167,7 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
 
     saveWorkoutLog(log);
     markAttendance(todayStr);
+    localStorage.removeItem("paused_session");
     if (user) {
       saveWorkoutLogRemote(user.id, todayStr, log)
         .then(() => console.log("✅ WorkoutLog guardado en Supabase"))
