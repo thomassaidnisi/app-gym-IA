@@ -39,14 +39,11 @@ export async function saveProfile(userId: string, profile: UserProfile) {
     longest_streak: profile.longest_streak ?? 0,
     updated_at: new Date().toISOString(),
   };
-  console.log("upsert payload day_descriptions:", payload.day_descriptions ? "PRESENTE" : "AUSENTE");
-  console.log("upsert payload plan_pillars:", payload.plan_pillars ? "PRESENTE" : "AUSENTE");
   const result = await supabase.from("profiles").upsert(payload);
   if (result.error) {
     // supabase-js no rechaza la promesa en fallas lógicas (RLS, constraint, etc.) —
     // sin este chequeo explícito, un saveProfile().catch(...) en el caller nunca se
     // entera de que el upsert falló silenciosamente.
-    alert("saveProfile falló: " + result.error.message);
     console.error("saveProfile error:", result.error);
   }
   return result;
@@ -72,8 +69,6 @@ export async function loadUserData(userId: string): Promise<{
     supabase.from("profiles").select("*").eq("id", userId).single(),
     supabase.from("plans").select("*").eq("user_id", userId).single(),
   ]);
-
-  console.log("day_descriptions cargado:", profileRow?.day_descriptions);
 
   let profile: UserProfile | null = null;
   if (profileRow) {

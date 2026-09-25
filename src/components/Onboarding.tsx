@@ -443,8 +443,6 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
         plan_pillars: generatedPlan.plan_pillars,
         walkthrough_seen: false,
       };
-      alert("keys recibidas: " + Object.keys(generatedPlan).join(", "));
-      console.log("perfil a guardar:", { ...finalProfile });
       localStorage.setItem("healty_plan", JSON.stringify(generatedPlan));
       localStorage.setItem("healty_profile", JSON.stringify(finalProfile));
       if (user) {

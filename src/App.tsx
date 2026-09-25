@@ -35,8 +35,8 @@ function readCachedPlan(): FullTrainingPlan | null {
 
 function readCachedProfile(): UserProfile | null {
   try {
-    const raw = localStorage.getItem("healty_profile");
-    return raw ? (JSON.parse(raw) as UserProfile) : null;
+    const cached = localStorage.getItem("healty_profile");
+    return cached ? JSON.parse(cached) : null;
   } catch {
     return null;
   }
@@ -312,7 +312,6 @@ if (!plan || !profile) {
 
           <RestTimerOverlay />
 
-          {console.log("walkthrough check:", { plan_pillars: profile?.plan_pillars, walkthrough_seen: profile?.walkthrough_seen })}
           {profile.plan_pillars && profile.plan_pillars.length > 0 && !profile.walkthrough_seen && (
             <PlanWalkthrough
               pillars={profile.plan_pillars}
