@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Onboarding } from "./components/Onboarding";
 import { WelcomeScreen } from "./components/WelcomeScreen";
@@ -17,7 +17,7 @@ import { FullTrainingPlan, UserProfile, NutritionGuide, ProgressionSuggestion } 
 import { Dumbbell, Apple, BarChart2, User as UserIcon, MessageSquare, BookOpen } from "lucide-react";
 import { AuthProvider, useAuth } from "./components/AuthContext";
 import { AuthScreen } from "./components/AuthScreen";
-import { loadUserData, loadNutritionGuide, saveNutritionGuide, loadExerciseLogs } from "./lib/db";
+import { loadUserData, loadNutritionGuide, saveNutritionGuide, loadExerciseLogs, clearLocalUserCache } from "./lib/db";
 import { getProgressionSuggestions } from "./lib/progression";
 
 // Optimistic restore: leídos sincrónicamente en el primer render, antes de
@@ -89,7 +89,23 @@ useEffect(() => {
 
   const { user, isLoading, isPasswordRecovery } = useAuth();
 
+  // Rastrea el user.id anterior para detectar cambio de usuario (no solo login/logout)
+  // y limpiar el caché de ese usuario antes de cargar los datos del nuevo.
+  const prevUserIdRef = useRef<string | null>(null);
+
 useEffect(() => {
+  const prevUserId = prevUserIdRef.current;
+  const newUserId = user?.id ?? null;
+  if (prevUserId && prevUserId !== newUserId) {
+    // El usuario logueado cambió (o cerró sesión por una vía que no pasó por
+    // signOut() de AuthContext, ej. token expirado) — limpiar el caché del
+    // usuario anterior antes de tocar el estado de plan/profile.
+    clearLocalUserCache();
+    setPlan(null);
+    setProfile(null);
+  }
+  prevUserIdRef.current = newUserId;
+
   if (!user) { setDataLoading(false); return; }
   // Reset explícito: si veníamos de un render sin usuario (dataLoading ya en false),
   // sin esto habría un render intermedio con user truthy + dataLoading stale-false +

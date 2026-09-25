@@ -8,6 +8,43 @@ function logIfError(label: string, result: { error: any }) {
   return result;
 }
 
+// Claves exactas de localStorage que usa la app (grep de todos los localStorage.setItem del repo).
+const STATIC_LOCAL_KEYS = [
+  "healty_plan",
+  "healty_profile",
+  "healty_chat_history",
+  "paused_session",
+  "workoutLogs",
+];
+
+// Prefijos de claves con sufijo dinámico (fecha, nombre de ejercicio, etc.).
+const DYNAMIC_LOCAL_KEY_PREFIXES = [
+  "log_",                          // log_{date}_{exerciseName}
+  "reps_",                         // reps_{date}_{exerciseName}
+  "coach_suggestions_dismissed_",  // coach_suggestions_dismissed_{date}
+  "gym_",                          // gym_{date}
+  "stats_",                        // stats_{date}
+];
+
+/**
+ * Borra todo el caché local de la app (plan, perfil, sesión pausada, historial de
+ * chat, logs de peso/reps por ejercicio, asistencia, etc.). Llamar al cerrar sesión
+ * o al detectar que el usuario logueado cambió — antes de cargar los datos del
+ * nuevo usuario, para no arrastrar caché del anterior.
+ */
+export function clearLocalUserCache() {
+  for (const key of STATIC_LOCAL_KEYS) localStorage.removeItem(key);
+
+  const toRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && DYNAMIC_LOCAL_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) {
+      toRemove.push(key);
+    }
+  }
+  for (const key of toRemove) localStorage.removeItem(key);
+}
+
 export async function saveProfile(
   userId: string,
   data: {
