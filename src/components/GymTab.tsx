@@ -3,7 +3,7 @@ import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion, PausedSe
 import { WorkoutSession } from "./WorkoutSession";
 import {
   Dumbbell, Clock, Play, Youtube, Check, FileText,
-  PersonStanding, Footprints, Bike, Moon, Zap, Flame, CalendarDays, ChevronDown, X, RotateCcw,
+  PersonStanding, Footprints, Bike, Moon, Zap, Flame, CalendarDays, ChevronDown, X, RotateCcw, BookOpen,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRestTimer } from "./RestTimerContext";
@@ -17,6 +17,7 @@ interface GymTabProps {
   onOpenCoach?: (initialMessage: string) => void;
   onOpenProfile?: () => void;
   onProfileUpdated?: (updated: UserProfile) => void;
+  onOpenWalkthrough?: () => void;
 }
 
 const DAY_KEYS = [
@@ -118,7 +119,7 @@ const DayPopup: React.FC<{
   );
 };
 
-export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach, onOpenProfile, onProfileUpdated }) => {
+export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach, onOpenProfile, onProfileUpdated, onOpenWalkthrough }) => {
   const { startTimer } = useRestTimer();
   const { user } = useAuth();
 
@@ -561,6 +562,17 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                     </span>
                   )}
                 </button>
+
+                {profile.plan_pillars && profile.plan_pillars.length > 0 && (
+                  <button
+                    onClick={onOpenWalkthrough}
+                    className="absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", backdropFilter: "blur(8px)" }}
+                    aria-label="Ver pilares del plan"
+                  >
+                    <BookOpen className="w-4 h-4 text-white" strokeWidth={1.5} />
+                  </button>
+                )}
               </div>
 
               {/* Today card */}

@@ -7,9 +7,11 @@ import { markWalkthroughSeen } from "../lib/db";
 interface PlanWalkthroughProps {
   pillars: PlanPillar[];
   onClose: () => void;
+  /** true cuando se reabre desde el botón de "releer pilares" — ya está visto, no hay que volver a marcarlo. */
+  readOnly?: boolean;
 }
 
-export const PlanWalkthrough: React.FC<PlanWalkthroughProps> = ({ pillars, onClose }) => {
+export const PlanWalkthrough: React.FC<PlanWalkthroughProps> = ({ pillars, onClose, readOnly = false }) => {
   const { user } = useAuth();
   const [index, setIndex] = useState(0);
   const [finishing, setFinishing] = useState(false);
@@ -17,8 +19,18 @@ export const PlanWalkthrough: React.FC<PlanWalkthroughProps> = ({ pillars, onClo
   const pillar = pillars[index];
 
   const handleFinish = async () => {
+    if (readOnly) {
+      onClose();
+      return;
+    }
     setFinishing(true);
-    if (user) await markWalkthroughSeen(user.id).catch(console.error);
+    if (user) {
+      const result = await markWalkthroughSeen(user.id);
+      if (result.error) {
+        console.error("PlanWalkthrough: markWalkthroughSeen falló:", result.error);
+      }
+    }
+    setFinishing(false);
     onClose();
   };
 
@@ -100,7 +112,7 @@ export const PlanWalkthrough: React.FC<PlanWalkthroughProps> = ({ pillars, onClo
             className="flex-1 h-14 rounded-2xl font-black text-base text-black disabled:opacity-60 transition-opacity"
             style={{ backgroundColor: "#c8f135" }}
           >
-            {isLast ? "Entendido" : "Siguiente"}
+            {isLast ? (readOnly ? "Cerrar" : "Entendido") : "Siguiente"}
           </motion.button>
         </div>
       </motion.div>

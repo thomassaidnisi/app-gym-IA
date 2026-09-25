@@ -52,6 +52,9 @@ function AppContent() {
 const [dataLoading, setDataLoading] = useState(true);
   // Solo relevante mientras no hay sesión: null = WelcomeScreen, si no AuthScreen en ese modo.
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
+  // Reapertura manual del walkthrough de pilares (botón en GymTab) — separado del
+  // auto-show por walkthrough_seen, así no se re-marca ni se confunde con la primera vez.
+  const [manualWalkthroughOpen, setManualWalkthroughOpen] = useState(false);
 
 
 useEffect(() => {
@@ -231,6 +234,7 @@ if (!plan || !profile) {
                     onOpenCoach={handleOpenCoachWithMessage}
                     onOpenProfile={() => setActiveTab("profile")}
                     onProfileUpdated={handleProfileUpdated}
+                    onOpenWalkthrough={() => setManualWalkthroughOpen(true)}
                   />
                 )}
                 {activeTab === "library" && <LibraryTab />}
@@ -328,12 +332,20 @@ if (!plan || !profile) {
 
           <RestTimerOverlay />
 
-          {profile.plan_pillars && profile.plan_pillars.length > 0 && !profile.walkthrough_seen && (
-            <PlanWalkthrough
-              pillars={profile.plan_pillars}
-              onClose={() => setProfile((p) => (p ? { ...p, walkthrough_seen: true } : p))}
-            />
-          )}
+          {(() => {
+            const shouldAutoShow = !!profile.plan_pillars && !profile.walkthrough_seen;
+            if (!profile.plan_pillars || (!shouldAutoShow && !manualWalkthroughOpen)) return null;
+            return (
+              <PlanWalkthrough
+                pillars={profile.plan_pillars}
+                readOnly={!shouldAutoShow}
+                onClose={() => {
+                  if (shouldAutoShow) setProfile((p) => (p ? { ...p, walkthrough_seen: true } : p));
+                  setManualWalkthroughOpen(false);
+                }}
+              />
+            );
+          })()}
         </div>
       </RestTimerProvider>
     </ThemeProvider>

@@ -154,7 +154,8 @@ export async function saveUserProgress(
 }
 
 export async function markWalkthroughSeen(userId: string) {
-  return supabase.from("plan_metadata").update({ walkthrough_seen: true }).eq("user_id", userId);
+  const result = await supabase.from("plan_metadata").update({ walkthrough_seen: true }).eq("user_id", userId);
+  return logIfError("markWalkthroughSeen", result);
 }
 
 export async function savePlan(userId: string, plan: FullTrainingPlan) {
