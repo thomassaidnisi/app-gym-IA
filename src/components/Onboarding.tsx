@@ -123,6 +123,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
 
   // --- Existing state ---
   const [name, setName] = useState("");
+  const [apellido, setApellido] = useState("");
   const [age, setAge] = useState<number | "">("");
   const [weight, setWeight] = useState<number | "">("");
   const [height, setHeight] = useState<number | "">("");
@@ -218,6 +219,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
         setGoals(initialGoals);
         setMuscleFocus(p.muscle_focus || []);
         setName(p.name || "");
+        setApellido(p.apellido || "");
         setAge(p.age || "");
         setWeight(p.weight || "");
         setHeight(p.height || "");
@@ -385,7 +387,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
   const isStepValid = () => {
     switch (currentStepId) {
       case "intro":         return true;
-      case "name":          return name.trim().length > 0;
+      case "name":          return name.trim().length > 0 && apellido.trim().length > 0;
       case "physical":      return age !== "" && age > 0 && weight !== "" && weight > 0 && height !== "" && height > 0 && gender !== "";
       case "goals":         return goals.length > 0;
       case "medical":       return medicalConditions.length > 0 || otherMedical.trim().length > 0;
@@ -428,7 +430,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
     );
 
     const payload: UserProfile = {
-      name, age: Number(age), weight: Number(weight), height: Number(height),
+      name, apellido, age: Number(age), weight: Number(weight), height: Number(height),
       gender, goals, objective: goals.join(", "), muscle_focus: muscleFocus,
       medicalConditions: activeMedicalList, experience, daysPerWeek,
       sessionDuration, cardioEquipment, strengthEquipment,
@@ -570,7 +572,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
   // --- Upload flow ---
   if (onboardingFlow === "upload") {
     const profilePayload: UserProfile = {
-      name, age: Number(age), weight: Number(weight), height: Number(height),
+      name, apellido, age: Number(age), weight: Number(weight), height: Number(height),
       gender, goals, objective: goals.join(", "), muscle_focus: muscleFocus,
       medicalConditions, experience, daysPerWeek, sessionDuration,
       cardioEquipment, strengthEquipment, exercisesToAvoid, injuriesOrLimitations,
@@ -800,8 +802,14 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                 <input
                   type="text" value={name} onChange={(e) => setName(e.target.value)}
                   placeholder="Escribe tu nombre"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-white/40 text-base placeholder-white/20"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-white/40 text-base placeholder-white/20 mb-3"
                   id="name-input" autoFocus
+                />
+                <input
+                  type="text" value={apellido} onChange={(e) => setApellido(e.target.value)}
+                  placeholder="Apellido"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-white/40 text-base placeholder-white/20"
+                  id="apellido-input"
                 />
               </div>
             )}

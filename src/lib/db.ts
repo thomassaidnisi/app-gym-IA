@@ -5,7 +5,7 @@ export async function saveProfile(userId: string, profile: UserProfile) {
   const payload = {
     id: userId,
     nombre: profile.name,
-    apellido: (profile as any).apellido ?? null,
+    apellido: profile.apellido ?? null,
     fecha_nacimiento: (profile as any).fecha_nacimiento ?? null,
     edad: profile.age,
     weight: profile.weight ?? null,
@@ -75,6 +75,7 @@ export async function loadUserData(userId: string): Promise<{
   if (profileRow) {
     profile = {
       name: profileRow.nombre ?? "",
+      apellido: profileRow.apellido ?? undefined,
       age: profileRow.edad ?? 0,
       weight: profileRow.weight ?? 0,
       height: profileRow.height ?? 0,

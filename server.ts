@@ -140,6 +140,7 @@ async function startServer() {
     try {
       const {
         name,
+        apellido = "",
         age,
         weight,
         height,
@@ -190,7 +191,7 @@ async function startServer() {
 Diseñá un plan de entrenamiento personalizado y completo basado en este perfil:
 
 PERFIL DEL USUARIO:
-- Nombre: ${name}
+- Nombre: ${name}${apellido ? ' ' + apellido : ''}
 - Edad: ${age} años
 - Peso: ${weight} kg
 - Altura: ${height} cm
