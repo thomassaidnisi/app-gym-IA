@@ -406,6 +406,7 @@ RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
     try {
       const {
         name,
+        apellido = "",
         age,
         weight,
         height,
@@ -430,7 +431,7 @@ RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
 Eres un nutricionista deportivo. Tu tarea es generar una guía nutricional personalizada, precisa y basada en evidencia científica. No inventes valores — usá las fórmulas indicadas.
 
 PERFIL DEL USUARIO:
-- Nombre: ${nombre}
+- Nombre: ${nombre}${apellido ? ' ' + apellido : ''}
 - Edad: ${edad} años
 - Peso: ${peso} kg
 - Altura: ${altura} cm
@@ -553,6 +554,7 @@ Devolvé ÚNICAMENTE un JSON válido RFC 8259. Sin comentarios, sin trailing com
       }
 
       const name = (profile && profile.name) || "Atleta";
+      const apellido = (profile && profile.apellido) || "";
       const age = profile.age || "No especificada";
       const weight = profile.weight || "No especificado";
       const height = profile.height || "No especificada";
@@ -584,7 +586,7 @@ Devolvé ÚNICAMENTE un JSON válido RFC 8259. Sin comentarios, sin trailing com
       const instructionsPrompt = `Eres un experto en digitalizar planes de entrenamiento de gimnasio. Te voy a dar un documento (PDF, foto o tabla de Excel) que contiene un plan de entrenamiento real, probablemente armado por un profesor o gimnasio. Tu tarea es extraer TODA la información y estructurarla en el formato JSON que te indico abajo.
 
 PERFIL DEL USUARIO (para darte contexto de sus necesidades, NO para inventar ejercicios que no vengan en el documento):
-- Nombre: ${name}
+- Nombre: ${name}${apellido ? ' ' + apellido : ''}
 - Edad: ${age} años, Peso: ${weight}kg, Altura: ${height}cm
 - Objetivo: ${objectiveText}
 - Condiciones médicas: ${medicalConditions}
@@ -754,7 +756,7 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
       const prompt = `Eres un coach personal y fisiólogo del ejercicio experto. Estás ayudando a ${profile.name || "Atleta"} a personalizar su plan de entrenamiento.
 
 PERFIL DEL USUARIO:
-- Nombre: ${profile.name || "Atleta"}
+- Nombre: ${profile.name || "Atleta"}${profile.apellido ? ' ' + profile.apellido : ''}
 - Edad: ${profile.age || "No especificada"} años, Peso: ${profile.weight || "No especificado"}kg, Altura: ${profile.height || "No especificada"}cm
 - Objetivos: ${profile.goals && profile.goals.length > 0 ? profile.goals.join(", ") : (profile.objective || "No especificado")}
 - Nivel: ${profile.experience || "No especificado"}
