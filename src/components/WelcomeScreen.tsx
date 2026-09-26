@@ -8,7 +8,7 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onLogin, onSignup }) => {
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden">
       {/* Background image */}
       <img
         src="/welcome-bg.jpg"
@@ -23,7 +23,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onLogin, onSignup 
 
       {/* Content */}
       <div
-        className="relative z-10 flex flex-col justify-end min-h-screen pb-12 px-6"
+        className="relative z-10 flex flex-col justify-end h-full px-6"
         style={{
           paddingTop: "env(safe-area-inset-top, 24px)",
           paddingBottom: "max(48px, env(safe-area-inset-bottom, 24px))",
