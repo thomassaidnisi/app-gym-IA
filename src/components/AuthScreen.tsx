@@ -61,7 +61,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
 
   if (isPasswordRecovery) {
     return (
-      <div className="relative min-h-[100dvh] w-full overflow-hidden">
+      <div className="fixed inset-0 overflow-hidden">
         <img
           src="/auth-bg.png"
           alt=""
@@ -71,7 +71,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
         />
         <div className="absolute inset-0 bg-black/50" style={{ zIndex: 10 }} />
         <div
-          className="relative min-h-[100dvh] flex items-center justify-center md:justify-end px-5 md:pr-16"
+          className="relative h-full flex items-center justify-center md:justify-end px-5 md:pr-16"
           style={{
             zIndex: 20,
             paddingTop: "env(safe-area-inset-top, 24px)",
@@ -226,7 +226,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
   };
 
   return (
-    <div className="relative min-h-[100dvh] w-full overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden">
       {/* Background image */}
       <img
         src="/auth-bg.png"
@@ -241,7 +241,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
 
       {/* Content */}
       <div
-        className="relative min-h-[100dvh] flex items-center justify-center md:justify-end px-5 md:pr-16"
+        className="relative h-full flex items-center justify-center md:justify-end px-5 md:pr-16"
         style={{
           zIndex: 20,
           paddingTop: "env(safe-area-inset-top, 24px)",
