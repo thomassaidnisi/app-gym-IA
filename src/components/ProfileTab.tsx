@@ -532,11 +532,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           >
             <button
               onClick={() => setShowAvatarFullscreen(false)}
-              className="absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+              className="absolute right-6 bg-black/50 backdrop-blur-sm rounded-full p-2 z-50"
+              style={{ top: "max(24px, env(safe-area-inset-top, 24px))" }}
               aria-label="Cerrar"
             >
-              <X className="w-5 h-5 text-white" />
+              <X size={20} className="text-white" />
             </button>
             <img src={avatarUrl} alt="" className="max-w-full max-h-full object-contain" />
           </motion.div>
