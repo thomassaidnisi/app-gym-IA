@@ -14,7 +14,7 @@ import { RestTimerProvider } from "./components/RestTimerContext";
 import { RestTimerOverlay } from "./components/RestTimerOverlay";
 import { ThemeProvider } from "./components/ThemeContext";
 import { FullTrainingPlan, UserProfile, NutritionGuide, ProgressionSuggestion } from "./types";
-import { Dumbbell, Apple, BarChart2, User as UserIcon, MessageSquare, BookOpen } from "lucide-react";
+import { Dumbbell, Apple, User, MessageSquare, BookOpen } from "lucide-react";
 import { AuthProvider, useAuth } from "./components/AuthContext";
 import { AuthScreen } from "./components/AuthScreen";
 import { loadUserData, loadNutritionGuide, saveNutritionGuide, loadExerciseLogs, clearLocalUserCache } from "./lib/db";
@@ -282,7 +282,7 @@ if (!plan || !profile) {
                   { id: "library", Icon: BookOpen,      label: "Library" },
                   { id: "coach",   Icon: MessageSquare, label: "Coach" },
                   { id: "nutricion", Icon: Apple,       label: "Nutrición" },
-                  { id: "stats",   Icon: BarChart2,     label: "Stats" },
+                  { id: "stats",   Icon: User,          label: "Yo" },
                 ] as const
               ).map(({ id, Icon, label }) =>
                 id === "coach" ? (
