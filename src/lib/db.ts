@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { UserProfile, FullTrainingPlan, WorkoutLog, NutritionGuide } from "../types";
+import { UserProfile, FullTrainingPlan, WorkoutLog, NutritionGuide, PR, WeeklyProgress, ExerciseHistoryEntry } from "../types";
 
 /** Solo se incluyen en el upsert las claves presentes en `data` — así un caller parcial
  * (ej. subir solo el avatar) nunca pisa con null las columnas que no está tocando. */
@@ -309,6 +309,109 @@ export async function loadExerciseLogs(
     .order("date", { ascending: false });
   if (error || !data) return [];
   return data;
+}
+
+function parseWeight(peso: string | undefined | null): number {
+  if (!peso) return NaN;
+  return parseFloat(peso.replace(/[^\d.]/g, ""));
+}
+
+/** Lunes (YYYY-MM-DD, local) de la semana que contiene hoy, `weeksBack` semanas atrás. */
+function weekStartStr(weeksBack: number): string {
+  const now = new Date();
+  const dow = now.getDay(); // 0 = domingo
+  const diffToMonday = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday - weeksBack * 7);
+  monday.setHours(0, 0, 0, 0);
+  const y = monday.getFullYear();
+  const m = String(monday.getMonth() + 1).padStart(2, "0");
+  const d = String(monday.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export async function getPersonalRecords(userId: string): Promise<PR[]> {
+  const logs = await loadExerciseLogs(userId);
+  const best = new Map<string, PR>();
+  for (const log of logs) {
+    const weight = parseWeight(log.peso);
+    if (isNaN(weight)) continue;
+    const current = best.get(log.exercise_name);
+    if (!current || weight > current.maxWeight) {
+      best.set(log.exercise_name, {
+        exerciseName: log.exercise_name,
+        maxWeight: weight,
+        maxReps: log.reps ?? "",
+        date: log.date,
+      });
+    }
+  }
+  return Array.from(best.values())
+    .sort((a, b) => b.maxWeight - a.maxWeight)
+    .slice(0, 10);
+}
+
+export async function getWeeklyProgress(userId: string): Promise<WeeklyProgress> {
+  const logs = await loadExerciseLogs(userId);
+  const thisWeekStart = weekStartStr(0);
+  const lastWeekStart = weekStartStr(1);
+
+  const thisWeekLogs = logs.filter((l) => l.date >= thisWeekStart);
+  const lastWeekLogs = logs.filter((l) => l.date >= lastWeekStart && l.date < thisWeekStart);
+
+  const volumeOf = (rows: typeof logs) =>
+    rows.reduce((sum, l) => {
+      const weight = parseWeight(l.peso);
+      const reps = parseFloat(l.reps ?? "");
+      return sum + (isNaN(weight) || isNaN(reps) ? 0 : weight * reps);
+    }, 0);
+
+  const thisWeekVolume = volumeOf(thisWeekLogs);
+  const lastWeekVolume = volumeOf(lastWeekLogs);
+  const percentChange = lastWeekVolume > 0
+    ? ((thisWeekVolume - lastWeekVolume) / lastWeekVolume) * 100
+    : thisWeekVolume > 0 ? 100 : 0;
+  const sessionsThisWeek = new Set(thisWeekLogs.map((l) => l.date)).size;
+
+  // Ejercicio con mayor mejora de peso máximo esta semana vs la anterior.
+  const maxWeightByExercise = (rows: typeof logs) => {
+    const map = new Map<string, number>();
+    for (const l of rows) {
+      const w = parseWeight(l.peso);
+      if (isNaN(w)) continue;
+      const current = map.get(l.exercise_name);
+      if (current === undefined || w > current) map.set(l.exercise_name, w);
+    }
+    return map;
+  };
+  const thisWeekMax = maxWeightByExercise(thisWeekLogs);
+  const lastWeekMax = maxWeightByExercise(lastWeekLogs);
+  let topImprovedExercise: string | undefined;
+  let bestImprovement = 0;
+  for (const [name, weight] of thisWeekMax) {
+    const prev = lastWeekMax.get(name);
+    if (prev === undefined) continue;
+    const improvement = weight - prev;
+    if (improvement > bestImprovement) {
+      bestImprovement = improvement;
+      topImprovedExercise = name;
+    }
+  }
+
+  return { thisWeekVolume, lastWeekVolume, percentChange, sessionsThisWeek, topImprovedExercise };
+}
+
+export async function getExerciseList(userId: string): Promise<string[]> {
+  const logs = await loadExerciseLogs(userId);
+  return Array.from(new Set(logs.map((l) => l.exercise_name))).sort((a, b) => a.localeCompare(b));
+}
+
+export async function getExerciseHistory(userId: string, exerciseName: string): Promise<ExerciseHistoryEntry[]> {
+  const logs = await loadExerciseLogs(userId);
+  return logs
+    .filter((l) => l.exercise_name === exerciseName)
+    .map((l) => ({ date: l.date, peso: parseWeight(l.peso), reps: l.reps ?? "" }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export async function saveWorkoutLog(userId: string, date: string, log: WorkoutLog) {

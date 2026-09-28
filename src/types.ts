@@ -140,6 +140,27 @@ export interface ExerciseLog {
   weight: string;
 }
 
+export interface PR {
+  exerciseName: string;
+  maxWeight: number;
+  maxReps: string;
+  date: string;
+}
+
+export interface WeeklyProgress {
+  thisWeekVolume: number;
+  lastWeekVolume: number;
+  percentChange: number;
+  sessionsThisWeek: number;
+  topImprovedExercise?: string;
+}
+
+export interface ExerciseHistoryEntry {
+  date: string;
+  peso: number;
+  reps: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'coach';

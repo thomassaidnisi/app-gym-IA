@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { WorkoutLog, FullTrainingPlan, UserProfile } from "../types";
-import { Trophy, TrendingUp } from "lucide-react";
-import { motion } from "motion/react";
+import { WorkoutLog, FullTrainingPlan, UserProfile, PR, WeeklyProgress } from "../types";
+import { Trophy, TrendingUp, ChevronRight, Dumbbell } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "./AuthContext";
-import { saveGymAttendance, deleteGymAttendance, loadGymAttendance, loadWorkoutLogsMerged } from "../lib/db";
+import {
+  saveGymAttendance, deleteGymAttendance, loadGymAttendance, loadWorkoutLogsMerged,
+  getPersonalRecords, getWeeklyProgress, getExerciseList,
+} from "../lib/db";
 import { markDayCompleted } from "../lib/streak";
+import { ExerciseHistoryModal } from "./ExerciseHistoryModal";
 
 const MONTH_NAMES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
@@ -62,12 +66,32 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
 
+  const [personalRecords, setPersonalRecords] = useState<PR[]>([]);
+  const [weeklyProgress, setWeeklyProgress] = useState<WeeklyProgress | null>(null);
+  const [exerciseList, setExerciseList] = useState<string[]>([]);
+  const [isLoadingRecords, setIsLoadingRecords] = useState(true);
+  const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
+
   useEffect(() => {
     if (!user) return;
     loadGymAttendance(user.id).then((dates) => {
       for (const date of dates) localStorage.setItem(`gym_${date}`, "true");
       loadMonthAttendance();
     }).catch(() => {});
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) { setIsLoadingRecords(false); return; }
+    setIsLoadingRecords(true);
+    Promise.all([
+      getPersonalRecords(user.id),
+      getWeeklyProgress(user.id),
+      getExerciseList(user.id),
+    ]).then(([records, progress, exercises]) => {
+      setPersonalRecords(records);
+      setWeeklyProgress(progress);
+      setExerciseList(exercises);
+    }).finally(() => setIsLoadingRecords(false));
   }, [user]);
 
   useEffect(() => {
@@ -207,12 +231,32 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
           <Trophy size={18} className="text-amber-400" />
           <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">Récords personales</p>
         </div>
-        <div className="text-center py-6">
-          <Trophy className="w-10 h-10 mx-auto mb-2 text-zinc-700" />
-          <p className="text-xs text-zinc-500 max-w-[220px] mx-auto leading-relaxed">
-            Completá tu primer entrenamiento para ver tus récords personales
-          </p>
-        </div>
+        {isLoadingRecords ? (
+          <div className="animate-pulse space-y-2">
+            <div className="h-9 rounded-xl bg-zinc-800" />
+            <div className="h-9 rounded-xl bg-zinc-800" />
+            <div className="h-9 rounded-xl bg-zinc-800" />
+          </div>
+        ) : personalRecords.length === 0 ? (
+          <div className="text-center py-6">
+            <Trophy className="w-10 h-10 mx-auto mb-2 text-zinc-700" />
+            <p className="text-xs text-zinc-500 max-w-[220px] mx-auto leading-relaxed">
+              Completá tu primer entrenamiento para ver tus récords personales
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {personalRecords.slice(0, 5).map((pr) => (
+              <div key={pr.exerciseName} className="flex items-center justify-between rounded-xl px-3 py-2.5 bg-white/5">
+                <span className="text-xs font-semibold text-white truncate pr-2">{pr.exerciseName}</span>
+                <div className="text-right shrink-0">
+                  <span className="text-sm font-black text-brand tabular-nums">{pr.maxWeight} kg</span>
+                  <span className="block text-[10px] text-zinc-500">{pr.date}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* D) Mi progreso */}
@@ -221,12 +265,33 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
           <TrendingUp size={18} className="text-brand" />
           <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">Mi progreso</p>
         </div>
-        <div className="text-center py-6">
-          <TrendingUp className="w-10 h-10 mx-auto mb-2 text-zinc-700" />
-          <p className="text-xs text-zinc-500 max-w-[220px] mx-auto leading-relaxed">
-            Tu historial de ejercicios aparecerá acá después de tu primera sesión
-          </p>
-        </div>
+        {isLoadingRecords ? (
+          <div className="animate-pulse h-16 rounded-xl bg-zinc-800" />
+        ) : !weeklyProgress || (weeklyProgress.thisWeekVolume === 0 && weeklyProgress.lastWeekVolume === 0) ? (
+          <div className="text-center py-6">
+            <TrendingUp className="w-10 h-10 mx-auto mb-2 text-zinc-700" />
+            <p className="text-xs text-zinc-500 max-w-[220px] mx-auto leading-relaxed">
+              Tu historial de ejercicios aparecerá acá después de tu primera sesión
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-black tabular-nums text-white">{weeklyProgress.thisWeekVolume.toLocaleString("es-AR")} kg</span>
+              {weeklyProgress.percentChange >= 0 ? (
+                <span className="text-xs font-semibold text-green-400">↑ {weeklyProgress.percentChange.toFixed(0)}%</span>
+              ) : (
+                <span className="text-xs font-semibold text-red-400">↓ {Math.abs(weeklyProgress.percentChange).toFixed(0)}%</span>
+              )}
+            </div>
+            <p className="text-xs text-zinc-400">{weeklyProgress.sessionsThisWeek} sesiones esta semana</p>
+            {weeklyProgress.topImprovedExercise && (
+              <p className="text-xs text-zinc-500">
+                Ejercicio más mejorado: <span className="text-white font-semibold">{weeklyProgress.topImprovedExercise}</span>
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* E) Asistencia — sin tocar */}
@@ -277,6 +342,45 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
           })}
         </div>
       </div>
+
+      {/* Mis ejercicios */}
+      <div className="rounded-3xl p-5 mb-6 shadow-sm" style={{ backgroundColor: T.bg, border: `1px solid ${T.border}` }}>
+        <h4 className="text-xs uppercase tracking-wider font-bold mb-3 select-none" style={{ color: T.textPri }}>
+          Mis ejercicios
+        </h4>
+        {exerciseList.length === 0 ? (
+          <div className="text-center py-6 rounded-2xl" style={{ backgroundColor: T.bgSec, border: `1px dashed ${T.border}` }}>
+            <Dumbbell className="w-8 h-8 block mx-auto mb-2" style={{ color: T.textTer }} />
+            <p className="text-xs leading-relaxed max-w-[220px] mx-auto select-none" style={{ color: T.textSec }}>
+              Todavía no registraste ningún ejercicio.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-1.5 max-h-72 overflow-y-auto">
+            {exerciseList.map((name) => (
+              <button
+                key={name}
+                onClick={() => setSelectedExercise(name)}
+                className="w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-left transition-opacity active:opacity-70"
+                style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}` }}
+              >
+                <span className="text-xs font-semibold truncate" style={{ color: T.textPri }}>{name}</span>
+                <ChevronRight className="w-4 h-4 shrink-0" style={{ color: T.textTer }} />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {selectedExercise && user && (
+          <ExerciseHistoryModal
+            userId={user.id}
+            exerciseName={selectedExercise}
+            onClose={() => setSelectedExercise(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

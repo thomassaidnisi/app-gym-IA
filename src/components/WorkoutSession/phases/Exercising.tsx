@@ -7,6 +7,8 @@ import { QueueSheet } from "../QueueSheet";
 import { TechniqueSheet } from "../TechniqueSheet";
 import { ExitSheet } from "../ExitSheet";
 import { SkipConfirmModal } from "../SkipConfirmModal";
+import { useAuth } from "../../AuthContext";
+import { getExerciseHistory } from "../../../lib/db";
 
 interface ExercisingProps {
   session: SessionState;
@@ -144,6 +146,19 @@ export const Exercising: React.FC<ExercisingProps> = ({
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const suggestion = suggestWeight(currentExercise.name, currentExercise.weight);
   const pb = getPersonalBest(currentExercise.name);
+
+  const { user } = useAuth();
+  const [lastLogged, setLastLogged] = useState<{ peso: number; reps: string } | null>(null);
+  useEffect(() => {
+    if (!user) { setLastLogged(null); return; }
+    let cancelled = false;
+    getExerciseHistory(user.id, currentExercise.name).then((entries) => {
+      if (cancelled) return;
+      const last = entries[entries.length - 1];
+      setLastLogged(last && !isNaN(last.peso) ? { peso: last.peso, reps: last.reps } : null);
+    }).catch(() => setLastLogged(null));
+    return () => { cancelled = true; };
+  }, [user, currentExercise.name]);
   const pbLabel = pb.weight !== null && pb.reps !== null
     ? `${pb.weight} kg · ${pb.reps} reps`
     : pb.weight !== null
@@ -302,6 +317,11 @@ export const Exercising: React.FC<ExercisingProps> = ({
           <h2 className="text-sm font-bold text-white leading-snug line-clamp-1 mt-0.5">
             {currentExercise.name}
           </h2>
+          {lastLogged && (
+            <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Última vez: {lastLogged.peso}kg × {lastLogged.reps} reps
+            </p>
+          )}
           {pbLabel && (
             <span
               className="inline-block text-xs rounded-full px-3 py-0.5 mt-1.5"
