@@ -161,6 +161,16 @@ export interface ExerciseHistoryEntry {
   reps: string;
 }
 
+export interface NewPR {
+  exerciseName: string;
+  weight: number;
+  previousBest: number | null;
+}
+
+export interface PRCelebrationData {
+  prs: NewPR[];
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'coach';

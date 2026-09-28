@@ -351,6 +351,20 @@ export async function getPersonalRecords(userId: string): Promise<PR[]> {
     .slice(0, 10);
 }
 
+export async function getPreviousPersonalRecords(userId: string, beforeDate: string): Promise<Record<string, number>> {
+  const logs = await loadExerciseLogs(userId);
+  const best: Record<string, number> = {};
+  for (const log of logs) {
+    if (log.date >= beforeDate) continue;
+    const weight = parseWeight(log.peso);
+    if (isNaN(weight)) continue;
+    if (best[log.exercise_name] === undefined || weight > best[log.exercise_name]) {
+      best[log.exercise_name] = weight;
+    }
+  }
+  return best;
+}
+
 export async function getWeeklyProgress(userId: string): Promise<WeeklyProgress> {
   const logs = await loadExerciseLogs(userId);
   const thisWeekStart = weekStartStr(0);

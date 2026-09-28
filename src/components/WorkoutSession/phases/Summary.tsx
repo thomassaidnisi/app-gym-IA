@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Trophy } from "lucide-react";
-import { SessionState, DayPlan, FullTrainingPlan, UserProfile, CompletedSet, WorkoutLog } from "../../../types";
+import { SessionState, DayPlan, FullTrainingPlan, UserProfile, CompletedSet, WorkoutLog, NewPR, PRCelebrationData } from "../../../types";
 import { useAuth } from "../../AuthContext";
-import { saveWorkoutLog as saveWorkoutLogRemote, saveGymAttendance } from "../../../lib/db";
+import { saveWorkoutLog as saveWorkoutLogRemote, saveGymAttendance, saveExerciseLog, getPreviousPersonalRecords } from "../../../lib/db";
 import { markDayCompleted } from "../../../lib/streak";
+import { PRCelebration } from "../../PRCelebration";
 
 interface SummaryProps {
   session: SessionState;
@@ -112,6 +113,7 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
   );
   const [notes, setNotes] = useState(session.sessionNotes);
   const [saving, setSaving] = useState(false);
+  const [celebration, setCelebration] = useState<PRCelebrationData | null>(null);
 
   const durationMs = Date.now() - new Date(session.sessionStartTime).getTime();
   const durationMinutes = Math.max(1, Math.round(durationMs / 60000));
@@ -147,7 +149,7 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
     );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (saving) return;
     setSaving(true);
 
@@ -168,6 +170,7 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
     saveWorkoutLog(log);
     markAttendance(todayStr);
     localStorage.removeItem("paused_session");
+
     if (user) {
       saveWorkoutLogRemote(user.id, todayStr, log)
         .then(() => console.log("✅ WorkoutLog guardado en Supabase"))
@@ -176,6 +179,40 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
       markDayCompleted(user.id, todayStr, profile, plan)
         .then((updated) => onProfileUpdated?.(updated))
         .catch((err) => console.error("❌ Error actualizando racha:", err));
+
+      // Mejor set (peso más alto) por ejercicio, para detectar PRs y alimentar exercise_logs.
+      const sessionExercises = grouped
+        .map((g) => {
+          const withWeight = g.sets.filter((s) => s.weight !== null && s.weight > 0);
+          if (withWeight.length === 0) return null;
+          const best = withWeight.reduce((a, b) => ((b.weight as number) > (a.weight as number) ? b : a));
+          return { name: g.name, weight: best.weight as number, reps: best.reps };
+        })
+        .filter((e): e is { name: string; weight: number; reps: number } => e !== null);
+
+      if (sessionExercises.length > 0) {
+        try {
+          const previousPRs = await getPreviousPersonalRecords(user.id, todayStr);
+          const newPRs: NewPR[] = [];
+          for (const ex of sessionExercises) {
+            const prev = previousPRs[ex.name] ?? null;
+            if (prev === null || ex.weight > prev) {
+              newPRs.push({ exerciseName: ex.name, weight: ex.weight, previousBest: prev });
+            }
+            saveExerciseLog(user.id, todayStr, ex.name, {
+              peso: `${ex.weight} kg`,
+              reps: String(ex.reps),
+            }).catch(console.error);
+          }
+          if (newPRs.length > 0) {
+            setSaving(false);
+            setCelebration({ prs: newPRs });
+            return;
+          }
+        } catch (err) {
+          console.error("Error detectando récords personales:", err);
+        }
+      }
     }
     onClose();
   };
@@ -370,6 +407,15 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
           {saving ? "Guardando…" : "Guardar y terminar"}
         </motion.button>
       </div>
+
+      <AnimatePresence>
+        {celebration && (
+          <PRCelebration
+            data={celebration}
+            onClose={() => { setCelebration(null); onClose(); }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
