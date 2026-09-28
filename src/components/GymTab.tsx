@@ -637,53 +637,6 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                 )}
               </div>
 
-              {/* ── CHECK-IN DIARIO ── */}
-              {todayCheckin ? (
-                (() => {
-                  const info = getReadinessInfo(todayCheckin.readinessScore);
-                  return (
-                    <button
-                      onClick={() => setShowCheckin(true)}
-                      className="w-full text-left rounded-2xl p-4 mb-3 bg-zinc-800/60 border border-zinc-700"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white">Índice de hoy</span>
-                        <span className={`text-sm font-black ${info.color}`}>
-                          {todayCheckin.readinessScore} {info.label.toUpperCase()}
-                        </span>
-                      </div>
-                      <p className="text-xs text-zinc-400 mt-1">{info.message}</p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-zinc-300">
-                        <span className="inline-flex items-center gap-1"><Moon size={14} className="text-zinc-400" /> {todayCheckin.sleepHours}h</span>
-                        <span className="inline-flex items-center gap-1"><Zap size={14} className="text-zinc-400" /> {ENERGY_LABELS[todayCheckin.energyLevel] ?? todayCheckin.energyLevel}</span>
-                        <span className="inline-flex items-center gap-1"><Activity size={14} className="text-zinc-400" /> {SORENESS_LABELS[todayCheckin.muscleSoreness] ?? todayCheckin.muscleSoreness}</span>
-                      </div>
-                    </button>
-                  );
-                })()
-              ) : (
-                <button
-                  onClick={() => setShowCheckin(true)}
-                  className="w-full text-left rounded-2xl p-4 mb-3 bg-zinc-800/60 border border-zinc-700"
-                >
-                  <p className="text-sm font-bold text-white inline-flex items-center gap-1.5"><Zap size={14} className="text-zinc-400" /> ¿Cómo llegás hoy?</p>
-                  <p className="text-xs text-zinc-400 mt-1">Registrá tu estado en 30 seg →</p>
-                </button>
-              )}
-
-              {/* Coach proactivo */}
-              {coachIsLoading ? (
-                <div className="rounded-2xl px-5 py-4 mb-3 bg-zinc-900/60 border border-zinc-800 space-y-2">
-                  <div className="h-3 rounded bg-zinc-800 animate-pulse w-full" />
-                  <div className="h-3 rounded bg-zinc-800 animate-pulse w-2/3" />
-                </div>
-              ) : coachMessage ? (
-                <div className="rounded-2xl px-5 py-4 mb-3 bg-zinc-900/60 border border-zinc-800 flex items-start gap-2">
-                  <MessageSquare size={14} className="text-lime-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-zinc-300 leading-relaxed">{coachMessage}</p>
-                </div>
-              ) : null}
-
               {/* Today card */}
               {dayState === "completed" ? (
                 <motion.div
@@ -806,6 +759,53 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                     </p>
                   )}
                 </motion.div>
+              )}
+
+              {/* Coach proactivo */}
+              {coachIsLoading ? (
+                <div className="rounded-2xl px-5 py-4 mb-3 bg-zinc-900/60 border border-zinc-800 space-y-2">
+                  <div className="h-3 rounded bg-zinc-800 animate-pulse w-full" />
+                  <div className="h-3 rounded bg-zinc-800 animate-pulse w-2/3" />
+                </div>
+              ) : coachMessage ? (
+                <div className="rounded-2xl px-5 py-4 mb-3 bg-zinc-900/60 border border-zinc-800 flex items-start gap-2">
+                  <MessageSquare size={14} className="text-lime-400 shrink-0 mt-0.5" />
+                  <p className="text-sm text-zinc-300 leading-relaxed">{coachMessage}</p>
+                </div>
+              ) : null}
+
+              {/* ── CHECK-IN DIARIO ── */}
+              {todayCheckin ? (
+                (() => {
+                  const info = getReadinessInfo(todayCheckin.readinessScore);
+                  return (
+                    <button
+                      onClick={() => setShowCheckin(true)}
+                      className="w-full text-left rounded-2xl p-4 mb-3 bg-zinc-800/60 border border-zinc-700"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">Índice de hoy</span>
+                        <span className={`text-sm font-black ${info.color}`}>
+                          {todayCheckin.readinessScore} {info.label.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-400 mt-1">{info.message}</p>
+                      <div className="flex items-center gap-3 mt-2 text-xs text-zinc-300">
+                        <span className="inline-flex items-center gap-1"><Moon size={14} className="text-zinc-400" /> {todayCheckin.sleepHours}h</span>
+                        <span className="inline-flex items-center gap-1"><Zap size={14} className="text-zinc-400" /> {ENERGY_LABELS[todayCheckin.energyLevel] ?? todayCheckin.energyLevel}</span>
+                        <span className="inline-flex items-center gap-1"><Activity size={14} className="text-zinc-400" /> {SORENESS_LABELS[todayCheckin.muscleSoreness] ?? todayCheckin.muscleSoreness}</span>
+                      </div>
+                    </button>
+                  );
+                })()
+              ) : (
+                <button
+                  onClick={() => setShowCheckin(true)}
+                  className="w-full text-left rounded-2xl p-4 mb-3 bg-zinc-800/60 border border-zinc-700"
+                >
+                  <p className="text-sm font-bold text-white inline-flex items-center gap-1.5"><Zap size={14} className="text-zinc-400" /> ¿Cómo llegás hoy?</p>
+                  <p className="text-xs text-zinc-400 mt-1">Registrá tu estado en 30 seg →</p>
+                </button>
               )}
 
               {/* Aviso de pausa prolongada */}
