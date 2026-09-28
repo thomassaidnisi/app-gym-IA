@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { UserProfile, FullTrainingPlan, DayDescriptions, ActivityDetail, PlanPillar } from "../types";
-import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target, Bell, HelpCircle, X, LogOut } from "lucide-react";
+import { Dumbbell, ChevronRight, ChevronLeft, Check, AlertCircle, RefreshCw, Sparkles, FileUp, Target, Bell, HelpCircle, X, LogOut, Home, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PlanUpload } from "./PlanUpload";
 import { useAuth } from "./AuthContext";
@@ -583,7 +583,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
         >
           <Bell className="w-9 h-9 text-brand" />
         </div>
-        <h2 className="text-2xl font-bold tracking-tight text-white mb-2">¡Tu plan está listo! 🎉</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-white mb-2">¡Tu plan está listo!</h2>
         <p className="text-white/50 text-sm mb-8 max-w-xs leading-relaxed">
           ¿Querés que te recordemos cuando tenés que entrenar?
         </p>
@@ -1013,16 +1013,16 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                 <p className="text-white/50 text-sm mb-6 leading-relaxed">Define el equipamiento disponible para tu plan.</p>
                 <div className="flex flex-col gap-3">
                   {[
-                    { id: "gym",  icon: "🏋️", title: "Gimnasio", desc: "Prefiero el gimnasio" },
-                    { id: "home", icon: "🏠", title: "Casa",      desc: "Entreno en casa" },
-                    { id: "both", icon: "🔄", title: "Ambos",    desc: "Uso los dos lugares" },
+                    { id: "gym",  icon: <Dumbbell className="w-5 h-5" />, title: "Gimnasio", desc: "Prefiero el gimnasio" },
+                    { id: "home", icon: <Home className="w-5 h-5" />, title: "Casa",      desc: "Entreno en casa" },
+                    { id: "both", icon: <RefreshCw className="w-5 h-5" />, title: "Ambos",    desc: "Uso los dos lugares" },
                   ].map((opt) => (
                     <button
                       key={opt.id}
                       onClick={() => setTrainingLocation(opt.id as "home" | "gym" | "both")}
                       className={selBtn(trainingLocation === opt.id)}
                     >
-                      <span className="text-2xl mr-4 mt-1 bg-white/5 p-2 rounded-lg">{opt.icon}</span>
+                      <span className="mr-4 mt-1 bg-white/5 p-2 rounded-lg text-white">{opt.icon}</span>
                       <div className="flex-1 pr-6">
                         <h4 className="font-bold text-sm text-white mb-1">{opt.title}</h4>
                         <p className="text-xs text-white/50 leading-snug">{opt.desc}</p>
@@ -1045,8 +1045,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                 <p className="text-white/50 text-sm mb-2 leading-relaxed">
                   Tocá cada día para asignarlo. Los días sin asignar se tratarán como descanso.
                 </p>
-                <p className="text-white/30 text-xs mb-6 uppercase tracking-wider">
-                  Sin asignar → 🏋️ Gym → 🏠 Casa → Sin asignar
+                <p className="text-white/30 text-xs mb-6 uppercase tracking-wider inline-flex items-center gap-1 flex-wrap">
+                  Sin asignar → <Dumbbell size={11} /> Gym → <Home size={11} /> Casa → Sin asignar
                 </p>
                 <div className="flex flex-col gap-2">
                   {weekDayOptions.map(({ key, label }) => {
@@ -1062,9 +1062,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                         }`}
                       >
                         <span>{label}</span>
-                        <span>
-                          {val === "gym"  ? "🏋️ Gym"    :
-                           val === "home" ? "🏠 Casa"   :
+                        <span className="inline-flex items-center gap-1">
+                          {val === "gym"  ? (<><Dumbbell size={13} /> Gym</>)    :
+                           val === "home" ? (<><Home size={13} /> Casa</>)   :
                                             "Sin asignar"}
                         </span>
                       </button>
@@ -1200,7 +1200,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                             })}
                           </div>
                           {detail.days.some((d) => preferredDays.includes(d)) && (
-                            <p className="text-[11px] text-amber-400 mt-2">⚠️ Ya elegiste este día para el gym</p>
+                            <p className="text-[11px] text-amber-400 mt-2 inline-flex items-center gap-1"><AlertTriangle size={11} /> Ya elegiste este día para el gym</p>
                           )}
                         </div>
                       );

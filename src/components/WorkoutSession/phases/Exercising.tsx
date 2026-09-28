@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Minus, Plus, ListOrdered } from "lucide-react";
+import { X, Minus, Plus, ListOrdered, Check } from "lucide-react";
 import { ExerciseBlock, Exercise, QueueItem, SessionState } from "../../../types";
 import { SuggestedWeight } from "../../../hooks/useWorkoutSession";
 import { QueueSheet } from "../QueueSheet";
@@ -634,10 +634,10 @@ export const Exercising: React.FC<ExercisingProps> = ({
         <motion.button
           whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
           onClick={() => (isSuperset ? handleCompleteRound() : onCompleteSet(weight, reps))}
-          className="w-full h-14 rounded-2xl font-black text-base text-black"
+          className="w-full h-14 rounded-2xl font-black text-base text-black inline-flex items-center justify-center gap-1.5"
           style={{ backgroundColor: "#c8f135" }}
         >
-          {isSuperset ? "Terminé la ronda ✓" : "Terminé la serie ✓"}
+          {isSuperset ? "Terminé la ronda" : "Terminé la serie"} <Check size={18} strokeWidth={3} />
         </motion.button>
 
         <button

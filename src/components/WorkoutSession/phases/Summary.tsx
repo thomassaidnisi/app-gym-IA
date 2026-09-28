@@ -173,12 +173,12 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
 
     if (user) {
       saveWorkoutLogRemote(user.id, todayStr, log)
-        .then(() => console.log("✅ WorkoutLog guardado en Supabase"))
-        .catch((err) => console.error("❌ Error guardando WorkoutLog:", err));
+        .then(() => console.log("WorkoutLog guardado en Supabase"))
+        .catch((err) => console.error("Error guardando WorkoutLog:", err));
       saveGymAttendance(user.id, todayStr).catch(console.error);
       markDayCompleted(user.id, todayStr, profile, plan)
         .then((updated) => onProfileUpdated?.(updated))
-        .catch((err) => console.error("❌ Error actualizando racha:", err));
+        .catch((err) => console.error("Error actualizando racha:", err));
 
       // Mejor set (peso más alto) por ejercicio, para detectar PRs y alimentar exercise_logs.
       const sessionExercises = grouped

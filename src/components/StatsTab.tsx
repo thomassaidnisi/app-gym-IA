@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { WorkoutLog, FullTrainingPlan, UserProfile, PR, WeeklyProgress } from "../types";
-import { Trophy, TrendingUp, ChevronRight, Dumbbell, Activity } from "lucide-react";
+import { Trophy, TrendingUp, ChevronRight, Dumbbell, Activity, Flame, Calendar, BarChart2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "./AuthContext";
 import {
@@ -196,15 +196,15 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
 
         <div className="flex gap-2 mt-4">
           <div className="flex-1 rounded-2xl py-2.5 px-2 text-center bg-zinc-900">
-            <span className="block text-sm font-bold text-white">🔥 {profile?.current_streak ?? 0}</span>
+            <span className="flex items-center justify-center gap-1 text-sm font-bold text-white"><Flame size={14} /> {profile?.current_streak ?? 0}</span>
             <span className="block text-[10px] text-zinc-400 mt-0.5">días racha</span>
           </div>
           <div className="flex-1 rounded-2xl py-2.5 px-2 text-center bg-zinc-900">
-            <span className="block text-sm font-bold text-white">📅 {thisWeekSessions}</span>
+            <span className="flex items-center justify-center gap-1 text-sm font-bold text-white"><Calendar size={14} /> {thisWeekSessions}</span>
             <span className="block text-[10px] text-zinc-400 mt-0.5">ses. semana</span>
           </div>
           <div className="flex-1 rounded-2xl py-2.5 px-2 text-center bg-zinc-900">
-            <span className="block text-sm font-bold text-white">💪 {thisWeekVolume.toLocaleString("es-AR")}kg</span>
+            <span className="flex items-center justify-center gap-1 text-sm font-bold text-white"><BarChart2 size={14} /> {thisWeekVolume.toLocaleString("es-AR")}kg</span>
             <span className="block text-[10px] text-zinc-400 mt-0.5">volumen</span>
           </div>
         </div>
@@ -229,7 +229,7 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
         </div>
         <div className="border-t border-zinc-800 mt-4 pt-3 text-center">
           {isFirstWeek ? (
-            <span className="text-xs text-zinc-500">Primera semana registrada 💪</span>
+            <span className="text-xs text-zinc-500">Primera semana registrada</span>
           ) : volumeDiff >= 0 ? (
             <span className="text-xs text-green-400">↑ +{volumeDiff.toLocaleString("es-AR")} kg vs semana anterior</span>
           ) : (

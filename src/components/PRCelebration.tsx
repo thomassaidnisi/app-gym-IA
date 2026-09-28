@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { motion } from "motion/react";
+import { Trophy } from "lucide-react";
 import { PRCelebrationData } from "../types";
 
 interface PRCelebrationProps {
@@ -27,7 +28,7 @@ export const PRCelebration: React.FC<PRCelebrationProps> = ({ data, onClose }) =
         style={{ border: "1px solid rgba(200,241,53,0.3)" }}
       >
         <div className="text-center">
-          <span className="text-5xl block mb-2">🏆</span>
+          <Trophy size={48} className="mx-auto mb-2 text-brand" strokeWidth={1.5} />
           <h2 className="text-xl font-black text-white">
             {isSingle ? "¡Nuevo récord!" : `¡${data.prs.length} nuevos récords!`}
           </h2>

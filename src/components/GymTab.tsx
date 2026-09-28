@@ -4,6 +4,7 @@ import { WorkoutSession } from "./WorkoutSession";
 import {
   Dumbbell, Clock, Play, Youtube, Check, FileText,
   PersonStanding, Footprints, Bike, Moon, Zap, Flame, CalendarDays, ChevronDown, X, RotateCcw, BookOpen,
+  Activity, Home, AlertTriangle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRestTimer } from "./RestTimerContext";
@@ -615,8 +616,8 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                       <span key={l} className="text-[11px] bg-white/10 border border-white/10 text-white/50 px-2.5 py-1 rounded-full">{l}</span>
                     ))}
                     {(todayDayPlan as any).location && (
-                      <span className="text-[11px] bg-white/10 border border-white/10 text-white/50 px-2.5 py-1 rounded-full">
-                        {(todayDayPlan as any).location === "gym" ? "🏋️ Gym" : "🏠 Casa"}
+                      <span className="text-[11px] bg-white/10 border border-white/10 text-white/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                        {(todayDayPlan as any).location === "gym" ? (<><Dumbbell size={11} /> Gym</>) : (<><Home size={11} /> Casa</>)}
                       </span>
                     )}
                   </div>
@@ -654,7 +655,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   className="rounded-2xl px-4 py-3 mb-3 flex items-start gap-3"
                   style={{ backgroundColor: "rgba(251,191,36,0.10)", border: "1px solid rgba(251,191,36,0.30)" }}
                 >
-                  <span className="text-base mt-0.5 shrink-0">⚠️</span>
+                  <AlertTriangle size={16} className="mt-0.5 shrink-0" style={{ color: "rgba(251,191,36,0.95)" }} />
                   <p className="text-xs leading-relaxed" style={{ color: "rgba(251,191,36,0.95)" }}>
                     Volvés después de {daysSinceLastWorkout} días. Te recomendamos bajar el peso un 10–15% en esta primera sesión para evitar lesiones.
                   </p>
@@ -683,9 +684,9 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
               </div>
               <p className="text-xs text-zinc-400 mt-1">{info.message}</p>
               <div className="flex items-center gap-3 mt-2 text-xs text-zinc-300">
-                <span>😴 {todayCheckin.sleepHours}h</span>
-                <span>⚡ {ENERGY_LABELS[todayCheckin.energyLevel] ?? todayCheckin.energyLevel}</span>
-                <span>💪 {SORENESS_LABELS[todayCheckin.muscleSoreness] ?? todayCheckin.muscleSoreness}</span>
+                <span className="inline-flex items-center gap-1"><Moon size={14} className="text-zinc-400" /> {todayCheckin.sleepHours}h</span>
+                <span className="inline-flex items-center gap-1"><Zap size={14} className="text-zinc-400" /> {ENERGY_LABELS[todayCheckin.energyLevel] ?? todayCheckin.energyLevel}</span>
+                <span className="inline-flex items-center gap-1"><Activity size={14} className="text-zinc-400" /> {SORENESS_LABELS[todayCheckin.muscleSoreness] ?? todayCheckin.muscleSoreness}</span>
               </div>
             </button>
           );
@@ -695,7 +696,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
           onClick={() => setShowCheckin(true)}
           className="w-full text-left rounded-2xl p-4 mb-5 bg-zinc-800/60 border border-zinc-700"
         >
-          <p className="text-sm font-bold text-white">⚡ ¿Cómo llegás hoy?</p>
+          <p className="text-sm font-bold text-white inline-flex items-center gap-1.5"><Zap size={14} className="text-zinc-400" /> ¿Cómo llegás hoy?</p>
           <p className="text-xs text-zinc-400 mt-1">Registrá tu estado en 30 seg →</p>
         </button>
       )}
@@ -729,8 +730,8 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   {isGym ? shortName(scheduleValue) : "Rest"}
                 </span>
                 {profile.trainingLocation === "both" && isGym && (profile.locationByDay as any)?.[day.key] && (
-                  <span className="text-[9px] opacity-60 leading-none">
-                    {(profile.locationByDay as any)[day.key] === "gym" ? "🏋️" : "🏠"}
+                  <span className="opacity-60 leading-none">
+                    {(profile.locationByDay as any)[day.key] === "gym" ? <Dumbbell size={9} /> : <Home size={9} />}
                   </span>
                 )}
               </div>
@@ -769,8 +770,8 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                 {activeDay.duration}
               </span>
               {(activeDay as any).location && (
-                <span className="text-[9px] font-medium px-2 py-0.5 rounded-full select-none bg-zinc-800 border border-zinc-700 text-zinc-400">
-                  {(activeDay as any).location === "gym" ? "🏋️ Gym" : "🏠 Casa"}
+                <span className="text-[9px] font-medium px-2 py-0.5 rounded-full select-none bg-zinc-800 border border-zinc-700 text-zinc-400 inline-flex items-center gap-1">
+                  {(activeDay as any).location === "gym" ? (<><Dumbbell size={9} /> Gym</>) : (<><Home size={9} /> Casa</>)}
                 </span>
               )}
             </div>

@@ -573,7 +573,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                     {exercise.needs_review && (
                                       <span className="text-yellow-500 text-xs font-bold font-mono uppercase bg-yellow-500/10 border border-yellow-500/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
-                                        ⚠️ Revisar
+                                        <AlertTriangle size={11} /> Revisar
                                       </span>
                                     )}
                                     <input
