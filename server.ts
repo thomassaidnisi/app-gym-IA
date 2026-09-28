@@ -867,6 +867,54 @@ RESPONDÉ con este JSON exacto, sin texto adicional:
     }
   });
 
+  // Daily proactive coach message — short, cached client-side once per day.
+  // NOTA: no se llama "/api/coach-message" (ese path ya existe arriba para el chat del coach,
+  // que espera un body distinto — message/plan/profile). Usar el mismo path acá lo dejaría
+  // inalcanzable (Express resuelve la primera ruta registrada) o rompería el chat si se
+  // registrara antes. Por eso este endpoint vive en un path propio.
+  app.post("/api/coach-daily-message", async (req, res) => {
+    try {
+      const {
+        userName,
+        planName = "",
+        todayType,
+        todayTitle,
+        currentStreak = 0,
+        sessionsThisWeek = 0,
+        lastSessionDate = null,
+        readinessScore = null,
+      } = req.body;
+
+      if (!userName || !todayType || !todayTitle) {
+        return res.status(400).json({ error: "Faltan datos requeridos (userName, todayType, todayTitle)." });
+      }
+
+      const prompt = `Sos el coach personal de ${userName}.
+Contexto de hoy: ${todayTitle} (${todayType}), racha de ${currentStreak} días,
+${sessionsThisWeek} sesiones esta semana, última sesión: ${lastSessionDate ?? "no registrada"}.
+${readinessScore ? `Índice de preparación hoy: ${readinessScore}/100.` : ""}
+
+Escribí UN mensaje motivador y específico de máximo 2 oraciones para mostrar en su pantalla de inicio.
+Sin saludos. Sin emojis. Directo al punto. Que se sienta personal, no genérico.
+Respondé SOLO con el mensaje, sin comillas ni formato extra.`;
+
+      const ai = getGeminiClient();
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: { temperature: 0.8 },
+      });
+
+      const message = response.text?.trim();
+      if (!message) throw new Error("No se recibió respuesta del modelo Gemini.");
+
+      return res.json({ message });
+    } catch (error: any) {
+      console.error("Error in coach-daily-message API:", error);
+      return res.status(500).json({ error: "No se pudo generar el mensaje del coach." });
+    }
+  });
+
   // Exercise Library endpoint
   app.get("/api/exercise-library", async (req, res) => {
     try {

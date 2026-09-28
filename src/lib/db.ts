@@ -19,6 +19,8 @@ const STATIC_LOCAL_KEYS = [
   "healty_chat_history",
   "paused_session",
   "workoutLogs",
+  "coach_daily_message",
+  "coach_daily_message_date",
 ];
 
 // Prefijos de claves con sufijo dinámico (fecha, nombre de ejercicio, etc.).
