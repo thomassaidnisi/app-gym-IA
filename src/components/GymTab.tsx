@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion, PausedSession, DayDescription, DailyCheckinData } from "../types";
+import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion, PausedSession, DayDescription, DailyCheckinData, DayState } from "../types";
 import { WorkoutSession } from "./WorkoutSession";
 import {
   Dumbbell, Clock, Play, Youtube, Check, FileText,
   PersonStanding, Footprints, Bike, Moon, Zap, Flame, CalendarDays, ChevronDown, X, RotateCcw, BookOpen,
-  Activity, Home, AlertTriangle,
+  Activity, Home, AlertTriangle, BedDouble, CheckCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRestTimer } from "./RestTimerContext";
 import { useAuth } from "./AuthContext";
-import { saveExerciseLog, getTodayCheckin } from "../lib/db";
+import { saveExerciseLog, getTodayCheckin, loadTodayWorkoutLog, saveGymAttendance } from "../lib/db";
 import { getReadinessInfo } from "../lib/readiness";
+import { markDayCompleted } from "../lib/streak";
 import { DailyCheckin } from "./DailyCheckin";
 
 interface GymTabProps {
@@ -19,6 +20,7 @@ interface GymTabProps {
   coachSuggestions?: ProgressionSuggestion[];
   onOpenCoach?: (initialMessage: string) => void;
   onOpenProfile?: () => void;
+  onOpenStats?: () => void;
   onProfileUpdated?: (updated: UserProfile) => void;
   onOpenWalkthrough?: () => void;
 }
@@ -125,7 +127,7 @@ const DayPopup: React.FC<{
   );
 };
 
-export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach, onOpenProfile, onProfileUpdated, onOpenWalkthrough }) => {
+export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach, onOpenProfile, onOpenStats, onProfileUpdated, onOpenWalkthrough }) => {
   const { startTimer } = useRestTimer();
   const { user } = useAuth();
 
@@ -152,6 +154,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
 
   const [todayCheckin, setTodayCheckin] = useState<DailyCheckinData | null>(null);
   const [showCheckin, setShowCheckin] = useState(false);
+  const [todayWorkoutSummary, setTodayWorkoutSummary] = useState<{ duration: number; totalSets: number } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -209,6 +212,11 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
 
   const todayStr = getLocalDateStr(new Date());
 
+  useEffect(() => {
+    if (!user) return;
+    loadTodayWorkoutLog(user.id, todayStr).then(setTodayWorkoutSummary).catch(() => {});
+  }, [user, todayStr]);
+
   const getGreeting = () => {
     const h = new Date().getHours();
     if (h >= 5 && h < 12) return "Buenos días";
@@ -265,6 +273,43 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
   };
 
   const nextTrainingDay = getNextTrainingDayLabel();
+
+  const alreadyCompleted = profile.completed_days?.includes(todayStr) ?? false;
+
+  const dayState: DayState = !todayDesc
+    ? "no_plan"
+    : alreadyCompleted
+    ? "completed"
+    : todayDesc.type === "descanso" || todayDesc.type === "recuperacion"
+    ? "rest"
+    : todayDesc.type === "fuerza" || todayDesc.type === "cardio" || todayDesc.type === "movilidad"
+    ? "gym"
+    : "other";
+
+  const findNextGymDay = (): { label: string; desc: DayDescription } | null => {
+    for (let i = 1; i <= 6; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const key = d.toLocaleDateString("es-AR", { weekday: "long" }).toLowerCase();
+      const desc = profile.day_descriptions?.[key];
+      if (desc && desc.type !== "descanso" && desc.type !== "recuperacion") {
+        const weekday = d.toLocaleDateString("es-AR", { weekday: "long" });
+        const label = i === 1 ? "Mañana" : `El ${weekday.charAt(0).toUpperCase()}${weekday.slice(1)}`;
+        return { label, desc };
+      }
+    }
+    return null;
+  };
+
+  const nextGymDay = dayState === "rest" ? findNextGymDay() : null;
+
+  const handleRegisterAttendance = () => {
+    if (!user) return;
+    saveGymAttendance(user.id, todayStr).catch(console.error);
+    markDayCompleted(user.id, todayStr, profile, plan)
+      .then((updated) => onProfileUpdated?.(updated))
+      .catch((err) => console.error("Error registrando asistencia:", err));
+  };
 
   useEffect(() => {
     const logs: Record<string, string> = {};
@@ -590,7 +635,71 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
               </div>
 
               {/* Today card */}
-              {showTodayTraining && todayDayPlan ? (
+              {dayState === "completed" ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-brand shrink-0" />
+                    <h2 className="text-xl font-bold text-white leading-tight">¡Entrenamiento completado!</h2>
+                  </div>
+                  <p className="text-sm mt-2 text-zinc-400">
+                    {todayWorkoutSummary
+                      ? `${todayDesc?.title ?? "Entrenamiento"} · ${todayWorkoutSummary.duration} min · ${todayWorkoutSummary.totalSets} series`
+                      : todayDesc?.title}
+                  </p>
+                  {onOpenStats && (
+                    <button
+                      onClick={onOpenStats}
+                      className="mt-3 text-xs font-semibold text-zinc-400 px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700"
+                    >
+                      Ver historial
+                    </button>
+                  )}
+                </motion.div>
+              ) : dayState === "rest" ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
+                >
+                  <div className="flex items-center gap-2">
+                    <BedDouble className="w-5 h-5 text-zinc-400 shrink-0" />
+                    <h2 className="text-xl font-bold text-white leading-tight">Día de descanso</h2>
+                  </div>
+                  <p className="text-sm mt-2 leading-relaxed text-zinc-400">El descanso es parte del progreso.</p>
+                  {nextGymDay && (
+                    <p className="text-[11px] mt-3 text-zinc-500">
+                      {nextGymDay.label}: <span className="font-semibold text-zinc-300">{nextGymDay.desc.title} · {nextGymDay.desc.duration}</span>
+                    </p>
+                  )}
+                </motion.div>
+              ) : dayState === "other" ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
+                >
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-zinc-400 shrink-0" />
+                    <h2 className="text-xl font-bold text-white leading-tight">{todayDesc?.title}</h2>
+                  </div>
+                  {todayDesc?.note && (
+                    <p className="text-sm mt-2 leading-relaxed text-zinc-400">{todayDesc.note}</p>
+                  )}
+                  <button
+                    onClick={handleRegisterAttendance}
+                    className="mt-3 text-xs font-semibold text-black px-3 py-1.5 rounded-lg bg-brand"
+                  >
+                    Registrar asistencia
+                  </button>
+                </motion.div>
+              ) : (dayState === "gym" || dayState === "no_plan") && showTodayTraining && todayDayPlan ? (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}

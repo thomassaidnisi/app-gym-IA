@@ -233,6 +233,7 @@ if (!plan || !profile) {
                     coachSuggestions={coachSuggestions}
                     onOpenCoach={handleOpenCoachWithMessage}
                     onOpenProfile={() => setActiveTab("profile")}
+                    onOpenStats={() => setActiveTab("stats")}
                     onProfileUpdated={handleProfileUpdated}
                     onOpenWalkthrough={() => setManualWalkthroughOpen(true)}
                   />

@@ -505,6 +505,24 @@ export async function loadWorkoutLogs(userId: string): Promise<WorkoutLog[]> {
   return data.map((row) => row.log_json as WorkoutLog);
 }
 
+export async function loadTodayWorkoutLog(
+  userId: string,
+  date: string
+): Promise<{ duration: number; totalSets: number } | null> {
+  const { data, error } = await supabase
+    .from("workout_logs")
+    .select("log_json")
+    .eq("user_id", userId)
+    .eq("date", date)
+    .single();
+  if (error || !data?.log_json) return null;
+  const log = data.log_json as WorkoutLog;
+  return {
+    duration: log.durationMinutes ?? 0,
+    totalSets: log.completedSets?.length ?? 0,
+  };
+}
+
 export async function saveNutritionGuide(userId: string, guide: NutritionGuide) {
   return supabase.from("nutrition_guides").upsert(
     { user_id: userId, guide_json: guide, updated_at: new Date().toISOString() },

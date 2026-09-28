@@ -161,6 +161,8 @@ export interface ExerciseHistoryEntry {
   reps: string;
 }
 
+export type DayState = 'rest' | 'completed' | 'gym' | 'other' | 'no_plan';
+
 export interface DailyCheckinData {
   sleepHours: number;
   energyLevel: number;
