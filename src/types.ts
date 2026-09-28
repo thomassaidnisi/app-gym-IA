@@ -161,6 +161,14 @@ export interface ExerciseHistoryEntry {
   reps: string;
 }
 
+export interface DailyCheckinData {
+  sleepHours: number;
+  energyLevel: number;
+  muscleSoreness: number;
+  readinessScore: number;
+  peso?: number;
+}
+
 export interface NewPR {
   exerciseName: string;
   weight: number;

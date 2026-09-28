@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { WorkoutLog, FullTrainingPlan, UserProfile, PR, WeeklyProgress } from "../types";
-import { Trophy, TrendingUp, ChevronRight, Dumbbell } from "lucide-react";
+import { Trophy, TrendingUp, ChevronRight, Dumbbell, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "./AuthContext";
 import {
   saveGymAttendance, deleteGymAttendance, loadGymAttendance, loadWorkoutLogsMerged,
-  getPersonalRecords, getWeeklyProgress, getExerciseList,
+  getPersonalRecords, getWeeklyProgress, getExerciseList, getReadinessHistory,
 } from "../lib/db";
 import { markDayCompleted } from "../lib/streak";
 import { ExerciseHistoryModal } from "./ExerciseHistoryModal";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const MONTH_NAMES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
@@ -45,6 +46,12 @@ function getWeekStart(weeksBack: number): string {
   return formatLocalDate(monday);
 }
 
+function formatShortDate(dateStr: string): string {
+  const [, m, d] = dateStr.split("-").map(Number);
+  if (!m || !d) return dateStr;
+  return `${d}/${m}`;
+}
+
 function formatMemberSince(iso: string | undefined): string {
   if (!iso) return "";
   const d = new Date(iso);
@@ -71,6 +78,12 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
   const [exerciseList, setExerciseList] = useState<string[]>([]);
   const [isLoadingRecords, setIsLoadingRecords] = useState(true);
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
+  const [readinessHistory, setReadinessHistory] = useState<{ date: string; score: number }[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    getReadinessHistory(user.id, 30).then(setReadinessHistory).catch(() => {});
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -341,6 +354,40 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
             );
           })}
         </div>
+      </div>
+
+      {/* Preparación */}
+      <div className="bg-zinc-900 rounded-3xl p-5 mb-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Activity size={18} className="text-brand" />
+          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">Preparación</p>
+        </div>
+        {readinessHistory.length >= 2 ? (
+          <div className="h-40 -mx-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={readinessHistory.map((r) => ({ label: formatShortDate(r.date), score: r.score }))}
+                margin={{ top: 8, right: 12, bottom: 0, left: -12 }}
+              >
+                <XAxis dataKey="label" tick={{ fill: "#71717a", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 100]} tick={{ fill: "#71717a", fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
+                <Tooltip
+                  contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 12, fontSize: 12 }}
+                  labelStyle={{ color: "#a1a1aa" }}
+                  formatter={(value: number) => [value, "Índice"]}
+                />
+                <Line type="monotone" dataKey="score" stroke="#c8f135" strokeWidth={2} dot={{ r: 3, fill: "#c8f135" }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="text-center py-6">
+            <Activity className="w-10 h-10 mx-auto mb-2 text-zinc-700" />
+            <p className="text-xs text-zinc-500 max-w-[220px] mx-auto leading-relaxed">
+              Completá el check-in diario para ver tu tendencia.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Mis ejercicios */}

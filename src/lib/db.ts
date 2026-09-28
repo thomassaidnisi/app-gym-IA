@@ -1,5 +1,9 @@
 import { supabase } from "./supabase";
-import { UserProfile, FullTrainingPlan, WorkoutLog, NutritionGuide, PR, WeeklyProgress, ExerciseHistoryEntry } from "../types";
+import { UserProfile, FullTrainingPlan, WorkoutLog, NutritionGuide, PR, WeeklyProgress, ExerciseHistoryEntry, DailyCheckinData } from "../types";
+
+function getTodayDateStr(): string {
+  return new Date().toISOString().split("T")[0];
+}
 
 /** Solo se incluyen en el upsert las claves presentes en `data` — así un caller parcial
  * (ej. subir solo el avatar) nunca pisa con null las columnas que no está tocando. */
@@ -260,6 +264,62 @@ export async function loadDailyMetrics(
     .order("date", { ascending: false });
   if (error || !data) return [];
   return data;
+}
+
+export async function saveDailyCheckin(
+  userId: string,
+  data: {
+    date: string;
+    sleepHours: number;
+    energyLevel: number;
+    muscleSoreness: number;
+    peso?: number;
+    readinessScore: number;
+  }
+) {
+  const payload: Record<string, unknown> = {
+    user_id: userId,
+    date: data.date,
+    sueno: data.sleepHours,
+    energy_level: data.energyLevel,
+    muscle_soreness: data.muscleSoreness,
+    readiness_score: data.readinessScore,
+  };
+  if (data.peso !== undefined) payload.peso = data.peso;
+  const result = await supabase.from("daily_metrics").upsert(payload, { onConflict: "user_id,date" });
+  logIfError("saveDailyCheckin", result);
+}
+
+export async function getTodayCheckin(userId: string): Promise<DailyCheckinData | null> {
+  const { data, error } = await supabase
+    .from("daily_metrics")
+    .select("sueno, energy_level, muscle_soreness, readiness_score, peso")
+    .eq("user_id", userId)
+    .eq("date", getTodayDateStr())
+    .single();
+  if (error || !data || data.readiness_score === null || data.readiness_score === undefined) return null;
+  return {
+    sleepHours: data.sueno,
+    energyLevel: data.energy_level,
+    muscleSoreness: data.muscle_soreness,
+    readinessScore: data.readiness_score,
+    peso: data.peso ?? undefined,
+  };
+}
+
+export async function getReadinessHistory(userId: string, days: number = 30): Promise<{ date: string; score: number }[]> {
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+  const sinceStr = since.toISOString().split("T")[0];
+  const { data, error } = await supabase
+    .from("daily_metrics")
+    .select("date, readiness_score")
+    .eq("user_id", userId)
+    .gte("date", sinceStr)
+    .not("readiness_score", "is", null)
+    .order("date", { ascending: true });
+  if (error || !data) return [];
+  return data.map((row) => ({ date: row.date as string, score: row.readiness_score as number }));
 }
 
 export async function saveGymAttendance(userId: string, date: string) {

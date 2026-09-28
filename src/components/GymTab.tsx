@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion, PausedSession, DayDescription } from "../types";
+import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion, PausedSession, DayDescription, DailyCheckinData } from "../types";
 import { WorkoutSession } from "./WorkoutSession";
 import {
   Dumbbell, Clock, Play, Youtube, Check, FileText,
@@ -8,7 +8,9 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { useRestTimer } from "./RestTimerContext";
 import { useAuth } from "./AuthContext";
-import { saveExerciseLog } from "../lib/db";
+import { saveExerciseLog, getTodayCheckin } from "../lib/db";
+import { getReadinessInfo } from "../lib/readiness";
+import { DailyCheckin } from "./DailyCheckin";
 
 interface GymTabProps {
   plan: FullTrainingPlan;
@@ -19,6 +21,9 @@ interface GymTabProps {
   onProfileUpdated?: (updated: UserProfile) => void;
   onOpenWalkthrough?: () => void;
 }
+
+const ENERGY_LABELS: Record<number, string> = { 1: "Muy baja", 2: "Baja", 3: "Normal", 4: "Alta", 5: "Muy alta" };
+const SORENESS_LABELS: Record<number, string> = { 1: "Muy cargados", 2: "Algo cargados", 3: "Bien", 4: "Frescos", 5: "Perfectos" };
 
 const DAY_KEYS = [
   "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
@@ -143,6 +148,14 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
   const [streak, setStreak] = useState(0);
   const [weekSessions, setWeekSessions] = useState(0);
   const [daysSinceLastWorkout, setDaysSinceLastWorkout] = useState<number | null>(null);
+
+  const [todayCheckin, setTodayCheckin] = useState<DailyCheckinData | null>(null);
+  const [showCheckin, setShowCheckin] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    getTodayCheckin(user.id).then(setTodayCheckin).catch(() => {});
+  }, [user]);
 
   const [sessionDay, setSessionDay] = useState<DayPlan | null>(null);
   const [resumeState, setResumeState] = useState<PausedSession | null>(null);
@@ -653,6 +666,40 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
         )}
       </AnimatePresence>
 
+      {/* ── CHECK-IN DIARIO ── */}
+      {todayCheckin ? (
+        (() => {
+          const info = getReadinessInfo(todayCheckin.readinessScore);
+          return (
+            <button
+              onClick={() => setShowCheckin(true)}
+              className="w-full text-left rounded-2xl p-4 mb-5 bg-zinc-800/60 border border-zinc-700"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white">Índice de hoy</span>
+                <span className={`text-sm font-black ${info.color}`}>
+                  {todayCheckin.readinessScore} {info.label.toUpperCase()}
+                </span>
+              </div>
+              <p className="text-xs text-zinc-400 mt-1">{info.message}</p>
+              <div className="flex items-center gap-3 mt-2 text-xs text-zinc-300">
+                <span>😴 {todayCheckin.sleepHours}h</span>
+                <span>⚡ {ENERGY_LABELS[todayCheckin.energyLevel] ?? todayCheckin.energyLevel}</span>
+                <span>💪 {SORENESS_LABELS[todayCheckin.muscleSoreness] ?? todayCheckin.muscleSoreness}</span>
+              </div>
+            </button>
+          );
+        })()
+      ) : (
+        <button
+          onClick={() => setShowCheckin(true)}
+          className="w-full text-left rounded-2xl p-4 mb-5 bg-zinc-800/60 border border-zinc-700"
+        >
+          <p className="text-sm font-bold text-white">⚡ ¿Cómo llegás hoy?</p>
+          <p className="text-xs text-zinc-400 mt-1">Registrá tu estado en 30 seg →</p>
+        </button>
+      )}
+
       {/* ── CALENDAR SEMANAL ── */}
       <div ref={calendarRef}>
         <h3 className="text-[10px] uppercase tracking-wider font-bold mb-3" style={{ color: T.textTer }}>
@@ -954,6 +1001,19 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
             dayName={selectedDay}
             description={profile.day_descriptions?.[selectedDay]}
             onClose={() => setSelectedDay(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Daily check-in */}
+      <AnimatePresence>
+        {showCheckin && (
+          <DailyCheckin
+            onComplete={(score) => {
+              setShowCheckin(false);
+              if (user) getTodayCheckin(user.id).then(setTodayCheckin).catch(() => {});
+            }}
+            onClose={() => setShowCheckin(false)}
           />
         )}
       </AnimatePresence>
