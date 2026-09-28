@@ -915,51 +915,6 @@ Respondé SOLO con el mensaje, sin comillas ni formato extra.`;
     }
   });
 
-  // Post-workout comment — short Gemini reaction shown right after saving a session.
-  app.post("/api/session-summary", async (req, res) => {
-    try {
-      const {
-        userName,
-        workoutName,
-        durationMinutes,
-        totalSets,
-        totalVolume,
-        exercisesCompleted,
-        newPRs = [] as string[],
-        currentStreak = 0,
-        sessionsThisWeek = 0,
-      } = req.body;
-
-      if (!userName || !workoutName) {
-        return res.status(400).json({ error: "Faltan datos requeridos (userName, workoutName)." });
-      }
-
-      const prompt = `Sos el coach personal de ${userName}.
-Acaba de terminar: ${workoutName}, ${durationMinutes} min, ${totalSets} series, ${totalVolume}kg de volumen, ${exercisesCompleted} ejercicios.
-${newPRs.length > 0 ? `Logró nuevos récords en: ${newPRs.join(', ')}.` : ''}
-Racha actual: ${currentStreak} días. Sesiones esta semana: ${sessionsThisWeek}.
-
-Escribí un comentario motivador y específico de máximo 3 oraciones para mostrarle al terminar su sesión.
-Sin saludos. Sin emojis. Directo, personal, que mencione algo concreto de la sesión.
-Respondé SOLO con el comentario, sin comillas ni formato extra.`;
-
-      const ai = getGeminiClient();
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-        config: { temperature: 0.8 },
-      });
-
-      const comment = response.text?.trim();
-      if (!comment) throw new Error("No se recibió respuesta del modelo Gemini.");
-
-      return res.json({ comment });
-    } catch (error: any) {
-      console.error("Error in session-summary API:", error);
-      return res.status(500).json({ error: "No se pudo generar el comentario del coach." });
-    }
-  });
-
   // Exercise Library endpoint
   app.get("/api/exercise-library", async (req, res) => {
     try {

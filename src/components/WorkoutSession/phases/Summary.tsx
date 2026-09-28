@@ -6,7 +6,6 @@ import { useAuth } from "../../AuthContext";
 import { saveWorkoutLog as saveWorkoutLogRemote, saveGymAttendance, saveExerciseLog, getPreviousPersonalRecords } from "../../../lib/db";
 import { markDayCompleted } from "../../../lib/streak";
 import { PRCelebration } from "../../PRCelebration";
-import { SessionComment, SessionCommentData } from "../../SessionComment";
 
 interface SummaryProps {
   session: SessionState;
@@ -44,20 +43,6 @@ function calcVolume(sets: CompletedSet[]): number {
 
 function round1(n: number) {
   return Math.round(n * 10) / 10;
-}
-
-/** Lunes (YYYY-MM-DD, local) de la semana que contiene hoy. */
-function getMondayStr(): string {
-  const now = new Date();
-  const dow = now.getDay(); // 0 = domingo
-  const diffToMonday = dow === 0 ? -6 : 1 - dow;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + diffToMonday);
-  monday.setHours(0, 0, 0, 0);
-  const y = monday.getFullYear();
-  const m = String(monday.getMonth() + 1).padStart(2, "0");
-  const d = String(monday.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
 }
 
 // Group CompletedSet[] by exercise name
@@ -129,8 +114,6 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
   const [notes, setNotes] = useState(session.sessionNotes);
   const [saving, setSaving] = useState(false);
   const [celebration, setCelebration] = useState<PRCelebrationData | null>(null);
-  const [showSessionComment, setShowSessionComment] = useState(false);
-  const [sessionCommentData, setSessionCommentData] = useState<SessionCommentData | null>(null);
 
   const durationMs = Date.now() - new Date(session.sessionStartTime).getTime();
   const durationMinutes = Math.max(1, Math.round(durationMs / 60000));
@@ -207,10 +190,10 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
         })
         .filter((e): e is { name: string; weight: number; reps: number } => e !== null);
 
-      let newPRs: NewPR[] = [];
       if (sessionExercises.length > 0) {
         try {
           const previousPRs = await getPreviousPersonalRecords(user.id, todayStr);
+          const newPRs: NewPR[] = [];
           for (const ex of sessionExercises) {
             const prev = previousPRs[ex.name] ?? null;
             if (prev === null || ex.weight > prev) {
@@ -221,36 +204,15 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
               reps: String(ex.reps),
             }).catch(console.error);
           }
+          if (newPRs.length > 0) {
+            setSaving(false);
+            setCelebration({ prs: newPRs });
+            return;
+          }
         } catch (err) {
           console.error("Error detectando récords personales:", err);
         }
       }
-
-      const todayKey = new Date().toLocaleDateString("es-AR", { weekday: "long" }).toLowerCase();
-      const todayDesc = profile.day_descriptions?.[todayKey];
-      const mondayStr = getMondayStr();
-      const sessionsThisWeek = (profile.completed_days ?? []).filter(
-        (d) => d >= mondayStr && d <= todayStr
-      ).length;
-
-      setSessionCommentData({
-        workoutName: todayDesc?.title ?? day.name ?? "Entrenamiento",
-        durationMinutes,
-        totalSets: editableSets.length,
-        totalVolume: volume,
-        exercisesCompleted: uniqueExercises,
-        newPRs: newPRs.map((pr) => pr.exerciseName),
-        currentStreak: (profile.current_streak ?? 0) + 1,
-        sessionsThisWeek: sessionsThisWeek + 1,
-      });
-
-      setSaving(false);
-      if (newPRs.length > 0) {
-        setCelebration({ prs: newPRs });
-      } else {
-        setShowSessionComment(true);
-      }
-      return;
     }
     onClose();
   };
@@ -450,22 +412,10 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
         {celebration && (
           <PRCelebration
             data={celebration}
-            onClose={() => {
-              setCelebration(null);
-              if (sessionCommentData) setShowSessionComment(true);
-              else onClose();
-            }}
+            onClose={() => { setCelebration(null); onClose(); }}
           />
         )}
       </AnimatePresence>
-
-      {showSessionComment && sessionCommentData && (
-        <SessionComment
-          data={sessionCommentData}
-          userName={profile.name || "atleta"}
-          onClose={() => { setShowSessionComment(false); onClose(); }}
-        />
-      )}
     </div>
   );
 };
