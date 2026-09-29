@@ -322,7 +322,7 @@ if (!plan || !profile) {
                       style={{
                         backgroundColor: activeTab === "coach"
                           ? "var(--color-brand)"
-                          : "rgba(200,241,53,0.10)",
+                          : "color-mix(in srgb, var(--color-brand) 10%, transparent)",
                       }}
                     >
                       <MessageSquare

@@ -109,7 +109,6 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       if (isHeicFile(file)) {
         // iOS guarda un preview JPEG accesible vía FileReader aunque el tipo declarado sea HEIC/HEIF.
         const url = await readFileAsDataURL(file);
-        console.log("[avatar] HEIC/HEIF detectado, guardado directo como base64, largo:", url.length);
         persistAvatar(url);
         return;
       }
@@ -124,12 +123,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
         if (uploadError) throw uploadError;
         url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
-        console.log("[avatar] subido a Supabase Storage:", url);
       } catch (err) {
         // Supabase Storage no configurado (bucket inexistente, etc.) — guardamos la imagen inline.
         console.warn("[avatar] Storage falló, usando fallback base64:", err);
         url = jpegDataUrl;
-        console.log("[avatar] avatar_url guardado como base64, largo:", url.length);
       }
       persistAvatar(url);
     } finally {
@@ -440,7 +437,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </h4>
           {pushPermission === "granted" ? (
             <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: T.textPri }}>
-              <Check className="w-4 h-4" style={{ color: "#c8f135" }} />
+              <Check className="w-4 h-4" style={{ color: "var(--color-brand)" }} />
               Notificaciones activas
             </div>
           ) : (
@@ -449,7 +446,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               onClick={handleEnablePush}
               disabled={pushSubscribing}
               className="w-full h-11 rounded-2xl text-sm font-bold disabled:opacity-50 transition-opacity"
-              style={{ backgroundColor: "#c8f135", color: "#000" }}
+              style={{ backgroundColor: "var(--color-brand)", color: "#000" }}
             >
               {pushSubscribing ? "Activando..." : "Activar notificaciones"}
             </motion.button>
@@ -675,7 +672,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={handleSaveEdit}
-                    className="flex-1 py-3 bg-brand hover:bg-lime-400 text-black rounded-xl font-semibold text-xs flex items-center justify-center gap-1 shadow-sm"
+                    className="flex-1 py-3 bg-brand hover:bg-brand/90 text-black rounded-xl font-semibold text-xs flex items-center justify-center gap-1 shadow-sm"
                   >
                     <Check className="w-3.5 h-3.5 text-black" />
                     Guardar

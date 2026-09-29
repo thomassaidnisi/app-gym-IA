@@ -37,9 +37,9 @@ export const Intro: React.FC<IntroProps> = ({ day, onStart }) => {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 400, damping: 28, delay: 0.05 }}
         className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8"
-        style={{ backgroundColor: "rgba(200,241,53,0.12)", border: "1px solid rgba(200,241,53,0.2)" }}
+        style={{ backgroundColor: "color-mix(in srgb, var(--color-brand) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--color-brand) 20%, transparent)" }}
       >
-        <Dumbbell className="w-8 h-8" style={{ color: "#c8f135" }} strokeWidth={1.5} />
+        <Dumbbell className="w-8 h-8" style={{ color: "var(--color-brand)" }} strokeWidth={1.5} />
       </motion.div>
 
       <motion.p
@@ -100,7 +100,7 @@ export const Intro: React.FC<IntroProps> = ({ day, onStart }) => {
         whileTap={{ scale: 0.97 }}
         onClick={advance}
         className="w-full max-w-xs h-14 rounded-2xl font-black text-base text-black"
-        style={{ backgroundColor: "#c8f135" }}
+        style={{ backgroundColor: "var(--color-brand)" }}
       >
         Comenzar →
       </motion.button>

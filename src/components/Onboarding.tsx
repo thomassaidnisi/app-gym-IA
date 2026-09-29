@@ -75,7 +75,7 @@ const TooltipModal: React.FC<{ text: string; onClose: () => void }> = ({ text, o
       <p className="text-sm text-white/70 leading-relaxed mb-4">{text}</p>
       <button
         onClick={onClose}
-        className="w-full bg-brand hover:bg-lime-400 text-black text-sm font-bold py-2.5 rounded-xl transition-all"
+        className="w-full bg-brand hover:bg-brand/90 text-black text-sm font-bold py-2.5 rounded-xl transition-all"
       >
         Entendido
       </button>
@@ -558,7 +558,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
         <motion.button
           whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
           onClick={generatePlan}
-          className="bg-brand text-black hover:bg-lime-400 font-semibold px-6 py-3 rounded-xl transition-all shadow-lg flex items-center gap-2"
+          className="bg-brand text-black hover:bg-brand/90 font-semibold px-6 py-3 rounded-xl transition-all shadow-lg flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4 animate-pulse" />
           Reintentar generación
@@ -579,7 +579,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
       <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 px-6 text-center select-none">
         <div
           className="w-20 h-20 rounded-3xl flex items-center justify-center mb-8"
-          style={{ backgroundColor: "rgba(200,241,53,0.10)", border: "1px solid rgba(200,241,53,0.25)" }}
+          style={{ backgroundColor: "color-mix(in srgb, var(--color-brand) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--color-brand) 25%, transparent)" }}
         >
           <Bell className="w-9 h-9 text-brand" />
         </div>
@@ -591,7 +591,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
           whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
           onClick={handleEnablePushAndContinue}
           disabled={pushPromptLoading}
-          className="w-full max-w-xs bg-brand hover:bg-lime-400 text-black font-semibold py-4 rounded-xl shadow-lg transition-all disabled:opacity-50 text-base"
+          className="w-full max-w-xs bg-brand hover:bg-brand/90 text-black font-semibold py-4 rounded-xl shadow-lg transition-all disabled:opacity-50 text-base"
         >
           {pushPromptLoading ? "Activando..." : "Sí, activar recordatorios"}
         </motion.button>
@@ -687,7 +687,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
             <motion.button
               whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
               onClick={(e) => { e.stopPropagation(); generatePlan(); }}
-              className="mt-5 w-full bg-brand text-black border-transparent text-xs font-bold py-2.5 rounded-xl uppercase tracking-wider transition-all cursor-pointer hover:bg-lime-400"
+              className="mt-5 w-full bg-brand text-black border-transparent text-xs font-bold py-2.5 rounded-xl uppercase tracking-wider transition-all cursor-pointer hover:bg-brand/90"
             >
               Generar mi plan
             </motion.button>
@@ -845,7 +845,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                   <motion.button
                     whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                     onClick={handleNext}
-                    className="w-full bg-brand hover:bg-lime-400 text-black font-semibold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base"
+                    className="w-full bg-brand hover:bg-brand/90 text-black font-semibold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base"
                     id="start-onboarding-btn"
                   >
                     Comenzar
@@ -1363,7 +1363,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
               disabled={!isStepValid()}
               className={`flex-1 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-1 text-sm text-black ${
                 isStepValid()
-                  ? "bg-brand hover:bg-lime-400 shadow-md cursor-pointer"
+                  ? "bg-brand hover:bg-brand/90 shadow-md cursor-pointer"
                   : "bg-white/10 border border-white/10 text-white/30 cursor-not-allowed"
               }`}
               id="next-step-btn"

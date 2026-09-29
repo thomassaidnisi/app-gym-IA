@@ -63,7 +63,7 @@ export const TechniqueSheet: React.FC<TechniqueSheetProps> = ({
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
               borderTop: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: "20px 20px 0 0",
+              borderRadius: "24px 24px 0 0",
               maxHeight: "80vh",
               display: "flex",
               flexDirection: "column",
@@ -111,7 +111,7 @@ export const TechniqueSheet: React.FC<TechniqueSheetProps> = ({
                     className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-opacity active:opacity-60"
                     style={
                       idx === activeIndex
-                        ? { backgroundColor: "#c8f135", color: "#000" }
+                        ? { backgroundColor: "var(--color-brand)", color: "#000" }
                         : {
                             backgroundColor: "rgba(255,255,255,0.08)",
                             color: "rgba(255,255,255,0.5)",

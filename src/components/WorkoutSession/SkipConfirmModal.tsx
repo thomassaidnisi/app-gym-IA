@@ -75,7 +75,7 @@ export const SkipConfirmModal: React.FC<SkipConfirmModalProps> = ({
                   whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                   onClick={onConfirm}
                   className="w-full h-12 rounded-2xl font-black text-sm text-black"
-                  style={{ backgroundColor: "#c8f135" }}
+                  style={{ backgroundColor: "var(--color-brand)" }}
                 >
                   Sí, saltear
                 </motion.button>

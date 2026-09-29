@@ -330,7 +330,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
                         whileTap={{ scale: 0.97 }}
                         onClick={() => handleApplyPlanPatch(msg.id, msg.planPatch!, msg.dayDescriptionsPatch)}
                         disabled={applyState[msg.id] === "loading"}
-                        className="w-full bg-brand text-black hover:bg-lime-400 py-2.5 rounded-xl text-xs font-semibold uppercase shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                        className="w-full bg-brand text-black hover:bg-brand/90 py-2.5 rounded-xl text-xs font-semibold uppercase shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                       >
                         {applyState[msg.id] === "loading"
                           ? <><Loader2 className="w-4 h-4 animate-spin text-black" />Aplicando...</>
@@ -365,7 +365,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
                         whileTap={{ scale: 0.97 }}
                         onClick={() => handleApplyNutritionPatch(msg.id, msg.nutritionPatch!)}
                         disabled={applyState[`nutrition-${msg.id}`] === "loading"}
-                        className="w-full bg-brand text-black hover:bg-lime-400 py-2.5 rounded-xl text-xs font-semibold uppercase shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                        className="w-full bg-brand text-black hover:bg-brand/90 py-2.5 rounded-xl text-xs font-semibold uppercase shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                       >
                         {applyState[`nutrition-${msg.id}`] === "loading"
                           ? <><Loader2 className="w-4 h-4 animate-spin text-black" />Aplicando...</>
@@ -416,7 +416,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
             whileTap={{ scale: 0.95 }}
             type="submit"
             disabled={!inputText.trim() || isLoading}
-            className="w-10 h-10 rounded-xl font-semibold transition-all flex items-center justify-center shrink-0 shadow-sm disabled:cursor-not-allowed bg-brand text-black hover:bg-lime-400 disabled:bg-transparent disabled:shadow-none"
+            className="w-10 h-10 rounded-xl font-semibold transition-all flex items-center justify-center shrink-0 shadow-sm disabled:cursor-not-allowed bg-brand text-black hover:bg-brand/90 disabled:bg-transparent disabled:shadow-none"
             style={(!inputText.trim() || isLoading) ? { backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textTer } : {}}
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}

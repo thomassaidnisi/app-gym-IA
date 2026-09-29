@@ -449,9 +449,9 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
         >
           <div
             className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-            style={{ backgroundColor: "rgba(200,241,53,0.10)" }}
+            style={{ backgroundColor: "color-mix(in srgb, var(--color-brand) 10%, transparent)" }}
           >
-            <RotateCcw className="w-4 h-4" style={{ color: "#c8f135" }} />
+            <RotateCcw className="w-4 h-4" style={{ color: "var(--color-brand)" }} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold" style={{ color: T.textPri }}>Tenés una sesión pausada</p>
@@ -460,7 +460,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
           <button
             onClick={handleResumeSession}
             className="px-4 h-9 rounded-xl text-xs font-bold uppercase shrink-0"
-            style={{ backgroundColor: "#c8f135", color: "#000" }}
+            style={{ backgroundColor: "var(--color-brand)", color: "#000" }}
           >
             Retomar
           </button>
@@ -735,7 +735,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   <motion.button
                     whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                     onClick={() => todayDayPlan && setSessionDay(todayDayPlan)}
-                    className="mt-4 w-full bg-brand hover:bg-lime-400 text-black font-bold py-3 rounded-xl text-sm transition-all shadow-sm"
+                    className="mt-4 w-full bg-brand hover:bg-brand/90 text-black font-bold py-3 rounded-xl text-sm transition-all shadow-sm"
                   >
                     Empezar Entrenamiento →
                   </motion.button>
@@ -1025,7 +1025,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                                     <motion.button
                                       whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                                       onClick={(e) => { e.stopPropagation(); startTimer(ex.rest_seconds, ex.name); }}
-                                      className="flex-1 bg-brand hover:bg-lime-400 text-black text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                      className="flex-1 bg-brand hover:bg-brand/90 text-black text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
                                     >
                                       <Play className="w-3.5 h-3.5 fill-black" />
                                       Descanso ({ex.rest_seconds}s)

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { X } from "lucide-react";
 import { CompletedSet, Exercise } from "../../../types";
+import { ExitSheet } from "../ExitSheet";
 
 interface RestingProps {
   initialSeconds: number;
@@ -11,7 +12,8 @@ interface RestingProps {
   completedSets: CompletedSet[];
   isLastExercise: boolean;
   onAdvance: () => void;
-  onExit: () => void;
+  onAbandon: () => void;
+  onPause: () => void;
 }
 
 const RADIUS = 48;
@@ -54,8 +56,10 @@ export const Resting: React.FC<RestingProps> = ({
   completedSets,
   isLastExercise,
   onAdvance,
-  onExit,
+  onAbandon,
+  onPause,
 }) => {
+  const [showExit, setShowExit] = useState(false);
   const ringRef = useRef<SVGCircleElement>(null);
   const rafRef = useRef<number>(0);
   const startTimeRef = useRef(Date.now());
@@ -147,11 +151,9 @@ export const Resting: React.FC<RestingProps> = ({
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-4 shrink-0">
         <button
-          onClick={() => {
-            console.log("[WorkoutSession] exit stub — confirmación en Parte 3");
-            onExit();
-          }}
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-opacity active:opacity-60"
+          onClick={() => setShowExit(true)}
+          aria-label="Salir de la sesión"
+          className="hit-44 relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-opacity active:opacity-60"
           style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
         >
           <X className="w-4 h-4 text-white" strokeWidth={2} />
@@ -205,7 +207,7 @@ export const Resting: React.FC<RestingProps> = ({
               cy="56"
               r={RADIUS}
               fill="none"
-              stroke="#c8f135"
+              stroke="var(--color-brand)"
               strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
@@ -270,6 +272,12 @@ export const Resting: React.FC<RestingProps> = ({
           </motion.button>
         </div>
       </div>
+      <ExitSheet
+        isOpen={showExit}
+        onContinue={() => setShowExit(false)}
+        onAbandon={onAbandon}
+        onPause={onPause}
+      />
     </motion.div>
   );
 };

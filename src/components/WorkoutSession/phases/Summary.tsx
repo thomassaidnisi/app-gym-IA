@@ -86,9 +86,9 @@ const EditableValue: React.FC<{
         onKeyDown={(e) => { if (e.key === "Enter") commit(); }}
         className="w-14 text-center rounded-lg px-1.5 py-0.5 text-xs font-bold focus:outline-none"
         style={{
-          backgroundColor: "rgba(200,241,53,0.15)",
-          border: "1px solid rgba(200,241,53,0.5)",
-          color: "#c8f135",
+          backgroundColor: "color-mix(in srgb, var(--color-brand) 15%, transparent)",
+          border: "1px solid color-mix(in srgb, var(--color-brand) 50%, transparent)",
+          color: "var(--color-brand)",
         }}
         onClick={(e) => e.stopPropagation()}
       />
@@ -99,7 +99,7 @@ const EditableValue: React.FC<{
     <button
       onClick={(e) => { e.stopPropagation(); setDraft(value); setEditing(true); }}
       className="rounded-lg px-1.5 py-0.5 text-xs font-bold underline-offset-2 transition-opacity active:opacity-60"
-      style={{ color: "#c8f135", textDecoration: "underline dotted" }}
+      style={{ color: "var(--color-brand)", textDecoration: "underline dotted" }}
     >
       {value}
     </button>
@@ -173,7 +173,6 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
 
     if (user) {
       saveWorkoutLogRemote(user.id, todayStr, log)
-        .then(() => console.log("WorkoutLog guardado en Supabase"))
         .catch((err) => console.error("Error guardando WorkoutLog:", err));
       saveGymAttendance(user.id, todayStr).catch(console.error);
       markDayCompleted(user.id, todayStr, profile, plan)
@@ -231,11 +230,11 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
             transition={{ type: "spring", stiffness: 450, damping: 22 }}
             className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
             style={{
-              backgroundColor: "rgba(200,241,53,0.12)",
-              border: "2px solid rgba(200,241,53,0.35)",
+              backgroundColor: "color-mix(in srgb, var(--color-brand) 12%, transparent)",
+              border: "2px solid color-mix(in srgb, var(--color-brand) 35%, transparent)",
             }}
           >
-            <Trophy className="w-8 h-8" style={{ color: "#c8f135" }} strokeWidth={1.5} />
+            <Trophy className="w-8 h-8" style={{ color: "var(--color-brand)" }} strokeWidth={1.5} />
           </motion.div>
 
           <motion.h1
@@ -383,7 +382,7 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
               backgroundColor: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.08)",
               color: "rgba(255,255,255,0.8)",
-              caretColor: "#c8f135",
+              caretColor: "var(--color-brand)",
             }}
           />
         </div>
@@ -402,7 +401,7 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
           onClick={handleSave}
           disabled={saving}
           className="w-full h-14 rounded-2xl font-black text-base text-black disabled:opacity-70"
-          style={{ backgroundColor: "#c8f135" }}
+          style={{ backgroundColor: "var(--color-brand)" }}
         >
           {saving ? "Guardando…" : "Guardar y terminar"}
         </motion.button>

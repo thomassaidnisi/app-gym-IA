@@ -104,7 +104,8 @@ export const WorkoutSession: React.FC<WorkoutSessionProps> = ({ day, onClose, re
               completedSets={session.completedSets}
               isLastExercise={session.upcomingQueue.length === 0}
               onAdvance={advanceFromResting}
-              onExit={onClose}
+              onAbandon={goToSummary}
+              onPause={handlePause}
             />
           </motion.div>
         )}

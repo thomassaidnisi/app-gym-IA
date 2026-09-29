@@ -74,7 +74,7 @@ export const ExerciseHistoryModal: React.FC<ExerciseHistoryModalProps> = ({ user
                         labelStyle={{ color: "#a1a1aa" }}
                         formatter={(value: number) => [`${value} kg`, "Peso"]}
                       />
-                      <Line type="monotone" dataKey="peso" stroke="#c8f135" strokeWidth={2} dot={{ r: 3, fill: "#c8f135" }} />
+                      <Line type="monotone" dataKey="peso" stroke="var(--color-brand)" strokeWidth={2} dot={{ r: 3, fill: "var(--color-brand)" }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

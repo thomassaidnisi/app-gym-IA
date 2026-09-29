@@ -25,7 +25,7 @@ export const PRCelebration: React.FC<PRCelebrationProps> = ({ data, onClose }) =
         transition={{ type: "spring", stiffness: 300, damping: 22 }}
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-sm rounded-3xl p-6 bg-zinc-900"
-        style={{ border: "1px solid rgba(200,241,53,0.3)" }}
+        style={{ border: "1px solid color-mix(in srgb, var(--color-brand) 30%, transparent)" }}
       >
         <div className="text-center">
           <Trophy size={48} className="mx-auto mb-2 text-brand" strokeWidth={1.5} />
@@ -57,7 +57,7 @@ export const PRCelebration: React.FC<PRCelebrationProps> = ({ data, onClose }) =
           whileTap={{ scale: 0.97 }}
           onClick={onClose}
           className="w-full h-12 rounded-2xl font-black text-base text-black mt-6"
-          style={{ backgroundColor: "#c8f135" }}
+          style={{ backgroundColor: "var(--color-brand)" }}
         >
           ¡Genial!
         </motion.button>

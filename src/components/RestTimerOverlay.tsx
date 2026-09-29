@@ -92,7 +92,7 @@ export const RestTimerOverlay: React.FC = () => {
               onClick={isActive ? pauseTimer : resumeTimer}
               aria-label={isActive ? "Pausar descanso" : "Reanudar descanso"}
               className={`hit-44 relative shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
-                isActive ? "" : "bg-brand hover:bg-lime-400"
+                isActive ? "" : "bg-brand hover:bg-brand/90"
               }`}
               style={isActive ? { backgroundColor: T.bgSec, border: `1px solid ${T.border}` } : {}}
               id="play-pause-timer-btn"

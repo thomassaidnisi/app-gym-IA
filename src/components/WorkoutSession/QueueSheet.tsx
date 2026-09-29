@@ -74,7 +74,7 @@ export const QueueSheet: React.FC<QueueSheetProps> = ({
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
               borderTop: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: "20px 20px 0 0",
+              borderRadius: "24px 24px 0 0",
               maxHeight: "78vh",
               display: "flex",
               flexDirection: "column",
@@ -183,7 +183,7 @@ export const QueueSheet: React.FC<QueueSheetProps> = ({
                 whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                 onClick={handleConfirm}
                 className="w-full rounded-2xl font-black text-base text-black"
-                style={{ backgroundColor: "#c8f135", height: 52 }}
+                style={{ backgroundColor: "var(--color-brand)", height: 52 }}
               >
                 Confirmar orden
               </motion.button>

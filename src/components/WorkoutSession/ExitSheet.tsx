@@ -52,7 +52,7 @@ export const ExitSheet: React.FC<ExitSheetProps> = ({
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
               borderTop: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: "20px 20px 0 0",
+              borderRadius: "24px 24px 0 0",
               display: "flex",
               flexDirection: "column",
               paddingBottom: "max(32px, env(safe-area-inset-bottom, 32px))",
@@ -85,7 +85,7 @@ export const ExitSheet: React.FC<ExitSheetProps> = ({
                 whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
                 onClick={onContinue}
                 className="w-full h-13 rounded-2xl font-black text-base text-black"
-                style={{ backgroundColor: "#c8f135", height: 52 }}
+                style={{ backgroundColor: "var(--color-brand)", height: 52 }}
               >
                 Seguir entrenando
               </motion.button>

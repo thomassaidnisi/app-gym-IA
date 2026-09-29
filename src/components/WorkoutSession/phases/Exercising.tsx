@@ -36,12 +36,6 @@ function parseReps(repsStr: string): number {
 function getPersonalBest(exerciseName: string): { weight: number | null; reps: number | null } {
   let bestWeight: number | null = null;
   let bestReps: number | null = null;
-  const allKeys: string[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && (key.startsWith("log_") || key.startsWith("reps_"))) allKeys.push(key);
-  }
-  console.log("[getPersonalBest] buscando:", exerciseName, "keys:", allKeys);
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (!key) continue;
@@ -88,9 +82,9 @@ const SupersetRow: React.FC<{
           >
             <Minus className="w-3.5 h-3.5 text-white" strokeWidth={2} />
           </button>
-          <span className="text-lg font-black tabular-nums w-14 text-center" style={{ color: "#c8f135" }}>
+          <span className="text-lg font-black tabular-nums w-14 text-center" style={{ color: "var(--color-brand)" }}>
             {value.weight % 1 === 0 ? value.weight : value.weight.toFixed(1)}
-            <span className="text-xs font-semibold" style={{ color: "rgba(200,241,53,0.4)" }}> kg</span>
+            <span className="text-xs font-semibold" style={{ color: "color-mix(in srgb, var(--color-brand) 40%, transparent)" }}> kg</span>
           </span>
           <button
             onClick={() => onChange({ ...value, weight: parseFloat((value.weight + 2.5).toFixed(1)) })}
@@ -295,7 +289,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
       <div className="h-0.5" style={{ backgroundColor: "rgba(255,255,255,0.07)" }}>
         <motion.div
           className="h-full"
-          style={{ backgroundColor: "#c8f135" }}
+          style={{ backgroundColor: "var(--color-brand)" }}
           animate={{ width: `${Math.max(2, progress * 100)}%` }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         />
@@ -361,7 +355,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
         <div className="flex-1 flex flex-col items-center justify-start px-6 pb-4 pt-2 overflow-y-auto">
           <p
             className="text-[10px] uppercase tracking-widest font-semibold"
-            style={{ color: "rgba(200,241,53,0.6)" }}
+            style={{ color: "color-mix(in srgb, var(--color-brand) 60%, transparent)" }}
           >
             Superserie
           </p>
@@ -470,10 +464,10 @@ export const Exercising: React.FC<ExercisingProps> = ({
                     className="font-black text-center tabular-nums bg-transparent focus:outline-none"
                     style={{
                       fontSize: 48,
-                      color: "#c8f135",
+                      color: "var(--color-brand)",
                       width: "4ch",
                       lineHeight: 1,
-                      caretColor: "#c8f135",
+                      caretColor: "var(--color-brand)",
                     }}
                   />
                 ) : (
@@ -483,7 +477,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="font-black tabular-nums leading-none"
-                    style={{ fontSize: 48, color: "#c8f135" }}
+                    style={{ fontSize: 48, color: "var(--color-brand)" }}
                   >
                     {weight % 1 === 0 ? weight : weight.toFixed(1)}
                   </motion.span>
@@ -491,7 +485,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
               </AnimatePresence>
               <span
                 className="text-xl font-semibold mb-1.5"
-                style={{ color: "rgba(200,241,53,0.4)" }}
+                style={{ color: "color-mix(in srgb, var(--color-brand) 40%, transparent)" }}
               >
                 kg
               </span>
@@ -596,7 +590,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
             >
               Última vez: {suggestion.lastWeight} kg · {suggestion.lastSetsCompleted} series
               {suggestion.progressionSuggested && (
-                <span style={{ color: "rgba(200,241,53,0.55)" }}> · ↑ progresión sugerida</span>
+                <span style={{ color: "color-mix(in srgb, var(--color-brand) 55%, transparent)" }}> · ↑ progresión sugerida</span>
               )}
             </motion.p>
           )}
@@ -640,7 +634,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
           whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 400, damping: 17 } }}
           onClick={() => (isSuperset ? handleCompleteRound() : onCompleteSet(weight, reps))}
           className="w-full h-14 rounded-2xl font-black text-base text-black inline-flex items-center justify-center gap-1.5"
-          style={{ backgroundColor: "#c8f135" }}
+          style={{ backgroundColor: "var(--color-brand)" }}
         >
           {isSuperset ? "Terminé la ronda" : "Terminé la serie"} <Check size={18} strokeWidth={3} />
         </motion.button>

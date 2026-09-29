@@ -180,7 +180,7 @@ export const MorningTab: React.FC = () => {
             whileTap={{ scale: 0.97 }}
             onClick={() => setMedActive(!medActive)}
             className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm ${
-              medActive ? "" : "bg-brand hover:bg-lime-400 text-black"
+              medActive ? "" : "bg-brand hover:bg-brand/90 text-black"
             }`}
             style={medActive ? { backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textPri } : {}}
           >
@@ -274,7 +274,7 @@ export const MorningTab: React.FC = () => {
                           whileTap={{ scale: 0.97 }}
                           onClick={() => startRoutineTimer(rt.id, rt.durationMins)}
                           className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm ${
-                            isTimerRunning ? "" : "bg-brand hover:bg-lime-400 text-black"
+                            isTimerRunning ? "" : "bg-brand hover:bg-brand/90 text-black"
                           }`}
                           style={isTimerRunning ? { backgroundColor: T.bg, border: `1px solid ${T.border}`, color: T.textPri } : {}}
                         >

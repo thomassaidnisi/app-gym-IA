@@ -183,7 +183,7 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
           ) : (
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center shrink-0 font-black text-2xl"
-              style={{ backgroundColor: "rgba(200,241,53,0.15)", color: "var(--brand-ink)" }}
+              style={{ backgroundColor: "color-mix(in srgb, var(--color-brand) 15%, transparent)", color: "var(--brand-ink)" }}
             >
               {nameInitial}
             </div>
@@ -342,7 +342,7 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
                 onClick={() => toggleAttendance(dayNum)}
                 className="h-9 w-full rounded-lg flex flex-col items-center justify-center relative transition-all"
                 style={isAttended
-                  ? { backgroundColor: "rgba(200,241,53,0.15)", border: `1px solid ${T.brand}`, color: "var(--brand-ink)", fontWeight: 700 }
+                  ? { backgroundColor: "color-mix(in srgb, var(--color-brand) 15%, transparent)", border: `1px solid ${T.brand}`, color: "var(--brand-ink)", fontWeight: 700 }
                   : isSelected
                   ? { backgroundColor: T.textPri, border: `1px solid ${T.textPri}`, color: T.bg, fontWeight: 500 }
                   : { backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }

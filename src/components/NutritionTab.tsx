@@ -188,7 +188,7 @@ export const NutritionTab: React.FC<NutritionTabProps> = ({ profile }) => {
           <div className="flex flex-col items-center text-center gap-4 bg-black/40 backdrop-blur-md rounded-3xl px-6 py-8">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "rgba(200,241,53,0.10)" }}
+              style={{ backgroundColor: "color-mix(in srgb, var(--color-brand) 10%, transparent)" }}
             >
               <Apple className="w-7 h-7" style={{ color: T.brand }} />
             </div>

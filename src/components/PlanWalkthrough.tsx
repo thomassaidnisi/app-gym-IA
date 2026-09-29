@@ -52,7 +52,7 @@ export const PlanWalkthrough: React.FC<PlanWalkthroughProps> = ({ pillars, onClo
             <div
               key={i}
               className="h-1 flex-1 rounded-full transition-colors"
-              style={{ backgroundColor: i <= index ? "#c8f135" : "#3f3f46" }}
+              style={{ backgroundColor: i <= index ? "var(--color-brand)" : "#3f3f46" }}
             />
           ))}
         </div>
@@ -110,7 +110,7 @@ export const PlanWalkthrough: React.FC<PlanWalkthroughProps> = ({ pillars, onClo
             onClick={() => (isLast ? handleFinish() : setIndex((i) => i + 1))}
             disabled={finishing}
             className="flex-1 h-14 rounded-2xl font-black text-base text-black disabled:opacity-60 transition-opacity"
-            style={{ backgroundColor: "#c8f135" }}
+            style={{ backgroundColor: "var(--color-brand)" }}
           >
             {isLast ? (readOnly ? "Cerrar" : "Entendido") : "Siguiente"}
           </motion.button>

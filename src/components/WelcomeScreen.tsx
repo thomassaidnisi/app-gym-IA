@@ -42,11 +42,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onLogin, onSignup 
           }}
         >
           <div className="mb-8">
-            <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "#c8f135" }}>
+            <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "var(--color-brand)" }}>
               Entrenador Personal con IA
             </p>
             <p className="text-4xl font-extrabold tracking-tight text-white leading-none">
-              HEALTY <span style={{ color: "#c8f135" }}>APP</span>
+              HEALTY <span style={{ color: "var(--color-brand)" }}>APP</span>
             </p>
             <p className="text-base font-light italic mt-3" style={{ color: "rgba(255,255,255,0.5)" }}>
               Entrená · Superá · Vive Mejor
@@ -61,7 +61,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onLogin, onSignup 
               whileTap={{ scale: 0.98 }}
               onClick={onSignup}
               className="w-full rounded-2xl font-black text-base text-black transition-opacity"
-              style={{ backgroundColor: "#c8f135", height: 52 }}
+              style={{ backgroundColor: "var(--color-brand)", height: 52 }}
             >
               Crear cuenta
             </motion.button>

@@ -18,7 +18,7 @@ export function getReadinessInfo(score: number): {
   if (score >= 85) return {
     label: "Óptimo",
     message: "Estás en tu mejor momento. Día ideal para dar todo.",
-    color: "text-lime-400",
+    color: "text-brand",
   };
   if (score >= 65) return {
     label: "Bueno",

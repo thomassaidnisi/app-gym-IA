@@ -92,7 +92,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
           >
             <div className="mb-8">
               <p className="text-3xl font-black tracking-tight text-white">
-                healty<span style={{ color: "#c8f135" }}>.</span>
+                healty<span style={{ color: "var(--color-brand)" }}>.</span>
               </p>
               <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
                 Ingresá tu nueva contraseña para tu cuenta.
@@ -104,7 +104,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
             </h2>
 
             {resetSuccess ? (
-              <p className="text-sm px-1" style={{ color: "#c8f135" }}>
+              <p className="text-sm px-1" style={{ color: "var(--color-brand)" }}>
                 ¡Contraseña actualizada! Redirigiendo...
               </p>
             ) : (
@@ -150,7 +150,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
                   type="submit"
                   disabled={resetLoading}
                   className="w-full rounded-2xl font-black text-base text-black mt-1 disabled:opacity-50 transition-opacity"
-                  style={{ backgroundColor: "#c8f135", height: 52 }}
+                  style={{ backgroundColor: "var(--color-brand)", height: 52 }}
                 >
                   {resetLoading ? "…" : "Guardar contraseña"}
                 </motion.button>
@@ -268,9 +268,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
             >
               <div
                 className="w-20 h-20 rounded-3xl flex items-center justify-center"
-                style={{ backgroundColor: "rgba(200,241,53,0.12)", border: "1px solid rgba(200,241,53,0.25)" }}
+                style={{ backgroundColor: "color-mix(in srgb, var(--color-brand) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--color-brand) 25%, transparent)" }}
               >
-                <Mail size={48} style={{ color: "#c8f135" }} />
+                <Mail size={48} style={{ color: "var(--color-brand)" }} />
               </div>
 
               <div className="flex flex-col gap-2">
@@ -293,7 +293,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
                   <motion.p
                     key="inf"
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="text-sm" style={{ color: "#c8f135" }}
+                    className="text-sm" style={{ color: "var(--color-brand)" }}
                   >{info}</motion.p>
                 )}
               </AnimatePresence>
@@ -338,7 +338,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
               {/* Wordmark */}
               <div className="mb-8">
                 <p className="text-3xl font-black tracking-tight text-white">
-                  healty<span style={{ color: "#c8f135" }}>.</span>
+                  healty<span style={{ color: "var(--color-brand)" }}>.</span>
                 </p>
                 <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
                   {mode === "login" ? "Bienvenido de nuevo." : mode === "signup" ? "Creá tu cuenta para empezar." : "Ingresá tu email para recuperar tu contraseña."}
@@ -362,7 +362,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
                       className="flex-1 h-10 rounded-xl text-sm font-bold transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/30"
                       style={
                         mode === m
-                          ? { backgroundColor: "#c8f135", color: "#000" }
+                          ? { backgroundColor: "var(--color-brand)", color: "#000" }
                           : { color: "rgba(255,255,255,0.35)" }
                       }
                     >
@@ -486,7 +486,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0 }}
                           className="text-sm px-1"
-                          style={{ color: "#c8f135" }}
+                          style={{ color: "var(--color-brand)" }}
                         >
                           {info}
                         </motion.p>
@@ -498,7 +498,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
                       type="submit"
                       disabled={loading}
                       className="w-full rounded-2xl font-black text-base text-black mt-1 disabled:opacity-50 transition-opacity"
-                      style={{ backgroundColor: "#c8f135", height: 52 }}
+                      style={{ backgroundColor: "var(--color-brand)", height: 52 }}
                     >
                       {loading ? "…" : mode === "login" ? "Ingresar" : mode === "signup" ? "Registrarme" : "Enviar link de recuperación"}
                     </motion.button>

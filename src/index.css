@@ -111,6 +111,13 @@ html[data-theme="light"] {
 .safe-pb { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
 .font-display { font-family: 'Bebas Neue', sans-serif; }
 
+/* Foco visible para teclado/switch control. --brand-ink es lima en oscuro y
+   verde oscuro en claro, así el anillo contrasta con el fondo del tema. */
+:where(button, a, [role="button"], summary):focus-visible {
+  outline: 2px solid var(--brand-ink);
+  outline-offset: 2px;
+}
+
 /* Área táctil mínima de 44px sin cambiar el tamaño visual. El elemento tiene
    que estar posicionado (relative/absolute); la clase no lo fuerza para no
    pisar un `absolute` existente. */

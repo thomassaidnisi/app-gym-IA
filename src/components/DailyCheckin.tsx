@@ -49,7 +49,7 @@ const ChipRow: React.FC<{
         type="button"
         onClick={() => onSelect(opt.value)}
         className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${
-          selected === opt.value ? "bg-lime-400 text-black" : "bg-zinc-800 text-zinc-300"
+          selected === opt.value ? "bg-brand text-black" : "bg-zinc-800 text-zinc-300"
         }`}
       >
         {opt.label}
@@ -139,7 +139,7 @@ export const DailyCheckin: React.FC<DailyCheckinProps> = ({ onComplete, onClose 
             onClick={handleSubmit}
             disabled={!canSubmit || saving}
             className="w-full h-14 rounded-2xl font-black text-base text-black disabled:opacity-40"
-            style={{ backgroundColor: "#c8f135" }}
+            style={{ backgroundColor: "var(--color-brand)" }}
           >
             {saving ? "Guardando…" : "Listo"}
           </motion.button>

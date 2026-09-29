@@ -70,9 +70,9 @@ export const Transition: React.FC<TransitionProps> = ({
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 500, damping: 24, delay: 0.05 }}
         className="w-20 h-20 rounded-full flex items-center justify-center mb-8"
-        style={{ backgroundColor: "rgba(200,241,53,0.12)", border: "2px solid rgba(200,241,53,0.3)" }}
+        style={{ backgroundColor: "color-mix(in srgb, var(--color-brand) 12%, transparent)", border: "2px solid color-mix(in srgb, var(--color-brand) 30%, transparent)" }}
       >
-        <Check className="w-9 h-9" style={{ color: "#c8f135" }} strokeWidth={2.5} />
+        <Check className="w-9 h-9" style={{ color: "var(--color-brand)" }} strokeWidth={2.5} />
       </motion.div>
 
       {/* Completed exercise name */}
@@ -123,7 +123,7 @@ export const Transition: React.FC<TransitionProps> = ({
         >
           <p
             className="text-xs uppercase tracking-widest font-semibold"
-            style={{ color: "rgba(200,241,53,0.6)" }}
+            style={{ color: "color-mix(in srgb, var(--color-brand) 60%, transparent)" }}
           >
             Último ejercicio completado
           </p>
