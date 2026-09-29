@@ -4,52 +4,254 @@
   "title": "Design System: Healty App",
   "extensions": {
     "colorMeta": {
-      "lima-voltaje": { "role": "primary", "displayName": "Lima Voltaje", "canonical": "#c8f135", "tonalRamp": ["oklch(22% 0.06 125)", "oklch(34% 0.1 125)", "oklch(46% 0.14 125)", "oklch(58% 0.17 125)", "oklch(70% 0.2 125)", "oklch(82% 0.21 125)", "oklch(91% 0.21 125)", "oklch(96% 0.1 125)"] },
-      "tinta": { "role": "neutral", "displayName": "Tinta", "canonical": "#000000" },
-      "carbon-hero": { "role": "neutral", "displayName": "Carbón Hero", "canonical": "#0a0a0a" },
-      "fondo-oscuro": { "role": "neutral", "displayName": "Fondo Oscuro", "canonical": "#121214", "tonalRamp": ["#0a0a0a", "#121214", "#1c1c1f", "#232326", "#2c2c30", "#6e6e73", "#9a9a9f", "#f5f5f7"] },
-      "fondo-oscuro-secundario": { "role": "neutral", "displayName": "Fondo Oscuro Secundario", "canonical": "#1c1c1f" },
-      "fondo-oscuro-elevado": { "role": "neutral", "displayName": "Fondo Oscuro Elevado", "canonical": "#232326" },
-      "texto-oscuro-primario": { "role": "neutral", "displayName": "Texto Oscuro Primario", "canonical": "#f5f5f7" },
-      "texto-oscuro-secundario": { "role": "neutral", "displayName": "Texto Oscuro Secundario", "canonical": "#9a9a9f" },
-      "texto-oscuro-terciario": { "role": "neutral", "displayName": "Texto Oscuro Terciario", "canonical": "#6e6e73" },
-      "borde-oscuro": { "role": "neutral", "displayName": "Borde Oscuro", "canonical": "#2c2c30" },
-      "fondo-claro": { "role": "neutral", "displayName": "Fondo Claro", "canonical": "#ffffff", "tonalRamp": ["#0a0a0a", "#6e6e73", "#aeaeb2", "#e5e5ea", "#f5f5f7", "#ffffff"] },
-      "fondo-claro-secundario": { "role": "neutral", "displayName": "Fondo Claro Secundario", "canonical": "#f5f5f7" },
-      "texto-claro-primario": { "role": "neutral", "displayName": "Texto Claro Primario", "canonical": "#0a0a0a" },
-      "texto-claro-secundario": { "role": "neutral", "displayName": "Texto Claro Secundario", "canonical": "#6e6e73" },
-      "texto-claro-terciario": { "role": "neutral", "displayName": "Texto Claro Terciario", "canonical": "#aeaeb2" },
-      "borde-claro": { "role": "neutral", "displayName": "Borde Claro", "canonical": "#e5e5ea" },
-      "racha-naranja": { "role": "signal", "displayName": "Racha Naranja", "canonical": "#f97316" },
-      "semana-cielo": { "role": "signal", "displayName": "Semana Cielo", "canonical": "#0ea5e9" },
-      "sesion-violeta": { "role": "signal", "displayName": "Sesión Violeta", "canonical": "#8b5cf6" },
-      "alerta-rojo": { "role": "signal", "displayName": "Alerta Rojo", "canonical": "#ef4444" }
+      "lima-voltaje": {
+        "role": "primary",
+        "displayName": "Lima Voltaje",
+        "canonical": "#c8f135",
+        "tonalRamp": [
+          "oklch(22% 0.06 125)",
+          "oklch(34% 0.1 125)",
+          "oklch(46% 0.14 125)",
+          "oklch(58% 0.17 125)",
+          "oklch(70% 0.2 125)",
+          "oklch(82% 0.21 125)",
+          "oklch(91% 0.21 125)",
+          "oklch(96% 0.1 125)"
+        ]
+      },
+      "tinta": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "#000000"
+      },
+      "carbon-hero": {
+        "role": "neutral",
+        "displayName": "Carbón Hero",
+        "canonical": "#0a0a0a"
+      },
+      "fondo-oscuro": {
+        "role": "neutral",
+        "displayName": "Fondo Oscuro",
+        "canonical": "#121214",
+        "tonalRamp": [
+          "#0a0a0a",
+          "#121214",
+          "#1c1c1f",
+          "#232326",
+          "#2c2c30",
+          "#6e6e73",
+          "#9a9a9f",
+          "#f5f5f7"
+        ]
+      },
+      "fondo-oscuro-secundario": {
+        "role": "neutral",
+        "displayName": "Fondo Oscuro Secundario",
+        "canonical": "#1c1c1f"
+      },
+      "fondo-oscuro-elevado": {
+        "role": "neutral",
+        "displayName": "Fondo Oscuro Elevado",
+        "canonical": "#232326"
+      },
+      "texto-oscuro-primario": {
+        "role": "neutral",
+        "displayName": "Texto Oscuro Primario",
+        "canonical": "#f5f5f7"
+      },
+      "texto-oscuro-secundario": {
+        "role": "neutral",
+        "displayName": "Texto Oscuro Secundario",
+        "canonical": "#aeaeb2"
+      },
+      "texto-oscuro-terciario": {
+        "role": "neutral",
+        "displayName": "Texto Oscuro Terciario",
+        "canonical": "#8e8e93"
+      },
+      "borde-oscuro": {
+        "role": "neutral",
+        "displayName": "Borde Oscuro",
+        "canonical": "#2c2c30"
+      },
+      "fondo-claro": {
+        "role": "neutral",
+        "displayName": "Fondo Claro",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#0a0a0a",
+          "#6e6e73",
+          "#aeaeb2",
+          "#e5e5ea",
+          "#f5f5f7",
+          "#ffffff"
+        ]
+      },
+      "fondo-claro-secundario": {
+        "role": "neutral",
+        "displayName": "Fondo Claro Secundario",
+        "canonical": "#f5f5f7"
+      },
+      "texto-claro-primario": {
+        "role": "neutral",
+        "displayName": "Texto Claro Primario",
+        "canonical": "#0a0a0a"
+      },
+      "texto-claro-secundario": {
+        "role": "neutral",
+        "displayName": "Texto Claro Secundario",
+        "canonical": "#56565b"
+      },
+      "texto-claro-terciario": {
+        "role": "neutral",
+        "displayName": "Texto Claro Terciario",
+        "canonical": "#6e6e73"
+      },
+      "borde-claro": {
+        "role": "neutral",
+        "displayName": "Borde Claro",
+        "canonical": "#e5e5ea"
+      },
+      "racha-naranja": {
+        "role": "signal",
+        "displayName": "Racha Naranja",
+        "canonical": "#f97316"
+      },
+      "semana-cielo": {
+        "role": "signal",
+        "displayName": "Semana Cielo",
+        "canonical": "#0ea5e9"
+      },
+      "sesion-violeta": {
+        "role": "signal",
+        "displayName": "Sesión Violeta",
+        "canonical": "#8b5cf6"
+      },
+      "alerta-rojo": {
+        "role": "signal",
+        "displayName": "Alerta Rojo",
+        "canonical": "#ef4444"
+      },
+      "tinta-lima-claro": {
+        "role": "semantic",
+        "displayName": "Tinta Lima (claro)",
+        "canonical": "#3f6212"
+      },
+      "estado-bien-claro": {
+        "role": "semantic",
+        "displayName": "Estado Bien (claro)",
+        "canonical": "#3f6212"
+      },
+      "estado-info-claro": {
+        "role": "semantic",
+        "displayName": "Estado Info (claro)",
+        "canonical": "#1d4ed8"
+      },
+      "estado-alerta-claro": {
+        "role": "semantic",
+        "displayName": "Estado Alerta (claro)",
+        "canonical": "#b45309"
+      },
+      "estado-mal-claro": {
+        "role": "semantic",
+        "displayName": "Estado Mal (claro)",
+        "canonical": "#b91c1c"
+      },
+      "grafico-lima-claro": {
+        "role": "semantic",
+        "displayName": "Gráfico Lima (claro)",
+        "canonical": "#65a30d"
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Nombre del usuario en el hero de Gym." },
-      "headline": { "displayName": "Headline", "purpose": "Títulos de pantalla en mayúsculas (flujos tipo PlanUpload)." },
-      "metric": { "displayName": "Metric", "purpose": "Números ganados: racha, sesiones, series, timers. Siempre tabular." },
-      "title": { "displayName": "Title", "purpose": "Títulos de tarjeta y opciones." },
-      "body": { "displayName": "Body", "purpose": "Texto de tarjetas y mensajes del coach." },
-      "caption": { "displayName": "Caption", "purpose": "Metadatos y subtítulos." },
-      "label": { "displayName": "Label", "purpose": "Rótulos de instrumento: tabs, campos, stats. Mayúsculas, tracking amplio. Utilidad font-mono (stack del sistema)." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Nombre del usuario en el hero de Gym."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Títulos de pantalla en mayúsculas (flujos tipo PlanUpload)."
+      },
+      "metric": {
+        "displayName": "Metric",
+        "purpose": "Números ganados: racha, sesiones, series, timers. Siempre tabular."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Títulos de tarjeta y opciones."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto de tarjetas y mensajes del coach."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Metadatos y subtítulos."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Rótulos de instrumento: tabs, campos, stats. Mayúsculas, tracking amplio. Utilidad font-mono (stack del sistema)."
+      }
     },
     "shadows": [
-      { "name": "card-subtle", "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)", "purpose": "shadow-sm opcional en tarjetas; la profundidad principal es tonal." },
-      { "name": "cta-lift", "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)", "purpose": "shadow-lg bajo CTAs lima para que floten." },
-      { "name": "selected", "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)", "purpose": "shadow-md en opciones seleccionadas." },
-      { "name": "smoked-glass", "value": "backdrop-filter: blur(12px); background: rgb(0 0 0 / 0.4)", "purpose": "Paneles sobre fotografía." },
-      { "name": "nav-glass", "value": "backdrop-filter: blur(20px); background: var(--nav-bg)", "purpose": "Tab bar." }
+      {
+        "name": "card-subtle",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "shadow-sm opcional en tarjetas; la profundidad principal es tonal."
+      },
+      {
+        "name": "cta-lift",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        "purpose": "shadow-lg bajo CTAs lima para que floten."
+      },
+      {
+        "name": "selected",
+        "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        "purpose": "shadow-md en opciones seleccionadas."
+      },
+      {
+        "name": "smoked-glass",
+        "value": "backdrop-filter: blur(12px); background: rgb(0 0 0 / 0.4)",
+        "purpose": "Paneles sobre fotografía."
+      },
+      {
+        "name": "nav-glass",
+        "value": "backdrop-filter: blur(20px); background: var(--nav-bg)",
+        "purpose": "Tab bar."
+      }
     ],
     "motion": [
-      { "name": "spring-tap", "value": "spring(stiffness 400, damping 17), scale 0.96", "purpose": "Feedback táctil al presionar botones y tarjetas." },
-      { "name": "spring-settle", "value": "spring(stiffness 400, damping 30)", "purpose": "Entradas de tarjetas y cambios de estado sin rebote visible." },
-      { "name": "spring-sheet", "value": "spring(stiffness 300, damping 32)", "purpose": "Sheets y modales que suben desde abajo." },
-      { "name": "enter-fade-up", "value": "opacity 0→1, y -8→0", "purpose": "Aparición de avisos (sesión pausada, coach)." },
-      { "name": "pulse-slow", "value": "opacity 1→0.4→1, 3s cubic-bezier(0.4,0,0.6,1) infinite", "purpose": "Indicadores en espera." }
+      {
+        "name": "spring-tap",
+        "value": "spring(stiffness 400, damping 17), scale 0.96",
+        "purpose": "Feedback táctil al presionar botones y tarjetas."
+      },
+      {
+        "name": "spring-settle",
+        "value": "spring(stiffness 400, damping 30)",
+        "purpose": "Entradas de tarjetas y cambios de estado sin rebote visible."
+      },
+      {
+        "name": "spring-sheet",
+        "value": "spring(stiffness 300, damping 32)",
+        "purpose": "Sheets y modales que suben desde abajo."
+      },
+      {
+        "name": "enter-fade-up",
+        "value": "opacity 0→1, y -8→0",
+        "purpose": "Aparición de avisos (sesión pausada, coach)."
+      },
+      {
+        "name": "pulse-slow",
+        "value": "opacity 1→0.4→1, 3s cubic-bezier(0.4,0,0.6,1) infinite",
+        "purpose": "Indicadores en espera."
+      }
     ],
     "breakpoints": [
-      { "name": "content-max", "value": "512px" }
+      {
+        "name": "content-max",
+        "value": "512px"
+      }
     ]
   },
   "components": [
@@ -122,11 +324,31 @@
       "Labels chicos en mayúsculas con tracking amplio, como rótulos de instrumento."
     ],
     "rules": [
-      { "name": "The One Light Rule", "body": "Lima Voltaje es la única luz encendida del tablero. Si una pantalla tiene más de un CTA en lima, uno de los dos está mal. Los estados seleccionados de formularios usan blanco translúcido, no lima.", "section": "colors" },
-      { "name": "The Ink-on-Lime Rule", "body": "Sobre Lima Voltaje el texto y los íconos son siempre negros (`#000`). Nunca blanco.", "section": "colors" },
-      { "name": "The Scoreboard Rule", "body": "Todo número que el usuario \"gana\" (racha, sesiones, PR, series) va en Bebas con `tabular-nums`. El texto explicativo nunca va en Bebas.", "section": "typography" },
-      { "name": "The Label Floor Rule", "body": "10px es el mínimo para labels. Los usos actuales de 8–9px son deuda, no parte del sistema.", "section": "typography" },
-      { "name": "The Smoked Glass Rule", "body": "El texto sobre fotografía siempre va sobre un degradé (transparente → negro al 90%) y, si es contenido importante, además sobre un panel de vidrio ahumado. Nunca texto blanco directo sobre la foto.", "section": "elevation" }
+      {
+        "name": "The One Light Rule",
+        "body": "Lima Voltaje es la única luz encendida del tablero. Si una pantalla tiene más de un CTA en lima, uno de los dos está mal. Los estados seleccionados de formularios usan blanco translúcido, no lima.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink-on-Lime Rule",
+        "body": "Sobre Lima Voltaje el texto y los íconos son siempre negros (`#000`). Nunca blanco.",
+        "section": "colors"
+      },
+      {
+        "name": "The Scoreboard Rule",
+        "body": "Todo número que el usuario \"gana\" (racha, sesiones, PR, series) va en Bebas con `tabular-nums`. El texto explicativo nunca va en Bebas.",
+        "section": "typography"
+      },
+      {
+        "name": "The Label Floor Rule",
+        "body": "10px es el mínimo para labels. Los usos actuales de 8–9px son deuda, no parte del sistema.",
+        "section": "typography"
+      },
+      {
+        "name": "The Smoked Glass Rule",
+        "body": "El texto sobre fotografía siempre va sobre un degradé (transparente → negro al 90%) y, si es contenido importante, además sobre un panel de vidrio ahumado. Nunca texto blanco directo sobre la foto.",
+        "section": "elevation"
+      }
     ],
     "dos": [
       "Do usar `bg-brand` / `text-brand` / `var(--color-brand)` para el lima. El token es la única fuente.",

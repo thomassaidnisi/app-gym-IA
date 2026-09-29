@@ -7,21 +7,27 @@ colors:
   fondo-claro: "#ffffff"
   fondo-claro-secundario: "#f5f5f7"
   texto-claro-primario: "#0a0a0a"
-  texto-claro-secundario: "#6e6e73"
-  texto-claro-terciario: "#aeaeb2"
+  texto-claro-secundario: "#56565b"
+  texto-claro-terciario: "#6e6e73"
   borde-claro: "#e5e5ea"
   fondo-oscuro: "#121214"
   fondo-oscuro-secundario: "#1c1c1f"
   fondo-oscuro-elevado: "#232326"
   texto-oscuro-primario: "#f5f5f7"
-  texto-oscuro-secundario: "#9a9a9f"
-  texto-oscuro-terciario: "#6e6e73"
+  texto-oscuro-secundario: "#aeaeb2"
+  texto-oscuro-terciario: "#8e8e93"
   borde-oscuro: "#2c2c30"
   carbon-hero: "#0a0a0a"
   racha-naranja: "#f97316"
   semana-cielo: "#0ea5e9"
   sesion-violeta: "#8b5cf6"
   alerta-rojo: "#ef4444"
+  tinta-lima-claro: "#3f6212"
+  estado-bien-claro: "#3f6212"
+  estado-info-claro: "#1d4ed8"
+  estado-alerta-claro: "#b45309"
+  estado-mal-claro: "#b91c1c"
+  grafico-lima-claro: "#65a30d"
 typography:
   display:
     fontFamily: "Bebas Neue, sans-serif"
@@ -171,6 +177,11 @@ Los tokens reactivos al tema viven en `src/index.css` como custom properties (`-
 - **Alerta Rojo** (`alerta-rojo`): errores y acciones destructivas.
 
 Los colores de señal aparecen como ícono sobre un círculo del mismo color al 12% de opacidad. Nunca son fondos sólidos ni texto de párrafo.
+
+### Tinta y estados según el tema
+El lima y los colores de estado del tema oscuro no llegan al contraste mínimo sobre blanco. Cuando se usan como **texto o ícono** en una superficie que sigue el tema, van por token: `--brand-ink` (lima en oscuro, `tinta-lima-claro` en claro), `--status-good`, `--status-info`, `--status-warn` y `--status-bad`, y `--chart-accent` para las líneas de gráficos. Los valores en claro están en el frontmatter con sufijo `-claro`; en oscuro coinciden con Lima Voltaje y los 400 de Tailwind.
+
+**Superficies siempre oscuras:** el hero con foto, la tarjeta "Entrenamiento de hoy" (`--surface-hero`), Onboarding, Auth, PlanUpload, la sesión de entrenamiento y las hojas modales (DayPopup, DailyCheckin, ExerciseHistory, PRCelebration). Ahí se usan `white/…` y `zinc` fijos. Todo lo demás en las tabs sigue el tema.
 
 ### Named Rules
 **The One Light Rule.** Lima Voltaje es la única luz encendida del tablero. Si una pantalla tiene más de un CTA en lima, uno de los dos está mal. Los estados seleccionados de formularios usan blanco translúcido, no lima.

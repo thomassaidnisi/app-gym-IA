@@ -43,7 +43,7 @@ export const PRCelebration: React.FC<PRCelebrationProps> = ({ data, onClose }) =
               <span className="text-sm font-semibold text-white truncate pr-2">{pr.exerciseName}</span>
               <div className="text-right shrink-0">
                 <span className="text-sm font-black text-brand tabular-nums">{pr.weight} kg</span>
-                <span className="block text-[10px] text-zinc-500">
+                <span className="block text-[10px] text-zinc-400">
                   {pr.previousBest === null
                     ? "¡Primera vez!"
                     : `+${(pr.weight - pr.previousBest).toFixed(1)}kg vs anterior`}

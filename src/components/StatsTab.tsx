@@ -183,7 +183,7 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
           ) : (
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center shrink-0 font-black text-2xl"
-              style={{ backgroundColor: "rgba(200,241,53,0.15)", color: T.brand }}
+              style={{ backgroundColor: "rgba(200,241,53,0.15)", color: "var(--brand-ink)" }}
             >
               {nameInitial}
             </div>
@@ -195,65 +195,65 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
         </div>
 
         <div className="flex gap-2 mt-4">
-          <div className="flex-1 rounded-2xl py-2.5 px-2 text-center bg-zinc-900">
-            <span className="flex items-center justify-center gap-1 text-sm font-bold text-white"><Flame size={14} /> {profile?.current_streak ?? 0}</span>
-            <span className="block text-[10px] text-zinc-400 mt-0.5">días racha</span>
+          <div className="flex-1 rounded-2xl py-2.5 px-2 text-center bg-[var(--bg-primary)]">
+            <span className="flex items-center justify-center gap-1 text-sm font-bold text-[var(--text-primary)]"><Flame size={14} /> {profile?.current_streak ?? 0}</span>
+            <span className="block text-[10px] text-[var(--text-secondary)] mt-0.5">días racha</span>
           </div>
-          <div className="flex-1 rounded-2xl py-2.5 px-2 text-center bg-zinc-900">
-            <span className="flex items-center justify-center gap-1 text-sm font-bold text-white"><Calendar size={14} /> {thisWeekSessions}</span>
-            <span className="block text-[10px] text-zinc-400 mt-0.5">ses. semana</span>
+          <div className="flex-1 rounded-2xl py-2.5 px-2 text-center bg-[var(--bg-primary)]">
+            <span className="flex items-center justify-center gap-1 text-sm font-bold text-[var(--text-primary)]"><Calendar size={14} /> {thisWeekSessions}</span>
+            <span className="block text-[10px] text-[var(--text-secondary)] mt-0.5">ses. semana</span>
           </div>
-          <div className="flex-1 rounded-2xl py-2.5 px-2 text-center bg-zinc-900">
-            <span className="flex items-center justify-center gap-1 text-sm font-bold text-white"><BarChart2 size={14} /> {thisWeekVolume.toLocaleString("es-AR")}kg</span>
-            <span className="block text-[10px] text-zinc-400 mt-0.5">volumen</span>
+          <div className="flex-1 rounded-2xl py-2.5 px-2 text-center bg-[var(--bg-primary)]">
+            <span className="flex items-center justify-center gap-1 text-sm font-bold text-[var(--text-primary)]"><BarChart2 size={14} /> {thisWeekVolume.toLocaleString("es-AR")}kg</span>
+            <span className="block text-[10px] text-[var(--text-secondary)] mt-0.5">volumen</span>
           </div>
         </div>
       </div>
 
       {/* B) Esta semana */}
-      <div className="bg-zinc-900 rounded-3xl p-5 mb-4">
-        <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">Esta semana</p>
+      <div className="bg-[var(--bg-primary)] rounded-3xl p-5 mb-4">
+        <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest">Esta semana</p>
         <div className="flex items-center justify-around mt-4 text-center">
           <div>
-            <span className="block text-2xl font-black tabular-nums text-white">{thisWeekSessions}</span>
-            <span className="block text-[11px] text-zinc-400 mt-1">entrenamientos</span>
+            <span className="block text-2xl font-black tabular-nums text-[var(--text-primary)]">{thisWeekSessions}</span>
+            <span className="block text-[11px] text-[var(--text-secondary)] mt-1">entrenamientos</span>
           </div>
           <div>
-            <span className="block text-2xl font-black tabular-nums text-white">{thisWeekVolume.toLocaleString("es-AR")}</span>
-            <span className="block text-[11px] text-zinc-400 mt-1">volumen total</span>
+            <span className="block text-2xl font-black tabular-nums text-[var(--text-primary)]">{thisWeekVolume.toLocaleString("es-AR")}</span>
+            <span className="block text-[11px] text-[var(--text-secondary)] mt-1">volumen total</span>
           </div>
           <div>
-            <span className="block text-2xl font-black tabular-nums text-white">{thisWeekMinutes}</span>
-            <span className="block text-[11px] text-zinc-400 mt-1">minutos</span>
+            <span className="block text-2xl font-black tabular-nums text-[var(--text-primary)]">{thisWeekMinutes}</span>
+            <span className="block text-[11px] text-[var(--text-secondary)] mt-1">minutos</span>
           </div>
         </div>
-        <div className="border-t border-zinc-800 mt-4 pt-3 text-center">
+        <div className="border-t border-[var(--border)] mt-4 pt-3 text-center">
           {isFirstWeek ? (
-            <span className="text-xs text-zinc-500">Primera semana registrada</span>
+            <span className="text-xs text-[var(--text-secondary)]">Primera semana registrada</span>
           ) : volumeDiff >= 0 ? (
-            <span className="text-xs text-green-400">↑ +{volumeDiff.toLocaleString("es-AR")} kg vs semana anterior</span>
+            <span className="text-xs text-[var(--status-good)]">↑ +{volumeDiff.toLocaleString("es-AR")} kg vs semana anterior</span>
           ) : (
-            <span className="text-xs text-red-400">↓ {volumeDiff.toLocaleString("es-AR")} kg vs semana anterior</span>
+            <span className="text-xs text-[var(--status-bad)]">↓ {volumeDiff.toLocaleString("es-AR")} kg vs semana anterior</span>
           )}
         </div>
       </div>
 
       {/* C) Récords personales */}
-      <div className="bg-zinc-900 rounded-3xl p-5 mb-4">
+      <div className="bg-[var(--bg-primary)] rounded-3xl p-5 mb-4">
         <div className="flex items-center gap-2 mb-4">
-          <Trophy size={18} className="text-amber-400" />
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">Récords personales</p>
+          <Trophy size={18} className="text-[var(--status-warn)]" />
+          <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest">Récords personales</p>
         </div>
         {isLoadingRecords ? (
           <div className="animate-pulse space-y-2">
-            <div className="h-9 rounded-xl bg-zinc-800" />
-            <div className="h-9 rounded-xl bg-zinc-800" />
-            <div className="h-9 rounded-xl bg-zinc-800" />
+            <div className="h-9 rounded-xl bg-[var(--bg-secondary)]" />
+            <div className="h-9 rounded-xl bg-[var(--bg-secondary)]" />
+            <div className="h-9 rounded-xl bg-[var(--bg-secondary)]" />
           </div>
         ) : personalRecords.length === 0 ? (
           <div className="text-center py-6">
-            <Trophy className="w-10 h-10 mx-auto mb-2 text-zinc-700" />
-            <p className="text-xs text-zinc-500 max-w-[220px] mx-auto leading-relaxed">
+            <Trophy className="w-10 h-10 mx-auto mb-2 text-[var(--border)]" />
+            <p className="text-xs text-[var(--text-secondary)] max-w-[220px] mx-auto leading-relaxed">
               Completá tu primer entrenamiento para ver tus récords personales
             </p>
           </div>
@@ -261,10 +261,10 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
           <div className="space-y-2">
             {personalRecords.slice(0, 5).map((pr) => (
               <div key={pr.exerciseName} className="flex items-center justify-between rounded-xl px-3 py-2.5 bg-white/5">
-                <span className="text-xs font-semibold text-white truncate pr-2">{pr.exerciseName}</span>
+                <span className="text-xs font-semibold text-[var(--text-primary)] truncate pr-2">{pr.exerciseName}</span>
                 <div className="text-right shrink-0">
-                  <span className="text-sm font-black text-brand tabular-nums">{pr.maxWeight} kg</span>
-                  <span className="block text-[10px] text-zinc-500">{pr.date}</span>
+                  <span className="text-sm font-black text-[var(--brand-ink)] tabular-nums">{pr.maxWeight} kg</span>
+                  <span className="block text-[10px] text-[var(--text-secondary)]">{pr.date}</span>
                 </div>
               </div>
             ))}
@@ -273,34 +273,34 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
       </div>
 
       {/* D) Mi progreso */}
-      <div className="bg-zinc-900 rounded-3xl p-5 mb-4">
+      <div className="bg-[var(--bg-primary)] rounded-3xl p-5 mb-4">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp size={18} className="text-brand" />
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">Mi progreso</p>
+          <TrendingUp size={18} className="text-[var(--brand-ink)]" />
+          <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest">Mi progreso</p>
         </div>
         {isLoadingRecords ? (
-          <div className="animate-pulse h-16 rounded-xl bg-zinc-800" />
+          <div className="animate-pulse h-16 rounded-xl bg-[var(--bg-secondary)]" />
         ) : !weeklyProgress || (weeklyProgress.thisWeekVolume === 0 && weeklyProgress.lastWeekVolume === 0) ? (
           <div className="text-center py-6">
-            <TrendingUp className="w-10 h-10 mx-auto mb-2 text-zinc-700" />
-            <p className="text-xs text-zinc-500 max-w-[220px] mx-auto leading-relaxed">
+            <TrendingUp className="w-10 h-10 mx-auto mb-2 text-[var(--border)]" />
+            <p className="text-xs text-[var(--text-secondary)] max-w-[220px] mx-auto leading-relaxed">
               Tu historial de ejercicios aparecerá acá después de tu primera sesión
             </p>
           </div>
         ) : (
           <div className="space-y-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black tabular-nums text-white">{weeklyProgress.thisWeekVolume.toLocaleString("es-AR")} kg</span>
+              <span className="text-2xl font-black tabular-nums text-[var(--text-primary)]">{weeklyProgress.thisWeekVolume.toLocaleString("es-AR")} kg</span>
               {weeklyProgress.percentChange >= 0 ? (
-                <span className="text-xs font-semibold text-green-400">↑ {weeklyProgress.percentChange.toFixed(0)}%</span>
+                <span className="text-xs font-semibold text-[var(--status-good)]">↑ {weeklyProgress.percentChange.toFixed(0)}%</span>
               ) : (
-                <span className="text-xs font-semibold text-red-400">↓ {Math.abs(weeklyProgress.percentChange).toFixed(0)}%</span>
+                <span className="text-xs font-semibold text-[var(--status-bad)]">↓ {Math.abs(weeklyProgress.percentChange).toFixed(0)}%</span>
               )}
             </div>
-            <p className="text-xs text-zinc-400">{weeklyProgress.sessionsThisWeek} sesiones esta semana</p>
+            <p className="text-xs text-[var(--text-secondary)]">{weeklyProgress.sessionsThisWeek} sesiones esta semana</p>
             {weeklyProgress.topImprovedExercise && (
-              <p className="text-xs text-zinc-500">
-                Ejercicio más mejorado: <span className="text-white font-semibold">{weeklyProgress.topImprovedExercise}</span>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Ejercicio más mejorado: <span className="text-[var(--text-primary)] font-semibold">{weeklyProgress.topImprovedExercise}</span>
               </p>
             )}
           </div>
@@ -342,7 +342,7 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
                 onClick={() => toggleAttendance(dayNum)}
                 className="h-9 w-full rounded-lg flex flex-col items-center justify-center relative transition-all"
                 style={isAttended
-                  ? { backgroundColor: "rgba(200,241,53,0.15)", border: `1px solid ${T.brand}`, color: T.brand, fontWeight: 700 }
+                  ? { backgroundColor: "rgba(200,241,53,0.15)", border: `1px solid ${T.brand}`, color: "var(--brand-ink)", fontWeight: 700 }
                   : isSelected
                   ? { backgroundColor: T.textPri, border: `1px solid ${T.textPri}`, color: T.bg, fontWeight: 500 }
                   : { backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }
@@ -357,10 +357,10 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
       </div>
 
       {/* Preparación */}
-      <div className="bg-zinc-900 rounded-3xl p-5 mb-4">
+      <div className="bg-[var(--bg-primary)] rounded-3xl p-5 mb-4">
         <div className="flex items-center gap-2 mb-4">
-          <Activity size={18} className="text-brand" />
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">Preparación</p>
+          <Activity size={18} className="text-[var(--brand-ink)]" />
+          <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest">Preparación</p>
         </div>
         {readinessHistory.length >= 2 ? (
           <div className="h-40 -mx-2">
@@ -369,21 +369,21 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
                 data={readinessHistory.map((r) => ({ label: formatShortDate(r.date), score: r.score }))}
                 margin={{ top: 8, right: 12, bottom: 0, left: -12 }}
               >
-                <XAxis dataKey="label" tick={{ fill: "#71717a", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fill: "#71717a", fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
+                <XAxis dataKey="label" tick={{ fill: "var(--text-tertiary)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 100]} tick={{ fill: "var(--text-tertiary)", fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
                 <Tooltip
-                  contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 12, fontSize: 12 }}
-                  labelStyle={{ color: "#a1a1aa" }}
+                  contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12, color: "var(--text-primary)" }}
+                  labelStyle={{ color: "var(--text-secondary)" }}
                   formatter={(value: number) => [value, "Índice"]}
                 />
-                <Line type="monotone" dataKey="score" stroke="#c8f135" strokeWidth={2} dot={{ r: 3, fill: "#c8f135" }} />
+                <Line type="monotone" dataKey="score" stroke="var(--chart-accent)" strokeWidth={2} dot={{ r: 3, fill: "var(--chart-accent)" }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         ) : (
           <div className="text-center py-6">
-            <Activity className="w-10 h-10 mx-auto mb-2 text-zinc-700" />
-            <p className="text-xs text-zinc-500 max-w-[220px] mx-auto leading-relaxed">
+            <Activity className="w-10 h-10 mx-auto mb-2 text-[var(--border)]" />
+            <p className="text-xs text-[var(--text-secondary)] max-w-[220px] mx-auto leading-relaxed">
               Completá el check-in diario para ver tu tendencia.
             </p>
           </div>

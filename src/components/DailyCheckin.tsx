@@ -101,7 +101,7 @@ export const DailyCheckin: React.FC<DailyCheckinProps> = ({ onComplete, onClose 
       >
         <div className="px-6 pt-6 shrink-0">
           <h2 className="text-2xl font-extrabold text-white">¿Cómo llegás hoy?</h2>
-          <p className="text-xs text-zinc-500 mt-1">Tarda menos de 30 segundos</p>
+          <p className="text-xs text-zinc-400 mt-1">Tarda menos de 30 segundos</p>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">

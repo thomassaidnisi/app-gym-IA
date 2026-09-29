@@ -16,14 +16,20 @@
   --bg-secondary:        #f5f5f7;
   --bg-elevated:         #ffffff;
   --text-primary:        #0a0a0a;
-  --text-secondary:      #6e6e73;
-  --text-tertiary:       #aeaeb2;
+  --text-secondary:      #56565b;
+  --text-tertiary:       #6e6e73;
   --border:              #e5e5ea;
   --surface-hero:        #0a0a0a;        /* hero card: black on light bg */
   --surface-hero-border: #1c1c1e;
   --nav-bg:              rgba(255,255,255,0.85);
   --nav-border:          rgba(0,0,0,0.08);
   --badge-bg:            rgba(0,0,0,0.08);
+  --brand-ink:            #3f6212;
+  --status-good:          #3f6212;
+  --status-info:          #1d4ed8;
+  --status-warn:          #b45309;
+  --status-bad:           #b91c1c;
+  --chart-accent:         #65a30d;
 }
 
 /* Dark via system preference (only when user hasn't forced light) */
@@ -33,14 +39,20 @@
     --bg-secondary:        #1c1c1f;
     --bg-elevated:         #232326;
     --text-primary:        #f5f5f7;
-    --text-secondary:      #9a9a9f;
-    --text-tertiary:       #6e6e73;
+    --text-secondary:      #aeaeb2;
+    --text-tertiary:       #8e8e93;
     --border:              #2c2c30;
     --surface-hero:        #232326;      /* hero card: elevated dark, not invisible */
     --surface-hero-border: #2c2c30;
     --nav-bg:              rgba(10,10,10,0.80);
     --nav-border:          rgba(255,255,255,0.08);
     --badge-bg:            rgba(255,255,255,0.12);
+    --brand-ink:            #c8f135;
+    --status-good:          #a3e635;
+    --status-info:          #60a5fa;
+    --status-warn:          #fbbf24;
+    --status-bad:           #f87171;
+    --chart-accent:         #c8f135;
   }
 }
 
@@ -50,14 +62,20 @@ html[data-theme="dark"] {
   --bg-secondary:        #1c1c1f;
   --bg-elevated:         #232326;
   --text-primary:        #f5f5f7;
-  --text-secondary:      #9a9a9f;
-  --text-tertiary:       #6e6e73;
+  --text-secondary:      #aeaeb2;
+  --text-tertiary:       #8e8e93;
   --border:              #2c2c30;
   --surface-hero:        #232326;
   --surface-hero-border: #2c2c30;
   --nav-bg:              rgba(10,10,10,0.80);
   --nav-border:          rgba(255,255,255,0.08);
   --badge-bg:            rgba(255,255,255,0.12);
+  --brand-ink:            #c8f135;
+  --status-good:          #a3e635;
+  --status-info:          #60a5fa;
+  --status-warn:          #fbbf24;
+  --status-bad:           #f87171;
+  --chart-accent:         #c8f135;
 }
 
 /* Light forced by user (overrides system dark via :not guard in media query) */
@@ -66,14 +84,20 @@ html[data-theme="light"] {
   --bg-secondary:        #f5f5f7;
   --bg-elevated:         #ffffff;
   --text-primary:        #0a0a0a;
-  --text-secondary:      #6e6e73;
-  --text-tertiary:       #aeaeb2;
+  --text-secondary:      #56565b;
+  --text-tertiary:       #6e6e73;
   --border:              #e5e5ea;
   --surface-hero:        #0a0a0a;
   --surface-hero-border: #1c1c1e;
   --nav-bg:              rgba(255,255,255,0.85);
   --nav-border:          rgba(0,0,0,0.08);
   --badge-bg:            rgba(0,0,0,0.08);
+  --brand-ink:            #3f6212;
+  --status-good:          #3f6212;
+  --status-info:          #1d4ed8;
+  --status-warn:          #b45309;
+  --status-bad:           #b91c1c;
+  --chart-accent:         #65a30d;
 }
 
 /* ── SCROLLBAR ───────────────────────────────────────────────────────────── */

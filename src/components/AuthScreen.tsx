@@ -7,7 +7,7 @@ import { supabase } from "../lib/supabase";
 type Mode = "login" | "signup" | "forgot" | "verify";
 
 const inputClass =
-  "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white text-base placeholder-white/20 focus:outline-none focus:border-white/40 transition-colors";
+  "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white text-base placeholder-white/50 focus:outline-none focus:border-white/40 transition-colors";
 
 interface AuthScreenProps {
   initialMode?: "login" | "signup";
@@ -414,7 +414,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
                             />
                           </div>
                           <div>
-                            <label htmlFor="signup-birthdate" className="block text-xs text-white/40 mb-1.5 px-1">
+                            <label htmlFor="signup-birthdate" className="block text-xs text-white/60 mb-1.5 px-1">
                               Fecha de nacimiento
                             </label>
                             <input

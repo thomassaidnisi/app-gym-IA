@@ -100,7 +100,7 @@ export const PlanWalkthrough: React.FC<PlanWalkthroughProps> = ({ pillars, onClo
           {index > 0 && (
             <button
               onClick={() => setIndex((i) => i - 1)}
-              className="text-sm font-semibold text-zinc-500 px-2 transition-opacity active:opacity-60"
+              className="text-sm font-semibold text-zinc-400 px-2 transition-opacity active:opacity-60"
             >
               Anterior
             </button>

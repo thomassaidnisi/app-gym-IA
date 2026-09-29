@@ -60,7 +60,7 @@ export const ExerciseHistoryModal: React.FC<ExerciseHistoryModalProps> = ({ user
               <div className="h-10 rounded-xl bg-zinc-800" />
             </div>
           ) : entries.length === 0 ? (
-            <p className="text-sm text-zinc-500 text-center py-10">Sin registros todavía.</p>
+            <p className="text-sm text-zinc-400 text-center py-10">Sin registros todavía.</p>
           ) : (
             <>
               {entries.length >= 2 && (
