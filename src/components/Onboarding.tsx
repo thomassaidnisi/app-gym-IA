@@ -768,7 +768,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
   ];
 
   return (
-    <div className="relative min-h-screen w-full bg-black">
+    <div className="relative min-h-dvh w-full bg-black">
       {/* Background image — cubre los pasos de preguntas (no el intro, que tiene su propio fondo) */}
       <img
         src="/auth-bg.webp"

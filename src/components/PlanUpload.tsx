@@ -589,8 +589,9 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                   
                                   <button
                                     onClick={() => handleRemoveExercise(day.id, blockIdx, exerciseIdx)}
-                                    className="p-1 text-neutral-500 hover:text-red-400 transition-colors cursor-pointer shrink-0"
+                                    className="hit-44 relative p-1 text-neutral-500 hover:text-red-400 transition-colors cursor-pointer shrink-0"
                                     title="Eliminar ejercicio"
+                                    aria-label="Eliminar ejercicio"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>

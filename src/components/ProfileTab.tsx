@@ -562,7 +562,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             >
               <button
                 onClick={() => setIsEditOpen(false)}
-                className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)]"
+                className="hit-44 absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)]"
                 style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}
               >
                 <X className="w-4 h-4" />

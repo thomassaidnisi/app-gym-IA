@@ -167,7 +167,7 @@ useEffect(() => {
 // Mientras se resuelve el estado de auth, no renderizar ninguna pantalla de
 // contenido (ni Welcome, ni Onboarding, ni home) — solo un splash mínimo.
 if (isLoading) {
-  return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100vh" }} />;
+  return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100dvh" }} />;
 }
 
 if (isPasswordRecovery) {
@@ -195,7 +195,7 @@ if (!plan || !profile) {
   // Sin plan/perfil todavía (usuario nuevo, o cache local vacía) — ahí sí hace
   // falta esperar a Supabase antes de decidir Onboarding vs. mostrar datos.
   if (dataLoading) {
-    return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100vh" }} />;
+    return <div style={{ backgroundColor: "#0a0a0a", minHeight: "100dvh" }} />;
   }
   return (
       <ThemeProvider>

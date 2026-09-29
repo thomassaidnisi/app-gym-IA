@@ -180,11 +180,11 @@ export const NutritionTab: React.FC<NutritionTabProps> = ({ profile }) => {
 
   if (!guide) {
     return (
-      <div className="relative min-h-screen -mx-4 md:mx-0">
+      <div className="relative min-h-dvh -mx-4 md:mx-0">
         <img src="/nutrition-empty-bg.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-white/40" />
 
-        <div className="relative z-10 flex items-center justify-center min-h-screen px-6">
+        <div className="relative z-10 flex items-center justify-center min-h-dvh px-6">
           <div className="flex flex-col items-center text-center gap-4 bg-black/40 backdrop-blur-md rounded-3xl px-6 py-8">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center"

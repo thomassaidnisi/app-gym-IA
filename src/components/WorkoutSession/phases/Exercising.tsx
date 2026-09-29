@@ -82,7 +82,8 @@ const SupersetRow: React.FC<{
         <div className="flex items-center gap-2">
           <button
             onClick={() => onChange({ ...value, weight: Math.max(0, parseFloat((value.weight - 2.5).toFixed(1))) })}
-            className="w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
+            aria-label="Restar 2,5 kg"
+            className="hit-44 relative w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
             style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
           >
             <Minus className="w-3.5 h-3.5 text-white" strokeWidth={2} />
@@ -93,7 +94,8 @@ const SupersetRow: React.FC<{
           </span>
           <button
             onClick={() => onChange({ ...value, weight: parseFloat((value.weight + 2.5).toFixed(1)) })}
-            className="w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
+            aria-label="Sumar 2,5 kg"
+            className="hit-44 relative w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
             style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
           >
             <Plus className="w-3.5 h-3.5 text-white" strokeWidth={2} />
@@ -102,7 +104,8 @@ const SupersetRow: React.FC<{
         <div className="flex items-center gap-2">
           <button
             onClick={() => onChange({ ...value, reps: Math.max(0, value.reps - 1) })}
-            className="w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
+            aria-label="Restar una repetición"
+            className="hit-44 relative w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
             style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
           >
             <Minus className="w-3.5 h-3.5 text-white" strokeWidth={2} />
@@ -112,7 +115,8 @@ const SupersetRow: React.FC<{
           </span>
           <button
             onClick={() => onChange({ ...value, reps: value.reps + 1 })}
-            className="w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
+            aria-label="Sumar una repetición"
+            className="hit-44 relative w-8 h-8 rounded-lg flex items-center justify-center active:opacity-60"
             style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
           >
             <Plus className="w-3.5 h-3.5 text-white" strokeWidth={2} />
@@ -301,7 +305,8 @@ export const Exercising: React.FC<ExercisingProps> = ({
       <div className="flex items-center gap-3 px-5 py-4 shrink-0">
         <button
           onClick={() => setShowExit(true)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-opacity active:opacity-60"
+          aria-label="Salir de la sesión"
+          className="hit-44 relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-opacity active:opacity-60"
           style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
         >
           <X className="w-4 h-4 text-white" strokeWidth={2} />
@@ -340,7 +345,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
         {session.upcomingQueue.length > 0 ? (
           <button
             onClick={() => setShowQueue(true)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-opacity active:opacity-60"
+            className="hit-44 relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-opacity active:opacity-60"
             style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
             aria-label="Ver cola de ejercicios"
           >

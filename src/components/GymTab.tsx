@@ -466,7 +466,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
           </button>
           <button
             onClick={handleDismissPausedSession}
-            className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+            className="hit-44 relative w-7 h-7 rounded-full flex items-center justify-center shrink-0"
             style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
             aria-label="Descartar sesión pausada"
           >

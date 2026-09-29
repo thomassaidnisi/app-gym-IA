@@ -90,7 +90,8 @@ export const RestTimerOverlay: React.FC = () => {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={isActive ? pauseTimer : resumeTimer}
-              className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+              aria-label={isActive ? "Pausar descanso" : "Reanudar descanso"}
+              className={`hit-44 relative shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                 isActive ? "" : "bg-brand hover:bg-lime-400"
               }`}
               style={isActive ? { backgroundColor: T.bgSec, border: `1px solid ${T.border}` } : {}}

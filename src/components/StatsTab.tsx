@@ -315,11 +315,11 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
             <p className="text-[10px] leading-snug mt-0.5" style={{ color: T.textSec }}>Tocá el calendario para marcar entrenamiento</p>
           </div>
           <div className="flex items-center gap-1.5">
-            <button onClick={prevMonth} className="p-1 rounded-lg text-[10px] px-2 font-bold transition-all" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}>◀</button>
+            <button onClick={prevMonth} aria-label="Mes anterior" className="hit-44 relative p-1 rounded-lg text-[10px] px-2 font-bold transition-all" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}>◀</button>
             <span className="text-xs font-bold min-w-[80px] text-center uppercase px-2 py-1 rounded-lg" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textPri }}>
               {MONTH_NAMES[currentMonth]} {currentYear}
             </span>
-            <button onClick={nextMonth} className="p-1 rounded-lg text-[10px] px-2 font-bold transition-all" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}>▶</button>
+            <button onClick={nextMonth} aria-label="Mes siguiente" className="hit-44 relative p-1 rounded-lg text-[10px] px-2 font-bold transition-all" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }}>▶</button>
           </div>
         </div>
 

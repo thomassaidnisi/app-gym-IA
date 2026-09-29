@@ -94,7 +94,8 @@ export const QueueSheet: React.FC<QueueSheetProps> = ({
               <p className="text-sm font-bold text-white">Cola de ejercicios</p>
               <button
                 onClick={onClose}
-                className="w-8 h-8 flex items-center justify-center rounded-lg transition-opacity active:opacity-60"
+                aria-label="Cerrar"
+                className="hit-44 relative w-8 h-8 flex items-center justify-center rounded-lg transition-opacity active:opacity-60"
                 style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
               >
                 <X className="w-4 h-4 text-white" strokeWidth={2} />
