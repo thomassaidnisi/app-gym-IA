@@ -221,7 +221,14 @@ export const MorningTab: React.FC = () => {
                 boxShadow: isExpanded ? "0 2px 8px rgba(0,0,0,0.08)" : undefined,
               }}
             >
-              <div className="p-4 flex items-center justify-between gap-3" onClick={() => setExpandedRoutine(isExpanded ? null : rt.id)}>
+              <div
+                role="button"
+                tabIndex={0}
+                aria-expanded={isExpanded}
+                className="p-4 flex items-center justify-between gap-3"
+                onClick={() => setExpandedRoutine(isExpanded ? null : rt.id)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpandedRoutine(isExpanded ? null : rt.id); } }}
+              >
                 <div className="flex items-center gap-4">
                   <div className="p-3 rounded-xl shrink-0" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}` }}>
                     {rt.icon}
@@ -237,7 +244,7 @@ export const MorningTab: React.FC = () => {
                       {formatMinSec(routineTimeLeft)}
                     </span>
                   )}
-                  <span className="text-[10px] transition-transform" style={{ color: isExpanded ? T.textPri : T.textTer, transform: isExpanded ? "rotate(90deg)" : "none" }}>▶</span>
+                  <span className="text-[10px] transition-transform" style={{ color: isExpanded ? T.textPri : T.textTer, transform: isExpanded ? "rotate(90deg)" : "none" }} aria-hidden>▶</span>
                 </div>
               </div>
 

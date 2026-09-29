@@ -887,8 +887,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                     { label: "Altura (cm)", placeholder: "175", value: height, setter: (v: any) => setHeight(v === "" ? "" : Number(v)) },
                   ].map(({ label, placeholder, value, setter, step: s }) => (
                     <div key={label}>
-                      <label className="block text-xs font-semibold text-white/40 uppercase mb-2">{label}</label>
+                      <label htmlFor={`onb-${label}`} className="block text-xs font-semibold text-white/40 uppercase mb-2">{label}</label>
                       <input
+                        id={`onb-${label}`}
                         type="number" step={s} value={value}
                         onChange={(e) => setter(e.target.value === "" ? "" : e.target.value)}
                         placeholder={placeholder}
@@ -897,10 +898,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                     </div>
                   ))}
                 </div>
-                <label className="block text-xs font-semibold text-white/40 uppercase mb-2">Género</label>
-                <div className="grid grid-cols-3 gap-2">
+                <p id="onb-gender" className="block text-xs font-semibold text-white/40 uppercase mb-2">Género</p>
+                <div role="group" aria-labelledby="onb-gender" className="grid grid-cols-3 gap-2">
                   {["Masculino", "Femenino", "Prefiero no decir"].map((g) => (
-                    <button key={g} onClick={() => setGender(g)}
+                    <button key={g} onClick={() => setGender(g)} aria-pressed={gender === g}
                       className={`py-3.5 rounded-xl text-xs font-bold transition-all border ${
                         gender === g ? "bg-white text-black border-white shadow-md" : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
                       }`}
@@ -970,11 +971,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                     </button>
                   ))}
                 </div>
-                <label className="flex items-center text-xs font-semibold text-white/40 uppercase mb-2">
+                <label htmlFor="onb-other-medical" className="flex items-center text-xs font-semibold text-white/40 uppercase mb-2">
                   Otra condición
                   <TooltipButton tooltipKey="medical" onOpen={setActiveTooltip} />
                 </label>
-                <input type="text" value={otherMedical} onChange={(e) => setOtherMedical(e.target.value)}
+                <input id="onb-other-medical" type="text" value={otherMedical} onChange={(e) => setOtherMedical(e.target.value)}
                   placeholder="Asma, lordosis, etc (opcional)"
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/40 text-sm placeholder-white/20"
                 />
@@ -1079,30 +1080,30 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-white mb-2">¿Cuánto podés entrenar?</h2>
                 <p className="text-white/50 text-sm mb-6 leading-relaxed">La división del programa se optimiza según tus días disponibles.</p>
-                <label className="block text-xs font-semibold text-white/40 uppercase mb-2">Días disponibles por semana</label>
-                <div className="grid grid-cols-5 gap-2 mb-6">
+                <p id="onb-days" className="block text-xs font-semibold text-white/40 uppercase mb-2">Días disponibles por semana</p>
+                <div role="group" aria-labelledby="onb-days" className="grid grid-cols-5 gap-2 mb-6">
                   {[2,3,4,5,6].map((dayOption) => (
-                    <button key={dayOption} onClick={() => setDaysPerWeek(dayOption)}
+                    <button key={dayOption} onClick={() => setDaysPerWeek(dayOption)} aria-pressed={daysPerWeek === dayOption}
                       className={`py-3.5 rounded-xl font-bold text-sm transition-all border ${
                         daysPerWeek === dayOption ? "bg-white text-black border-white shadow-md" : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
                       }`}
                     >{dayOption}</button>
                   ))}
                 </div>
-                <label className="block text-xs font-semibold text-white/40 uppercase mb-2">Duración de cada sesión</label>
-                <div className="grid grid-cols-4 gap-2 mb-6">
+                <p id="onb-duration" className="block text-xs font-semibold text-white/40 uppercase mb-2">Duración de cada sesión</p>
+                <div role="group" aria-labelledby="onb-duration" className="grid grid-cols-4 gap-2 mb-6">
                   {["45 min","60 min","75 min","90 min"].map((durOption) => (
-                    <button key={durOption} onClick={() => setSessionDuration(durOption)}
+                    <button key={durOption} onClick={() => setSessionDuration(durOption)} aria-pressed={sessionDuration === durOption}
                       className={`py-3.5 rounded-xl font-bold text-[10px] sm:text-xs transition-all border ${
                         sessionDuration === durOption ? "bg-white text-black border-white shadow-md" : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
                       }`}
                     >{durOption}</button>
                   ))}
                 </div>
-                <label className="block text-xs font-semibold text-white/40 uppercase mb-2">¿A qué hora preferís entrenar?</label>
-                <div className="grid grid-cols-2 gap-2">
+                <p id="onb-schedule" className="block text-xs font-semibold text-white/40 uppercase mb-2">¿A qué hora preferís entrenar?</p>
+                <div role="group" aria-labelledby="onb-schedule" className="grid grid-cols-2 gap-2">
                   {SCHEDULE_OPTIONS.map((opt) => (
-                    <button key={opt} onClick={() => setPreferredSchedule(opt)} className={chipBtn(preferredSchedule === opt)}>
+                    <button key={opt} onClick={() => setPreferredSchedule(opt)} aria-pressed={preferredSchedule === opt} className={chipBtn(preferredSchedule === opt)}>
                       <span>{opt}</span>
                       {preferredSchedule === opt && <Check className="w-3.5 h-3.5 text-white" />}
                     </button>
@@ -1162,14 +1163,15 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                         <div key={activity} className="bg-white/5 border border-white/10 rounded-xl p-4">
                           <h4 className="text-sm font-bold text-white mb-3">{activity}</h4>
 
-                          <label className="block text-xs font-semibold text-white/40 uppercase mb-2">
+                          <p id={`onb-freq-${activity}`} className="block text-xs font-semibold text-white/40 uppercase mb-2">
                             ¿Cuántas veces por semana hacés {activity}?
-                          </label>
-                          <div className="grid grid-cols-4 gap-2 mb-4">
+                          </p>
+                          <div role="group" aria-labelledby={`onb-freq-${activity}`} className="grid grid-cols-4 gap-2 mb-4">
                             {FREQUENCY_OPTIONS.map((freq) => (
                               <button
                                 key={freq}
                                 onClick={() => setActivityFrequency(activity, freq)}
+                                aria-pressed={detail.frequency === freq}
                                 className={`py-2.5 rounded-lg text-[11px] font-bold transition-all border ${
                                   detail.frequency === freq ? "bg-white text-black border-white shadow-md" : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
                                 }`}
@@ -1177,8 +1179,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                             ))}
                           </div>
 
-                          <label className="block text-xs font-semibold text-white/40 uppercase mb-2">¿Qué días?</label>
-                          <div className="grid grid-cols-7 gap-1.5">
+                          <p id={`onb-actdays-${activity}`} className="block text-xs font-semibold text-white/40 uppercase mb-2">¿Qué días?</p>
+                          <div role="group" aria-labelledby={`onb-actdays-${activity}`} className="grid grid-cols-7 gap-1.5">
                             {ACTIVITY_DAY_OPTIONS.map(({ short, key }) => {
                               const isActive = detail.days.includes(key);
                               const isConflict = preferredDays.includes(key);
@@ -1186,6 +1188,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                                 <button
                                   key={key}
                                   onClick={() => toggleActivityDay(activity, key)}
+                                  aria-pressed={isActive}
                                   className={`py-2.5 rounded-lg text-xs font-bold transition-all border ${
                                     isConflict
                                       ? isActive
@@ -1208,11 +1211,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                   </div>
                 )}
 
-                <label className="flex items-center text-xs font-semibold text-white/40 uppercase mb-2">
+                <label htmlFor="onb-other-activity" className="flex items-center text-xs font-semibold text-white/40 uppercase mb-2">
                   Otro
                   <TooltipButton tooltipKey="activity" onOpen={setActiveTooltip} />
                 </label>
-                <input type="text" value={otherActivityText} onChange={(e) => setOtherActivityText(e.target.value)}
+                <input id="onb-other-activity" type="text" value={otherActivityText} onChange={(e) => setOtherActivityText(e.target.value)}
                   onBlur={handleOtherActivityBlur}
                   placeholder="¿Otro? Ej: padel, golf, crossfit..."
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/40 text-sm placeholder-white/20 mb-4"
@@ -1304,15 +1307,15 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                 <p className="text-white/50 text-sm mb-6 leading-relaxed">Indicaciones extra procesadas rigurosamente por nuestro algoritmo.</p>
                 <div className="flex flex-col gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-white/40 uppercase mb-2">Ejercicios que querés evitar</label>
-                    <input type="text" value={exercisesToAvoid} onChange={(e) => setExercisesToAvoid(e.target.value)}
+                    <label htmlFor="onb-avoid" className="block text-xs font-semibold text-white/40 uppercase mb-2">Ejercicios que querés evitar</label>
+                    <input id="onb-avoid" type="text" value={exercisesToAvoid} onChange={(e) => setExercisesToAvoid(e.target.value)}
                       placeholder="Ej: Peso muerto, squat libre, dominadas (opcional)"
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-white/40 text-sm placeholder-white/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-white/40 uppercase mb-2">Lesiones o limitaciones físicas</label>
-                    <input type="text" value={injuriesOrLimitations} onChange={(e) => setInjuriesOrLimitations(e.target.value)}
+                    <label htmlFor="onb-injuries" className="block text-xs font-semibold text-white/40 uppercase mb-2">Lesiones o limitaciones físicas</label>
+                    <input id="onb-injuries" type="text" value={injuriesOrLimitations} onChange={(e) => setInjuriesOrLimitations(e.target.value)}
                       placeholder="Ej: hernia discal L4-L5, tendinitis de hombro (opcional)"
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-white/40 text-sm placeholder-white/20"
                     />

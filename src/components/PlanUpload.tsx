@@ -485,8 +485,9 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
           {/* Metadata simple config panel */}
           <div className="bg-neutral-950 border border-neutral-900 rounded-3xl p-4 space-y-4">
             <div>
-              <label className="text-[10px] font-mono text-neutral-500 uppercase block mb-1">Nombre del Plan</label>
+              <label htmlFor="plan-name" className="text-[10px] font-mono text-neutral-500 uppercase block mb-1">Nombre del Plan</label>
               <input
+                id="plan-name"
                 type="text"
                 value={editablePlan.plan_name}
                 onChange={(e) => setEditablePlan({ ...editablePlan, plan_name: e.target.value })}
@@ -495,8 +496,9 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[10px] font-mono text-neutral-500 uppercase block mb-1">División</label>
+                <label htmlFor="plan-division" className="text-[10px] font-mono text-neutral-500 uppercase block mb-1">División</label>
                 <input
+                  id="plan-division"
                   type="text"
                   value={editablePlan.division}
                   onChange={(e) => setEditablePlan({ ...editablePlan, division: e.target.value })}
@@ -504,8 +506,9 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono text-neutral-500 uppercase block mb-1">Duración Sesión</label>
+                <label htmlFor="plan-duration" className="text-[10px] font-mono text-neutral-500 uppercase block mb-1">Duración Sesión</label>
                 <input
+                  id="plan-duration"
                   type="text"
                   value={editablePlan.session_duration}
                   onChange={(e) => setEditablePlan({ ...editablePlan, session_duration: e.target.value })}
@@ -596,8 +599,9 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                 {/* Main inputs row */}
                                 <div className="grid grid-cols-3 gap-2">
                                   <div>
-                                    <label className="text-[9px] font-mono text-neutral-500 uppercase block mb-0.5">Series</label>
+                                    <label className="text-[9px] font-mono text-neutral-500 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-sets`}>Series</label>
                                     <input
+                                      id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-sets`}
                                       type="number"
                                       value={exercise.sets}
                                       onChange={(e) => handleExerciseChange(day.id, blockIdx, exerciseIdx, "sets", parseInt(e.target.value) || 0)}
@@ -605,8 +609,9 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-[9px] font-mono text-neutral-500 uppercase block mb-0.5">Reps</label>
+                                    <label className="text-[9px] font-mono text-neutral-500 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-reps`}>Reps</label>
                                     <input
+                                      id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-reps`}
                                       type="text"
                                       value={exercise.reps}
                                       onChange={(e) => handleExerciseChange(day.id, blockIdx, exerciseIdx, "reps", e.target.value)}
@@ -614,8 +619,9 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-[9px] font-mono text-neutral-500 uppercase block mb-0.5">Peso</label>
+                                    <label className="text-[9px] font-mono text-neutral-500 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-weight`}>Peso</label>
                                     <input
+                                      id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-weight`}
                                       type="text"
                                       value={exercise.weight}
                                       onChange={(e) => handleExerciseChange(day.id, blockIdx, exerciseIdx, "weight", e.target.value)}
@@ -627,8 +633,9 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                 {/* Extra info: Tip of technique or muscles */}
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
-                                    <label className="text-[9px] font-mono text-neutral-500 uppercase block mb-0.5">Descanso (segundos)</label>
+                                    <label className="text-[9px] font-mono text-neutral-500 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-rest_seconds`}>Descanso (segundos)</label>
                                     <input
+                                      id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-rest_seconds`}
                                       type="number"
                                       value={exercise.rest_seconds}
                                       onChange={(e) => handleExerciseChange(day.id, blockIdx, exerciseIdx, "rest_seconds", parseInt(e.target.value) || 0)}
@@ -636,8 +643,9 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-[9px] font-mono text-neutral-500 uppercase block mb-0.5">Músculos (separados por coma)</label>
+                                    <label className="text-[9px] font-mono text-neutral-500 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-muscles`}>Músculos (separados por coma)</label>
                                     <input
+                                      id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-muscles`}
                                       type="text"
                                       value={exercise.muscles.join(", ")}
                                       onChange={(e) => handleExerciseChange(day.id, blockIdx, exerciseIdx, "muscles", e.target.value.split(",").map(m => m.trim()))}

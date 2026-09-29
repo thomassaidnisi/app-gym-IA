@@ -962,7 +962,14 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                             isExpanded ? "bg-zinc-900" : "bg-zinc-900/60"
                           }`}
                         >
-                          <div onClick={() => toggleExpand(ex.name)} className="p-5 flex items-center justify-between gap-3.5">
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            aria-expanded={isExpanded}
+                            onClick={() => toggleExpand(ex.name)}
+                            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleExpand(ex.name); } }}
+                            className="p-5 flex items-center justify-between gap-3.5"
+                          >
                             <div className="flex-1 min-w-0">
                               <h6 className="text-sm font-semibold leading-snug break-words text-white">
                                 {ex.name}

@@ -3,13 +3,13 @@ const IS_DEV = self.location.hostname === 'localhost' || self.location.hostname 
 // __BUILD_TS__ is replaced at build time by the Vite plugin with a real timestamp.
 // In dev (public/ served as-is) it stays as the literal string, which is fine because
 // IS_DEV bypasses all caching anyway.
-// v4: bumped so clients running the old SW byte-compare this file as different
+// v5: bumped so clients running the old SW byte-compare this file as different
 // and install the new one.
-const CACHE = 'healty-app-v4-__BUILD_TS__';
+const CACHE = 'healty-app-v5-__BUILD_TS__';
 
 const ASSETS = [
   './manifest.json',
-  './logo-icon.png',
+  './icon-192.png',
 ];
 
 self.addEventListener('install', e => {

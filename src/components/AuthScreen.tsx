@@ -414,10 +414,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
                             />
                           </div>
                           <div>
-                            <label className="block text-xs text-white/40 mb-1.5 px-1">
+                            <label htmlFor="signup-birthdate" className="block text-xs text-white/40 mb-1.5 px-1">
                               Fecha de nacimiento
                             </label>
                             <input
+                              id="signup-birthdate"
                               type="date"
                               required
                               value={fechaNacimiento}

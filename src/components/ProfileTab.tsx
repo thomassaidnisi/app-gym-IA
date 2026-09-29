@@ -576,8 +576,9 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               <div className="space-y-5 text-xs font-sans">
                 {/* Name */}
                 <div>
-                  <label className="block font-semibold mb-1" style={{ color: T.textSec }}>Nombre</label>
+                  <label className="block font-semibold mb-1" style={{ color: T.textSec }} htmlFor="profile-name">Nombre</label>
                   <input
+                    id="profile-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -588,38 +589,39 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
                 {/* Age stepper */}
                 <div>
-                  <label className="block font-semibold mb-2" style={{ color: T.textSec }}>Edad (años)</label>
-                  <div className="flex items-center justify-between gap-2">
-                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setAge((a) => Math.max(1, Number(a) - 1))} className={stepperCls} style={stepperSty}>−</motion.button>
+                  <p id="profile-age" className="block font-semibold mb-2" style={{ color: T.textSec }}>Edad (años)</p>
+                  <div role="group" aria-labelledby="profile-age" className="flex items-center justify-between gap-2">
+                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setAge((a) => Math.max(1, Number(a) - 1))} aria-label="Restar edad" className={stepperCls} style={stepperSty}>−</motion.button>
                     <span className="flex-1 text-center font-bold text-2xl tabular-nums" style={{ color: T.textPri }}>{age}</span>
-                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setAge((a) => Math.min(120, Number(a) + 1))} className={stepperCls} style={stepperSty}>+</motion.button>
+                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setAge((a) => Math.min(120, Number(a) + 1))} aria-label="Sumar edad" className={stepperCls} style={stepperSty}>+</motion.button>
                   </div>
                 </div>
 
                 {/* Weight stepper */}
                 <div>
-                  <label className="block font-semibold mb-2" style={{ color: T.textSec }}>Peso (kg)</label>
-                  <div className="flex items-center justify-between gap-2">
-                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setWeight((w) => Math.max(20, parseFloat((Number(w) - 0.5).toFixed(1))))} className={stepperCls} style={stepperSty}>−</motion.button>
+                  <p id="profile-weight" className="block font-semibold mb-2" style={{ color: T.textSec }}>Peso (kg)</p>
+                  <div role="group" aria-labelledby="profile-weight" className="flex items-center justify-between gap-2">
+                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setWeight((w) => Math.max(20, parseFloat((Number(w) - 0.5).toFixed(1))))} aria-label="Restar peso" className={stepperCls} style={stepperSty}>−</motion.button>
                     <span className="flex-1 text-center font-bold text-2xl tabular-nums" style={{ color: T.textPri }}>{weight}</span>
-                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setWeight((w) => Math.min(300, parseFloat((Number(w) + 0.5).toFixed(1))))} className={stepperCls} style={stepperSty}>+</motion.button>
+                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setWeight((w) => Math.min(300, parseFloat((Number(w) + 0.5).toFixed(1))))} aria-label="Sumar peso" className={stepperCls} style={stepperSty}>+</motion.button>
                   </div>
                 </div>
 
                 {/* Height stepper */}
                 <div>
-                  <label className="block font-semibold mb-2" style={{ color: T.textSec }}>Altura (cm)</label>
-                  <div className="flex items-center justify-between gap-2">
-                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setHeight((h) => Math.max(50, Number(h) - 1))} className={stepperCls} style={stepperSty}>−</motion.button>
+                  <p id="profile-height" className="block font-semibold mb-2" style={{ color: T.textSec }}>Altura (cm)</p>
+                  <div role="group" aria-labelledby="profile-height" className="flex items-center justify-between gap-2">
+                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setHeight((h) => Math.max(50, Number(h) - 1))} aria-label="Restar altura" className={stepperCls} style={stepperSty}>−</motion.button>
                     <span className="flex-1 text-center font-bold text-2xl tabular-nums" style={{ color: T.textPri }}>{height}</span>
-                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setHeight((h) => Math.min(250, Number(h) + 1))} className={stepperCls} style={stepperSty}>+</motion.button>
+                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setHeight((h) => Math.min(250, Number(h) + 1))} aria-label="Sumar altura" className={stepperCls} style={stepperSty}>+</motion.button>
                   </div>
                 </div>
 
                 {/* Gender */}
                 <div>
-                  <label className="block font-semibold mb-1" style={{ color: T.textSec }}>Género</label>
+                  <label className="block font-semibold mb-1" style={{ color: T.textSec }} htmlFor="profile-gender">Género</label>
                   <select
+                    id="profile-gender"
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
                     className={inputCls}
@@ -633,10 +635,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
                 {/* Exercises to avoid */}
                 <div>
-                  <label className="block font-semibold mb-1" style={{ color: T.textSec }}>
+                  <label className="block font-semibold mb-1" style={{ color: T.textSec }} htmlFor="profile-avoid">
                     Evitar ejercicios
                   </label>
                   <input
+                    id="profile-avoid"
                     type="text"
                     value={exercisesToAvoid}
                     onChange={(e) => setExercisesToAvoid(e.target.value)}
@@ -647,10 +650,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
                 {/* Injuries */}
                 <div>
-                  <label className="block font-semibold mb-1" style={{ color: T.textSec }}>
+                  <label className="block font-semibold mb-1" style={{ color: T.textSec }} htmlFor="profile-injuries">
                     Limitaciones / Lesiones
                   </label>
                   <input
+                    id="profile-injuries"
                     type="text"
                     value={injuriesOrLimitations}
                     onChange={(e) => setInjuriesOrLimitations(e.target.value)}
