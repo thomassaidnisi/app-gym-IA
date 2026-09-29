@@ -552,7 +552,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
               {/* Hero: foto de fondo full-bleed, se extiende hasta cubrir las stats cards */}
               <div className="relative mx-0 mb-5 h-[420px] rounded-3xl overflow-hidden">
                 <img
-                  src={profile.gender?.toLowerCase() === "femenino" ? "/gym-hero-female.jpg" : "/gym-hero.jpg"}
+                  src={profile.gender?.toLowerCase() === "femenino" ? "/gym-hero-female.webp" : "/gym-hero.webp"}
                   alt=""
                   className="absolute inset-0 w-full h-full object-cover"
                   style={profile.gender?.toLowerCase() === "femenino" ? { objectPosition: "80% center" } : undefined}

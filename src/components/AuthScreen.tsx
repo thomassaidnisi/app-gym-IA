@@ -63,7 +63,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
     return (
       <div className="fixed inset-0 overflow-hidden">
         <img
-          src="/auth-bg.png"
+          src="/auth-bg.webp"
           alt=""
           aria-hidden
           className="absolute inset-0 w-full h-full object-cover object-center"
@@ -229,7 +229,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ initialMode = "login" })
     <div className="fixed inset-0 overflow-hidden">
       {/* Background image */}
       <img
-        src="/auth-bg.png"
+        src="/auth-bg.webp"
         alt=""
         aria-hidden
         className="absolute inset-0 w-full h-full object-cover object-center"

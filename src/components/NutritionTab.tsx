@@ -181,7 +181,7 @@ export const NutritionTab: React.FC<NutritionTabProps> = ({ profile }) => {
   if (!guide) {
     return (
       <div className="relative min-h-screen -mx-4 md:mx-0">
-        <img src="/nutrition-empty-bg.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <img src="/nutrition-empty-bg.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-white/40" />
 
         <div className="relative z-10 flex items-center justify-center min-h-screen px-6">
@@ -221,7 +221,7 @@ export const NutritionTab: React.FC<NutritionTabProps> = ({ profile }) => {
     <div className="flex flex-col gap-5 pb-4">
       {/* Hero: calorías + macros sobre foto de fondo */}
       <div className="relative rounded-3xl overflow-hidden mb-6">
-        <img src="/nutrition-hero.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img src="/nutrition-hero.webp" alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/60" />
 
         <div className="relative z-10 flex flex-col gap-5 p-6">

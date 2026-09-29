@@ -771,7 +771,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
     <div className="relative min-h-screen w-full bg-black">
       {/* Background image — cubre los pasos de preguntas (no el intro, que tiene su propio fondo) */}
       <img
-        src="/auth-bg.png"
+        src="/auth-bg.webp"
         alt=""
         aria-hidden
         className="absolute inset-0 w-full h-full object-cover"
@@ -811,7 +811,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
             {currentStepId === "intro" && (
               <div className="fixed inset-0 z-50 overflow-hidden">
                 <img
-                  src="/onboarding-bg.jpg"
+                  src="/onboarding-bg.webp"
                   alt=""
                   aria-hidden
                   className="absolute inset-0 w-full h-full object-cover"

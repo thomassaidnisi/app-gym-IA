@@ -1,15 +1,25 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Onboarding } from "./components/Onboarding";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { PlanWalkthrough } from "./components/PlanWalkthrough";
 import { GymTab } from "./components/GymTab";
-import { LibraryTab } from "./components/LibraryTab";
-import { NutritionTab } from "./components/NutritionTab";
-import { StatsTab } from "./components/StatsTab";
-import { ProfileTab } from "./components/ProfileTab";
-import { CoachTab } from "./components/CoachTab";
+
+// Gym es la pantalla de inicio y va en el bundle principal. El resto de las tabs
+// (recharts en Yo) y el Onboarding (solo usuarios nuevos, arrastra PlanUpload) se
+// cargan aparte y se precargan en idle una vez montado el home.
+const loadOnboarding = () => import("./components/Onboarding");
+const loadLibrary = () => import("./components/LibraryTab");
+const loadNutrition = () => import("./components/NutritionTab");
+const loadStats = () => import("./components/StatsTab");
+const loadProfile = () => import("./components/ProfileTab");
+const loadCoach = () => import("./components/CoachTab");
+const Onboarding = lazy(() => loadOnboarding().then((m) => ({ default: m.Onboarding })));
+const LibraryTab = lazy(() => loadLibrary().then((m) => ({ default: m.LibraryTab })));
+const NutritionTab = lazy(() => loadNutrition().then((m) => ({ default: m.NutritionTab })));
+const StatsTab = lazy(() => loadStats().then((m) => ({ default: m.StatsTab })));
+const ProfileTab = lazy(() => loadProfile().then((m) => ({ default: m.ProfileTab })));
+const CoachTab = lazy(() => loadCoach().then((m) => ({ default: m.CoachTab })));
 import { RestTimerProvider } from "./components/RestTimerContext";
 import { RestTimerOverlay } from "./components/RestTimerOverlay";
 import { ThemeProvider } from "./components/ThemeContext";
@@ -60,6 +70,16 @@ const [dataLoading, setDataLoading] = useState(true);
 useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [activeTab]);
+
+  // Precarga las tabs diferidas cuando el home ya está en pantalla.
+  const homeReady = !!plan && !!profile;
+  useEffect(() => {
+    if (!homeReady) return;
+    const t = setTimeout(() => {
+      [loadLibrary, loadNutrition, loadStats, loadProfile, loadCoach].forEach((load) => load().catch(() => {}));
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [homeReady]);
 
   const handlePlanGenerated = (newPlan: FullTrainingPlan, newProfile: UserProfile) => {
     setPlan(newPlan);
@@ -181,7 +201,9 @@ if (!plan || !profile) {
       <ThemeProvider>
         <div className="w-full min-h-[100dvh] bg-black text-white px-4 md:px-0 safe-pt pb-10">
           <div className="max-w-lg mx-auto">
-            <Onboarding onPlanGenerated={handlePlanGenerated} />
+            <Suspense fallback={null}>
+              <Onboarding onPlanGenerated={handlePlanGenerated} />
+            </Suspense>
           </div>
         </div>
       </ThemeProvider>
@@ -226,6 +248,7 @@ if (!plan || !profile) {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ type: "spring", stiffness: 500, damping: 35 }}
               >
+                <Suspense fallback={null}>
                 {activeTab === "gym" && (
                   <GymTab
                     plan={plan}
@@ -262,6 +285,7 @@ if (!plan || !profile) {
                     onProfileUpdated={handleProfileUpdated}
                   />
                 )}
+                </Suspense>
               </motion.div>
             </AnimatePresence>
           </main>

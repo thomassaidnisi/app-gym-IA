@@ -11,7 +11,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onLogin, onSignup 
     <div className="fixed inset-0 overflow-hidden">
       {/* Background image */}
       <img
-        src="/welcome-bg.jpg"
+        src="/welcome-bg.webp"
         alt=""
         aria-hidden
         className="absolute inset-0 w-full h-full object-cover"
