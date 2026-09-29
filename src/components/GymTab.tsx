@@ -643,13 +643,13 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="rounded-3xl p-5 mb-3 bg-[var(--bg-primary)] border border-[var(--border)]"
+                  className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
                 >
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-[var(--brand-ink)] shrink-0" />
-                    <h2 className="text-xl font-bold text-[var(--text-primary)] leading-tight">¡Entrenamiento completado!</h2>
+                    <CheckCircle className="w-5 h-5 text-brand shrink-0" />
+                    <h2 className="text-xl font-bold text-white leading-tight">¡Entrenamiento completado!</h2>
                   </div>
-                  <p className="text-sm mt-2 text-[var(--text-secondary)]">
+                  <p className="text-sm mt-2 text-zinc-400">
                     {todayWorkoutSummary
                       ? `${todayDesc?.title ?? "Entrenamiento"} · ${todayWorkoutSummary.duration} min · ${todayWorkoutSummary.totalSets} series`
                       : todayDesc?.title}
@@ -657,7 +657,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   {onOpenStats && (
                     <button
                       onClick={onOpenStats}
-                      className="mt-3 text-xs font-semibold text-[var(--text-secondary)] px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]"
+                      className="mt-3 text-xs font-semibold text-zinc-400 px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-800"
                     >
                       Ver historial
                     </button>
@@ -668,16 +668,16 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="rounded-3xl p-5 mb-3 bg-[var(--bg-primary)] border border-[var(--border)]"
+                  className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
                 >
                   <div className="flex items-center gap-2">
-                    <BedDouble className="w-5 h-5 text-[var(--text-secondary)] shrink-0" />
-                    <h2 className="text-xl font-bold text-[var(--text-primary)] leading-tight">Día de descanso</h2>
+                    <BedDouble className="w-5 h-5 text-zinc-400 shrink-0" />
+                    <h2 className="text-xl font-bold text-white leading-tight">Día de descanso</h2>
                   </div>
-                  <p className="text-sm mt-2 leading-relaxed text-[var(--text-secondary)]">El descanso es parte del progreso.</p>
+                  <p className="text-sm mt-2 leading-relaxed text-zinc-400">El descanso es parte del progreso.</p>
                   {nextGymDay && (
-                    <p className="text-[11px] mt-3 text-[var(--text-secondary)]">
-                      {nextGymDay.label}: <span className="font-semibold text-[var(--text-primary)]">{nextGymDay.desc.title} · {nextGymDay.desc.duration}</span>
+                    <p className="text-[11px] mt-3 text-zinc-400">
+                      {nextGymDay.label}: <span className="font-semibold text-white">{nextGymDay.desc.title} · {nextGymDay.desc.duration}</span>
                     </p>
                   )}
                 </motion.div>
@@ -686,14 +686,14 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="rounded-3xl p-5 mb-3 bg-[var(--bg-primary)] border border-[var(--border)]"
+                  className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
                 >
                   <div className="flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-[var(--text-secondary)] shrink-0" />
-                    <h2 className="text-xl font-bold text-[var(--text-primary)] leading-tight">{todayDesc?.title}</h2>
+                    <Activity className="w-5 h-5 text-zinc-400 shrink-0" />
+                    <h2 className="text-xl font-bold text-white leading-tight">{todayDesc?.title}</h2>
                   </div>
                   {todayDesc?.note && (
-                    <p className="text-sm mt-2 leading-relaxed text-[var(--text-secondary)]">{todayDesc.note}</p>
+                    <p className="text-sm mt-2 leading-relaxed text-zinc-400">{todayDesc.note}</p>
                   )}
                   <button
                     onClick={handleRegisterAttendance}
@@ -707,8 +707,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="rounded-3xl p-5 mb-3"
-                  style={{ backgroundColor: T.hero, borderColor: T.heroBorder, border: `1px solid ${T.heroBorder}` }}
+                  className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
                 >
                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
                     Entrenamiento de hoy
@@ -746,16 +745,16 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="rounded-3xl p-5 mb-3 bg-[var(--bg-primary)] border border-[var(--border)]"
+                  className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">Hoy</span>
-                  <h2 className="text-xl font-bold mt-1 text-[var(--text-primary)]">{todayDesc?.title || "Día de descanso"}</h2>
-                  <p className="text-sm mt-2 leading-relaxed text-[var(--text-secondary)]">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Hoy</span>
+                  <h2 className="text-xl font-bold mt-1 text-white">{todayDesc?.title || "Día de descanso"}</h2>
+                  <p className="text-sm mt-2 leading-relaxed text-zinc-400">
                     {todayDesc?.note || "Día de recuperación. Caminá, hidratate, dormí 8 horas. Tu sistema nervioso se recarga hoy para que mañana rompas marcas."}
                   </p>
                   {nextTrainingDay && (
-                    <p className="text-[11px] mt-3 text-[var(--text-secondary)]">
-                      Próxima sesión: <span className="font-semibold text-[var(--text-primary)]">{nextTrainingDay}</span>
+                    <p className="text-[11px] mt-3 text-zinc-400">
+                      Próxima sesión: <span className="font-semibold text-white">{nextTrainingDay}</span>
                     </p>
                   )}
                 </motion.div>
@@ -763,14 +762,14 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
 
               {/* Coach proactivo */}
               {coachIsLoading ? (
-                <div className="rounded-2xl px-5 py-4 mb-3 bg-[var(--bg-primary)] border border-[var(--border)] space-y-2">
-                  <div className="h-3 rounded bg-[var(--bg-secondary)] animate-pulse w-full" />
-                  <div className="h-3 rounded bg-[var(--bg-secondary)] animate-pulse w-2/3" />
+                <div className="rounded-2xl px-5 py-4 mb-3 bg-zinc-900 border border-zinc-800 space-y-2">
+                  <div className="h-3 rounded bg-zinc-800 animate-pulse w-full" />
+                  <div className="h-3 rounded bg-zinc-800 animate-pulse w-2/3" />
                 </div>
               ) : coachMessage ? (
-                <div className="rounded-2xl px-5 py-4 mb-3 bg-[var(--bg-primary)] border border-[var(--border)] flex items-start gap-2">
-                  <MessageSquare size={14} className="text-[var(--brand-ink)] shrink-0 mt-0.5" />
-                  <p className="text-sm text-[var(--text-primary)] leading-relaxed">{coachMessage}</p>
+                <div className="rounded-2xl px-5 py-4 mb-3 bg-zinc-900 border border-zinc-800 flex items-start gap-2">
+                  <MessageSquare size={14} className="text-brand shrink-0 mt-0.5" />
+                  <p className="text-sm text-white leading-relaxed">{coachMessage}</p>
                 </div>
               ) : null}
 
@@ -781,19 +780,19 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   return (
                     <button
                       onClick={() => setShowCheckin(true)}
-                      className="w-full text-left rounded-2xl p-4 mb-3 bg-[var(--bg-primary)] border border-[var(--border)]"
+                      className="w-full text-left rounded-2xl p-4 mb-3 bg-zinc-900 border border-zinc-800"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-[var(--text-primary)]">Índice de hoy</span>
+                        <span className="text-xs font-bold text-white">Índice de hoy</span>
                         <span className={`text-sm font-black ${info.color}`}>
                           {todayCheckin.readinessScore} {info.label.toUpperCase()}
                         </span>
                       </div>
-                      <p className="text-xs text-[var(--text-secondary)] mt-1">{info.message}</p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-[var(--text-primary)]">
-                        <span className="inline-flex items-center gap-1"><Moon size={14} className="text-[var(--text-secondary)]" /> {todayCheckin.sleepHours}h</span>
-                        <span className="inline-flex items-center gap-1"><Zap size={14} className="text-[var(--text-secondary)]" /> {ENERGY_LABELS[todayCheckin.energyLevel] ?? todayCheckin.energyLevel}</span>
-                        <span className="inline-flex items-center gap-1"><Activity size={14} className="text-[var(--text-secondary)]" /> {SORENESS_LABELS[todayCheckin.muscleSoreness] ?? todayCheckin.muscleSoreness}</span>
+                      <p className="text-xs text-zinc-400 mt-1">{info.message}</p>
+                      <div className="flex items-center gap-3 mt-2 text-xs text-white">
+                        <span className="inline-flex items-center gap-1"><Moon size={14} className="text-zinc-400" /> {todayCheckin.sleepHours}h</span>
+                        <span className="inline-flex items-center gap-1"><Zap size={14} className="text-zinc-400" /> {ENERGY_LABELS[todayCheckin.energyLevel] ?? todayCheckin.energyLevel}</span>
+                        <span className="inline-flex items-center gap-1"><Activity size={14} className="text-zinc-400" /> {SORENESS_LABELS[todayCheckin.muscleSoreness] ?? todayCheckin.muscleSoreness}</span>
                       </div>
                     </button>
                   );
@@ -801,10 +800,10 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
               ) : (
                 <button
                   onClick={() => setShowCheckin(true)}
-                  className="w-full text-left rounded-2xl p-4 mb-3 bg-[var(--bg-primary)] border border-[var(--border)]"
+                  className="w-full text-left rounded-2xl p-4 mb-3 bg-zinc-900 border border-zinc-800"
                 >
-                  <p className="text-sm font-bold text-[var(--text-primary)] inline-flex items-center gap-1.5"><Zap size={14} className="text-[var(--text-secondary)]" /> ¿Cómo llegás hoy?</p>
-                  <p className="text-xs text-[var(--text-secondary)] mt-1">Registrá tu estado en 30 seg →</p>
+                  <p className="text-sm font-bold text-white inline-flex items-center gap-1.5"><Zap size={14} className="text-zinc-400" /> ¿Cómo llegás hoy?</p>
+                  <p className="text-xs text-zinc-400 mt-1">Registrá tu estado en 30 seg →</p>
                 </button>
               )}
 

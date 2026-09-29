@@ -18,21 +18,21 @@ export function getReadinessInfo(score: number): {
   if (score >= 85) return {
     label: "Óptimo",
     message: "Estás en tu mejor momento. Día ideal para dar todo.",
-    color: "text-[var(--status-good)]",
+    color: "text-lime-400",
   };
   if (score >= 65) return {
     label: "Bueno",
     message: "Llegás bien hoy. Entrenamiento normal.",
-    color: "text-[var(--status-info)]",
+    color: "text-blue-400",
   };
   if (score >= 45) return {
     label: "Regular",
     message: "Llegás algo justo. Escuchá tu cuerpo durante la sesión.",
-    color: "text-[var(--status-warn)]",
+    color: "text-amber-400",
   };
   return {
     label: "Bajo",
     message: "Tu cuerpo pide recuperación. Considerá una sesión liviana hoy.",
-    color: "text-[var(--status-bad)]",
+    color: "text-red-400",
   };
 }
