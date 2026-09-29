@@ -208,7 +208,7 @@ El lima y los colores de estado del tema oscuro no llegan al contraste mínimo s
 ### Named Rules
 **The Scoreboard Rule.** Todo número que el usuario "gana" (racha, sesiones, PR, series) va en Bebas con `tabular-nums`. El texto explicativo nunca va en Bebas.
 
-**The Label Floor Rule.** 10px es el mínimo para labels. Los usos actuales de 8–9px son deuda, no parte del sistema.
+**The Label Floor Rule.** 10px es el mínimo para cualquier texto, y la escala chica tiene solo dos pasos: Label (10px, mayúsculas) y Caption (12px). No se usan 8, 9 ni 11px.
 
 ## Layout
 

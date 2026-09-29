@@ -166,7 +166,7 @@ export const QueueSheet: React.FC<QueueSheetProps> = ({
                         {item.exercise.name}
                       </p>
                       <p
-                        className="text-[11px] mt-0.5"
+                        className="text-xs mt-0.5"
                         style={{ color: "rgba(255,255,255,0.35)" }}
                       >
                         {blockTypeLabel(item)} · {item.exercise.sets} series

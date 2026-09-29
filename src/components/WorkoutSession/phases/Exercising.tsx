@@ -323,7 +323,7 @@ export const Exercising: React.FC<ExercisingProps> = ({
             {currentExercise.name}
           </h2>
           {lastLogged && (
-            <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>
               Última vez: {lastLogged.peso}kg × {lastLogged.reps} reps
             </p>
           )}

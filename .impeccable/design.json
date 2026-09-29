@@ -341,7 +341,7 @@
       },
       {
         "name": "The Label Floor Rule",
-        "body": "10px es el mínimo para labels. Los usos actuales de 8–9px son deuda, no parte del sistema.",
+        "body": "10px es el mínimo para cualquier texto, y la escala chica tiene solo dos pasos: Label (10px, mayúsculas) y Caption (12px). No se usan 8, 9 ni 11px.",
         "section": "typography"
       },
       {

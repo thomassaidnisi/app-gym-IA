@@ -80,7 +80,7 @@ export const Transition: React.FC<TransitionProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="text-[11px] uppercase tracking-widest font-semibold mb-2"
+        className="text-xs uppercase tracking-widest font-semibold mb-2"
         style={{ color: "rgba(255,255,255,0.3)" }}
       >
         Completado
@@ -122,7 +122,7 @@ export const Transition: React.FC<TransitionProps> = ({
           className="flex flex-col items-center gap-2"
         >
           <p
-            className="text-[11px] uppercase tracking-widest font-semibold"
+            className="text-xs uppercase tracking-widest font-semibold"
             style={{ color: "rgba(200,241,53,0.6)" }}
           >
             Último ejercicio completado
@@ -138,7 +138,7 @@ export const Transition: React.FC<TransitionProps> = ({
             className="flex flex-col items-center gap-2"
           >
             <p
-              className="text-[11px] uppercase tracking-widest font-semibold"
+              className="text-xs uppercase tracking-widest font-semibold"
               style={{ color: "rgba(255,255,255,0.25)" }}
             >
               Siguiente

@@ -600,7 +600,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                 {/* Main inputs row */}
                                 <div className="grid grid-cols-3 gap-2">
                                   <div>
-                                    <label className="text-[9px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-sets`}>Series</label>
+                                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-sets`}>Series</label>
                                     <input
                                       id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-sets`}
                                       type="number"
@@ -610,7 +610,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-[9px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-reps`}>Reps</label>
+                                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-reps`}>Reps</label>
                                     <input
                                       id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-reps`}
                                       type="text"
@@ -620,7 +620,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-[9px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-weight`}>Peso</label>
+                                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-weight`}>Peso</label>
                                     <input
                                       id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-weight`}
                                       type="text"
@@ -634,7 +634,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                 {/* Extra info: Tip of technique or muscles */}
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
-                                    <label className="text-[9px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-rest_seconds`}>Descanso (segundos)</label>
+                                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-rest_seconds`}>Descanso (segundos)</label>
                                     <input
                                       id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-rest_seconds`}
                                       type="number"
@@ -644,7 +644,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-[9px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-muscles`}>Músculos (separados por coma)</label>
+                                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-muscles`}>Músculos (separados por coma)</label>
                                     <input
                                       id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-muscles`}
                                       type="text"

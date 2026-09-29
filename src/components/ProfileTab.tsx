@@ -293,7 +293,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 .map((gLine, idx) => (
                   <span
                     key={idx}
-                    className="text-[9px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider inline-block"
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider inline-block"
                     style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textPri }}
                   >
                     {gLine}
@@ -316,13 +316,13 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               className="p-3 rounded-2xl text-center"
               style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}` }}
             >
-              <span className="text-[8px] block uppercase mb-1" style={{ color: T.textTer }}>
+              <span className="text-[10px] block uppercase mb-1" style={{ color: T.textTer }}>
                 {label}
               </span>
               <strong className="text-base font-bold tabular-nums block" style={{ color: T.textPri }}>
                 {value}
               </strong>
-              <span className="text-[8px] block mt-0.5 uppercase truncate px-0.5" style={{ color: T.textSec }}>
+              <span className="text-[10px] block mt-0.5 uppercase truncate px-0.5" style={{ color: T.textSec }}>
                 {unit}
               </span>
             </div>

@@ -299,7 +299,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
                   ) : (
                     <p className="whitespace-pre-wrap">{msg.text}</p>
                   )}
-                  <span className={`block text-[9px] mt-1.5 uppercase tracking-wider ${isCoach ? "text-left" : "text-right font-medium"}`}
+                  <span className={`block text-[10px] mt-1.5 uppercase tracking-wider ${isCoach ? "text-left" : "text-right font-medium"}`}
                     style={{ color: isCoach ? T.textTer : "rgba(0,0,0,0.4)" }}>
                     {isCoach ? "Coach" : "Atleta"} · {formatTime(msg.timestamp)}
                   </span>
@@ -317,7 +317,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
                       <Sparkles className="w-4 h-4 text-brand shrink-0 mt-0.5" />
                       <div>
                         <h4 className="text-xs font-semibold" style={{ color: T.textPri }}>Modificación de Plan Lista</h4>
-                        <p className="text-[11px]" style={{ color: T.textSec }}>Aplicá estos cambios para reemplazar tu rutina activa.</p>
+                        <p className="text-xs" style={{ color: T.textSec }}>Aplicá estos cambios para reemplazar tu rutina activa.</p>
                       </div>
                     </div>
                     {isApplied ? (
@@ -352,7 +352,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
                       <Sparkles className="w-4 h-4 text-brand shrink-0 mt-0.5" />
                       <div>
                         <h4 className="text-xs font-semibold" style={{ color: T.textPri }}>Cambio en tu guía nutricional</h4>
-                        <p className="text-[11px]" style={{ color: T.textSec }}>Aplicá estos cambios para reemplazar tu guía activa.</p>
+                        <p className="text-xs" style={{ color: T.textSec }}>Aplicá estos cambios para reemplazar tu guía activa.</p>
                       </div>
                     </div>
                     {msg.nutritionApplied ? (
@@ -387,7 +387,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
                   <span key={delay} className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: T.textTer, animationDelay: `${delay}ms` }} />
                 ))}
               </div>
-              <span className="block text-[8px] uppercase tracking-wider mt-2" style={{ color: T.textTer }}>Analizando tu plan...</span>
+              <span className="block text-[10px] uppercase tracking-wider mt-2" style={{ color: T.textTer }}>Analizando tu plan...</span>
             </div>
           </motion.div>
         )}
@@ -422,7 +422,7 @@ export const CoachTab: React.FC<CoachTabProps> = ({ plan, profile, onPlanUpdated
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </motion.button>
         </form>
-        <p className="text-[9px] text-center mt-2 uppercase tracking-wider" style={{ color: T.textTer }}>
+        <p className="text-[10px] text-center mt-2 uppercase tracking-wider" style={{ color: T.textTer }}>
           Enter para enviar · Shift+Enter nueva línea
         </p>
       </div>

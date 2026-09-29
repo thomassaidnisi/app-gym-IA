@@ -64,7 +64,7 @@ export const RestTimerOverlay: React.FC = () => {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[9px] font-bold tabular-nums" style={{ color: T.textPri }}>
+                <span className="text-[10px] font-bold tabular-nums" style={{ color: T.textPri }}>
                   {timeLeft}s
                 </span>
               </div>

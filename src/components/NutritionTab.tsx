@@ -102,7 +102,7 @@ const PlateChart: React.FC<{ macros: NonNullable<NutritionDistribucionItem["macr
           <span className="text-base font-black tabular-nums" style={{ color: T.textPri }}>
             {macros.calorias}
           </span>
-          <span className="text-[9px]" style={{ color: T.textTer }}>kcal</span>
+          <span className="text-[10px]" style={{ color: T.textTer }}>kcal</span>
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-1.5">

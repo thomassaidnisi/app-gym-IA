@@ -240,7 +240,7 @@ export const MorningTab: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {activeRoutineId === rt.id && routineTimeLeft > 0 && (
-                    <span className="text-[11px] font-bold py-1 px-2.5 rounded-full" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textPri }}>
+                    <span className="text-xs font-bold py-1 px-2.5 rounded-full" style={{ backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textPri }}>
                       {formatMinSec(routineTimeLeft)}
                     </span>
                   )}

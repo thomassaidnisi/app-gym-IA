@@ -1172,7 +1172,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                                 key={freq}
                                 onClick={() => setActivityFrequency(activity, freq)}
                                 aria-pressed={detail.frequency === freq}
-                                className={`py-2.5 rounded-lg text-[11px] font-bold transition-all border ${
+                                className={`py-2.5 rounded-lg text-xs font-bold transition-all border ${
                                   detail.frequency === freq ? "bg-white text-black border-white shadow-md" : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
                                 }`}
                               >{freq}</button>
@@ -1203,7 +1203,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
                             })}
                           </div>
                           {detail.days.some((d) => preferredDays.includes(d)) && (
-                            <p className="text-[11px] text-amber-400 mt-2 inline-flex items-center gap-1"><AlertTriangle size={11} /> Ya elegiste este día para el gym</p>
+                            <p className="text-xs text-amber-400 mt-2 inline-flex items-center gap-1"><AlertTriangle size={11} /> Ya elegiste este día para el gym</p>
                           )}
                         </div>
                       );

@@ -46,7 +46,7 @@ export const Intro: React.FC<IntroProps> = ({ day, onStart }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="text-[11px] uppercase tracking-widest font-semibold mb-2"
+        className="text-xs uppercase tracking-widest font-semibold mb-2"
         style={{ color: "rgba(255,255,255,0.35)" }}
       >
         Entrenamiento de hoy

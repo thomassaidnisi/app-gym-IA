@@ -159,7 +159,7 @@ export const Resting: React.FC<RestingProps> = ({
 
         <div className="flex-1 text-center">
           <p
-            className="text-[11px] uppercase tracking-widest font-semibold"
+            className="text-xs uppercase tracking-widest font-semibold"
             style={{ color: "rgba(255,255,255,0.35)" }}
           >
             Descansando

@@ -218,7 +218,7 @@ export const LibraryTab: React.FC = () => {
 
       {/* Count */}
       {!loading && (
-        <p className="text-[11px] mb-3 select-none" style={{ color: T.textTer }}>
+        <p className="text-xs mb-3 select-none" style={{ color: T.textTer }}>
           {total} ejercicio{total !== 1 ? "s" : ""}
         </p>
       )}

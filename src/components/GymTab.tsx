@@ -676,7 +676,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   </div>
                   <p className="text-sm mt-2 leading-relaxed text-zinc-400">El descanso es parte del progreso.</p>
                   {nextGymDay && (
-                    <p className="text-[11px] mt-3 text-zinc-400">
+                    <p className="text-xs mt-3 text-zinc-400">
                       {nextGymDay.label}: <span className="font-semibold text-white">{nextGymDay.desc.title} · {nextGymDay.desc.duration}</span>
                     </p>
                   )}
@@ -724,10 +724,10 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   )}
                   <div className="flex flex-wrap gap-2 mt-3">
                     {[todayDesc?.duration || todayDayPlan.duration, `${todayBlockCount} bloques`, `${todayExerciseCount} ejercicios`].map((l) => (
-                      <span key={l} className="text-[11px] bg-white/10 border border-white/10 text-white/50 px-2.5 py-1 rounded-full">{l}</span>
+                      <span key={l} className="text-xs bg-white/10 border border-white/10 text-white/50 px-2.5 py-1 rounded-full">{l}</span>
                     ))}
                     {(todayDayPlan as any).location && (
-                      <span className="text-[11px] bg-white/10 border border-white/10 text-white/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                      <span className="text-xs bg-white/10 border border-white/10 text-white/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1">
                         {(todayDayPlan as any).location === "gym" ? (<><Dumbbell size={11} /> Gym</>) : (<><Home size={11} /> Casa</>)}
                       </span>
                     )}
@@ -753,7 +753,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                     {todayDesc?.note || "Día de recuperación. Caminá, hidratate, dormí 8 horas. Tu sistema nervioso se recarga hoy para que mañana rompas marcas."}
                   </p>
                   {nextTrainingDay && (
-                    <p className="text-[11px] mt-3 text-zinc-400">
+                    <p className="text-xs mt-3 text-zinc-400">
                       Próxima sesión: <span className="font-semibold text-white">{nextTrainingDay}</span>
                     </p>
                   )}
@@ -850,7 +850,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                 <div className={isGym ? "text-black" : "text-[var(--text-secondary)]"}>
                   {isGym ? getWorkoutIcon(scheduleValue, "w-4 h-4") : <Moon className="w-4 h-4" strokeWidth={1.5} />}
                 </div>
-                <span className={`text-[9px] font-bold block max-w-full truncate px-1 leading-tight ${isGym ? "text-black" : "text-[var(--text-secondary)]"}`}>
+                <span className={`text-[10px] font-bold block max-w-full truncate px-1 leading-tight ${isGym ? "text-black" : "text-[var(--text-secondary)]"}`}>
                   {isGym ? shortName(scheduleValue) : "Rest"}
                 </span>
                 {profile.trainingLocation === "both" && isGym && (profile.locationByDay as any)?.[day.key] && (
@@ -890,11 +890,11 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
               <span className="font-bold text-xl select-none text-[var(--text-primary)]">
                 {activeDay.name} — {activeDay.day_of_week}
               </span>
-              <span className="text-[9px] font-medium px-2 py-0.5 rounded-full select-none bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)]">
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full select-none bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)]">
                 {activeDay.duration}
               </span>
               {(activeDay as any).location && (
-                <span className="text-[9px] font-medium px-2 py-0.5 rounded-full select-none bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)] inline-flex items-center gap-1">
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full select-none bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)] inline-flex items-center gap-1">
                   {(activeDay as any).location === "gym" ? (<><Dumbbell size={9} /> Gym</>) : (<><Home size={9} /> Casa</>)}
                 </span>
               )}
@@ -918,7 +918,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                       <span className="text-xs font-semibold select-none mt-0.5 text-[var(--text-primary)]">{warm.sets_reps}</span>
                       <div>
                         <h5 className="text-xs font-semibold text-[var(--text-primary)]">{warm.name}</h5>
-                        <p className="text-[11px] leading-normal mt-0.5 text-[var(--text-secondary)]">{warm.note}</p>
+                        <p className="text-xs leading-normal mt-0.5 text-[var(--text-secondary)]">{warm.note}</p>
                       </div>
                     </div>
                   ))}
@@ -940,7 +940,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
               {activeDay.blocks.map((block, bIdx) => (
                 <div key={bIdx} className="rounded-2xl p-5 bg-[var(--bg-primary)] border border-[var(--border)]">
                   <div className="flex items-center gap-2 mb-4 select-none">
-                    <span className="text-[9px] font-bold tracking-wider px-2 py-0.5 rounded bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)]">
+                    <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)]">
                       {block.is_superset ? "Superserie" : block.label || "Ejercicio"}
                     </span>
                     <h5 className="text-xs font-bold truncate max-w-[70%] text-[var(--text-secondary)]">{block.title}</h5>
@@ -975,7 +975,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                               </h6>
                               <div className="flex flex-wrap gap-1 mt-2">
                                 {ex.muscles.map((m, mIdx) => (
-                                  <span key={mIdx} className="text-[8px] tracking-wider px-1.5 py-0.5 rounded bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)]">
+                                  <span key={mIdx} className="text-[10px] tracking-wider px-1.5 py-0.5 rounded bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)]">
                                     {m}
                                   </span>
                                 ))}
@@ -986,7 +986,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                                 <span className={`font-bold tabular-nums leading-snug block break-words text-[var(--text-primary)] ${(`${ex.sets}x${ex.reps}`).length > 15 ? "text-base" : "text-xl"}`}>
                                   {ex.sets}x{ex.reps}
                                 </span>
-                                <div className="text-[9px] mt-1 block text-[var(--text-secondary)]">
+                                <div className="text-[10px] mt-1 block text-[var(--text-secondary)]">
                                   {loggedWeight ? `Hoy: ${loggedWeight}` : ex.weight}
                                 </div>
                               </div>
@@ -1015,7 +1015,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                                       { label: "Descanso", value: `${ex.rest_seconds}s` },
                                     ].map(({ label, value }) => (
                                       <div key={label} className="p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
-                                        <span className="text-[8px] block uppercase mb-0.5 text-[var(--text-secondary)]">{label}</span>
+                                        <span className="text-[10px] block uppercase mb-0.5 text-[var(--text-secondary)]">{label}</span>
                                         <strong className="text-xs block truncate leading-tight font-bold tabular-nums text-[var(--text-primary)]">{value}</strong>
                                       </div>
                                     ))}
@@ -1073,7 +1073,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                                     </motion.button>
                                   </div>
 
-                                  <div className="mt-3 p-3 rounded-xl text-[11px] leading-relaxed select-text space-y-1 bg-[var(--bg-secondary)] border border-[var(--border)]">
+                                  <div className="mt-3 p-3 rounded-xl text-xs leading-relaxed select-text space-y-1 bg-[var(--bg-secondary)] border border-[var(--border)]">
                                     <p className="text-[var(--text-secondary)]">
                                       <strong className="text-[var(--text-primary)]">Técnica:</strong> {ex.technique_tip}
                                     </p>

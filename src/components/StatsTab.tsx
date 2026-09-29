@@ -216,15 +216,15 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
         <div className="flex items-center justify-around mt-4 text-center">
           <div>
             <span className="block text-2xl font-black tabular-nums text-[var(--text-primary)]">{thisWeekSessions}</span>
-            <span className="block text-[11px] text-[var(--text-secondary)] mt-1">entrenamientos</span>
+            <span className="block text-xs text-[var(--text-secondary)] mt-1">entrenamientos</span>
           </div>
           <div>
             <span className="block text-2xl font-black tabular-nums text-[var(--text-primary)]">{thisWeekVolume.toLocaleString("es-AR")}</span>
-            <span className="block text-[11px] text-[var(--text-secondary)] mt-1">volumen total</span>
+            <span className="block text-xs text-[var(--text-secondary)] mt-1">volumen total</span>
           </div>
           <div>
             <span className="block text-2xl font-black tabular-nums text-[var(--text-primary)]">{thisWeekMinutes}</span>
-            <span className="block text-[11px] text-[var(--text-secondary)] mt-1">minutos</span>
+            <span className="block text-xs text-[var(--text-secondary)] mt-1">minutos</span>
           </div>
         </div>
         <div className="border-t border-[var(--border)] mt-4 pt-3 text-center">
@@ -323,7 +323,7 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 text-center text-[9px] uppercase font-bold mb-2" style={{ color: T.textTer }}>
+        <div className="grid grid-cols-7 gap-1 text-center text-[10px] uppercase font-bold mb-2" style={{ color: T.textTer }}>
           {["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].map((d) => <span key={d}>{d}</span>)}
         </div>
 
@@ -348,7 +348,7 @@ export const StatsTab: React.FC<StatsTabProps> = ({ plan, profile, onProfileUpda
                   : { backgroundColor: T.bgSec, border: `1px solid ${T.border}`, color: T.textSec }
                 }
               >
-                <span className="text-[11px]">{dayNum}</span>
+                <span className="text-xs">{dayNum}</span>
                 {isAttended && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-brand" />}
               </motion.button>
             );
