@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion, PausedSession, DayDescription, DailyCheckinData, DayState } from "../types";
 import { WorkoutSession } from "./WorkoutSession";
 import {
@@ -11,7 +11,7 @@ import { useRestTimer } from "./RestTimerContext";
 import { useAuth } from "./AuthContext";
 import { saveExerciseLog, getTodayCheckin, loadTodayWorkoutLog, saveGymAttendance } from "../lib/db";
 import { getReadinessInfo } from "../lib/readiness";
-import { markDayCompleted } from "../lib/streak";
+import { markDayCompleted, calculateStreak } from "../lib/streak";
 import { DailyCheckin } from "./DailyCheckin";
 import { useCoachMessage } from "../hooks/useCoachMessage";
 
@@ -149,7 +149,6 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
   const [repsInputs, setRepsInputs] = useState<Record<string, string>>({});
   const [todayLogs, setTodayLogs] = useState<Record<string, string>>({});
   const [todayRepsLogs, setTodayRepsLogs] = useState<Record<string, string>>({});
-  const [streak, setStreak] = useState(0);
   const [weekSessions, setWeekSessions] = useState(0);
   const [daysSinceLastWorkout, setDaysSinceLastWorkout] = useState<number | null>(null);
 
@@ -214,6 +213,13 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
   };
 
   const todayStr = getLocalDateStr(new Date());
+
+  // Racha del hero: el mismo cálculo que se guarda en Supabase (streak.ts), en vivo. Saltea los días
+  // de descanso y no queda desactualizada si el usuario dejó de entrenar desde la última sesión.
+  const streak = useMemo(
+    () => calculateStreak(profile.day_descriptions, profile.completed_days ?? [], plan).current_streak,
+    [profile.day_descriptions, profile.completed_days, plan, todayStr]
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -333,16 +339,7 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
     setTodayLogs(logs);
     setTodayRepsLogs(repsLogs);
 
-    let s = 0;
     const now = new Date();
-    for (let i = 0; i < 365; i++) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      if (localStorage.getItem(`gym_${getLocalDateStr(d)}`) === "true") s++;
-      else break;
-    }
-    setStreak(s);
-
     let lastDays: number | null = null;
     for (let i = 1; i < 365; i++) {
       const d = new Date(now);

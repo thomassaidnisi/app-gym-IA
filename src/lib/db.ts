@@ -1,9 +1,8 @@
 import { supabase } from "./supabase";
 import { UserProfile, FullTrainingPlan, WorkoutLog, NutritionGuide, PR, WeeklyProgress, ExerciseHistoryEntry, DailyCheckinData } from "../types";
+import { localDateStr } from "./date";
 
-function getTodayDateStr(): string {
-  return new Date().toISOString().split("T")[0];
-}
+const getTodayDateStr = () => localDateStr();
 
 /** Solo se incluyen en el upsert las claves presentes en `data` — así un caller parcial
  * (ej. subir solo el avatar) nunca pisa con null las columnas que no está tocando. */
@@ -312,7 +311,7 @@ export async function getTodayCheckin(userId: string): Promise<DailyCheckinData 
 export async function getReadinessHistory(userId: string, days: number = 30): Promise<{ date: string; score: number }[]> {
   const since = new Date();
   since.setDate(since.getDate() - days);
-  const sinceStr = since.toISOString().split("T")[0];
+  const sinceStr = localDateStr(since);
   const { data, error } = await supabase
     .from("daily_metrics")
     .select("date, readiness_score")

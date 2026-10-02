@@ -74,6 +74,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
   // Interactive Editing States
   const [editablePlan, setEditablePlan] = useState<FullTrainingPlan | null>(null);
   const [expandedDayId, setExpandedDayId] = useState<string | null>(null);
+  const [confirmDeleteDayId, setConfirmDeleteDayId] = useState<string | null>(null);
 
   // Drag and Drop State
   const [isDragging, setIsDragging] = useState(false);
@@ -538,7 +539,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
               </motion.h3>
             </AnimatePresence>
             <p className="text-neutral-400 text-xs px-6">
-              Gemini está extrayendo ejercicios, estructurando días y optimizando pesos. Esto tomará sólo unos segundos.
+              La IA está leyendo tus ejercicios y armando los días. Esto toma sólo unos segundos.
             </p>
           </div>
         </div>
@@ -654,9 +655,10 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleRemoveDay(day.id); }}
+                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteDayId(day.id); }}
                         className="hit-44 relative p-1.5 text-neutral-400 hover:text-red-400 transition-colors cursor-pointer"
                         aria-label={`Eliminar ${day.name || "día"}`}
+                        aria-expanded={confirmDeleteDayId === day.id}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -671,6 +673,30 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                       </button>
                     </div>
                   </div>
+
+                  {/* Confirmación antes de eliminar el día */}
+                  {confirmDeleteDayId === day.id && (
+                    <div role="alertdialog" aria-label="¿Eliminar este día?" className="border-t border-red-900/50 bg-red-950/30 px-4 py-3 flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold text-red-200">¿Eliminar este día?</p>
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          type="button"
+                          autoFocus
+                          onClick={() => setConfirmDeleteDayId(null)}
+                          className="h-10 px-4 rounded-xl text-xs font-semibold bg-neutral-900 border border-neutral-800 text-neutral-200 cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { handleRemoveDay(day.id); setConfirmDeleteDayId(null); }}
+                          className="h-10 px-4 rounded-xl text-xs font-bold bg-red-600 text-white cursor-pointer"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Accordion Content Block */}
                   {isExpanded && (

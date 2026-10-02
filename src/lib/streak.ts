@@ -1,5 +1,6 @@
 import { UserProfile, FullTrainingPlan, DayDescriptions } from "../types";
 import { saveUserProgress } from "./db";
+import { localDateStr } from "./date";
 
 const WEEKLY_SCHEDULE_KEY_BY_ES: Record<string, keyof FullTrainingPlan["weekly_schedule"]> = {
   lunes: "monday",
@@ -11,10 +12,7 @@ const WEEKLY_SCHEDULE_KEY_BY_ES: Record<string, keyof FullTrainingPlan["weekly_s
   domingo: "sunday",
 };
 
-function toDateStr(date: Date): string {
-  const tzoffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - tzoffset).toISOString().slice(0, 10);
-}
+const toDateStr = localDateStr;
 
 function weekdayKeyEs(date: Date): string {
   return date.toLocaleDateString("es-AR", { weekday: "long" }).toLowerCase();
@@ -49,14 +47,16 @@ function isTrainingDay(
 export function calculateStreak(
   dayDescriptions: DayDescriptions | undefined,
   completedDays: string[],
-  plan?: FullTrainingPlan
+  plan?: FullTrainingPlan,
+  today: Date = new Date()
 ): { current_streak: number; longest_streak: number } {
   const completedSet = new Set(completedDays);
-  const todayStr = toDateStr(new Date());
+  const todayStr = toDateStr(today);
 
   // --- Racha actual: caminar hacia atrás desde hoy ---
+  // Se recorre con setDate sobre fechas completas: cruza meses y años sin casos especiales.
   let current = 0;
-  const cursor = new Date();
+  const cursor = new Date(today);
   for (let i = 0; i < 730; i++) {
     const dateStr = toDateStr(cursor);
     if (isTrainingDay(cursor, dayDescriptions, plan)) {
@@ -77,7 +77,7 @@ export function calculateStreak(
   if (completedDays.length > 0) {
     const sorted = [...completedDays].sort();
     const start = new Date(`${sorted[0]}T00:00:00`);
-    const end = new Date();
+    const end = new Date(today);
     let run = 0;
     for (const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       if (!isTrainingDay(d, dayDescriptions, plan)) continue;

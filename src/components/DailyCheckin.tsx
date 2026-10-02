@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { useAuth } from "./AuthContext";
 import { saveDailyCheckin } from "../lib/db";
 import { calculateReadinessScore } from "../lib/readiness";
+import { localDateStr } from "../lib/date";
 
 interface DailyCheckinProps {
   onComplete: (score: number) => void;
@@ -33,9 +34,7 @@ const SORENESS_OPTIONS = [
   { value: 5, label: "Perfectos" },
 ];
 
-function getTodayDateStr(): string {
-  return new Date().toISOString().split("T")[0];
-}
+const getTodayDateStr = () => localDateStr();
 
 const ChipRow: React.FC<{
   options: { value: number; label: string }[];

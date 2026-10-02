@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { UserProfile, DailyCheckinData } from "../types";
+import { localDateStr } from "../lib/date";
 
 function getMondayStr(): string {
   const now = new Date();
@@ -7,11 +8,7 @@ function getMondayStr(): string {
   const diffToMonday = dow === 0 ? -6 : 1 - dow;
   const monday = new Date(now);
   monday.setDate(now.getDate() + diffToMonday);
-  monday.setHours(0, 0, 0, 0);
-  const y = monday.getFullYear();
-  const m = String(monday.getMonth() + 1).padStart(2, "0");
-  const d = String(monday.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  return localDateStr(monday);
 }
 
 export function useCoachMessage(profile: UserProfile, todayCheckin: DailyCheckinData | null) {
@@ -19,7 +16,7 @@ export function useCoachMessage(profile: UserProfile, todayCheckin: DailyCheckin
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = localDateStr();
     const cached = localStorage.getItem("coach_daily_message");
     const cachedDate = localStorage.getItem("coach_daily_message_date");
 
