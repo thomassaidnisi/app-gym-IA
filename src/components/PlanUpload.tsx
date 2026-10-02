@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { UserProfile, FullTrainingPlan, DayPlan, ExerciseBlock, Exercise } from "../types";
+import { UserProfile, FullTrainingPlan, DayPlan, ExerciseBlock, Exercise, DayDescriptions, PlanPillar } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   FileUp, RefreshCw, ChevronLeft, Check, AlertTriangle, 
@@ -13,6 +13,54 @@ interface PlanUploadProps {
 }
 
 type SubState = "select" | "confirm" | "processing" | "review" | "success";
+
+const ACCEPTED_EXTENSIONS = [".pdf", ".xlsx", ".xls", ".csv", ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"];
+const ACCEPTED_IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+
+// Días de la semana: chip, nombre en el plan (day_of_week) y clave de weekly_schedule.
+const WEEKDAYS = [
+  { chip: "L", label: "Lunes", key: "monday" },
+  { chip: "M", label: "Martes", key: "tuesday" },
+  { chip: "X", label: "Miércoles", key: "wednesday" },
+  { chip: "J", label: "Jueves", key: "thursday" },
+  { chip: "V", label: "Viernes", key: "friday" },
+  { chip: "S", label: "Sábado", key: "saturday" },
+  { chip: "D", label: "Domingo", key: "sunday" },
+] as const;
+const normDay = (s: string) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+const weekdayOf = (dayOfWeek: string) => WEEKDAYS.find(w => normDay(w.label) === normDay(dayOfWeek));
+
+// weekly_schedule y days_per_week derivados de los días: se recalculan en cada cambio de día.
+function withScheduleFromDays(plan: FullTrainingPlan, days: DayPlan[]): FullTrainingPlan {
+  const schedule = {} as FullTrainingPlan["weekly_schedule"];
+  for (const w of WEEKDAYS) {
+    const names = days.filter(d => weekdayOf(d.day_of_week)?.key === w.key).map(d => d.name);
+    schedule[w.key] = names.length > 0 ? names.join(" + ") : "Rest";
+  }
+  return { ...plan, days, weekly_schedule: schedule, days_per_week: days.length };
+}
+
+// Textarea de una línea que crece con el contenido: los nombres largos se leen completos, sin truncar.
+const AutoTextarea: React.FC<{ value: string; onChange: (v: string) => void; className?: string; ariaLabel?: string; id?: string }> = ({ value, onChange, className, ariaLabel, id }) => {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+  return (
+    <textarea
+      ref={ref}
+      id={id}
+      rows={1}
+      value={value}
+      aria-label={ariaLabel}
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
+      onChange={(e) => onChange(e.target.value.replace(/\n/g, " "))}
+      className={`resize-none overflow-hidden break-words ${className ?? ""}`}
+    />
+  );
+};
 
 export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanSaved }) => {
   const [subState, setSubState] = useState<SubState>("select");
@@ -37,17 +85,19 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
   const [processingTextIdx, setProcessingTextIdx] = useState(0);
   const processingPhrases = [
     "Leyendo tu plan...",
-    "Identificando los ejercicios...",
-    "Organizando series y repeticiones...",
-    "Cruzando con tu perfil...",
+    "Identificando ejercicios...",
+    "Estructurando los días...",
+    "Verificando con tu perfil...",
     "Casi listo..."
   ];
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (subState === "processing") {
+      setProcessingTextIdx(0);
+      // En orden y sin volver al principio: si la IA tarda, queda en "Casi listo..."
       interval = setInterval(() => {
-        setProcessingTextIdx((prev) => (prev + 1) % processingPhrases.length);
+        setProcessingTextIdx((prev) => Math.min(prev + 1, processingPhrases.length - 1));
       }, 2500);
     }
     return () => clearInterval(interval);
@@ -89,10 +139,9 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
 
   const validateAndSetFile = (file: File) => {
     const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-    const acceptedExtensions = [".pdf", ".xlsx", ".xls", ".csv"];
-    
-    if (!acceptedExtensions.includes(ext)) {
-      setErrorMsg("Formato no soportado. Por favor sube un archivo PDF, XLSX, XLS o CSV.");
+
+    if (!ACCEPTED_EXTENSIONS.includes(ext) && !ACCEPTED_IMAGE_MIMES.includes(file.type)) {
+      setErrorMsg("Formato no soportado. Subí un PDF, una foto (JPG, PNG, WEBP, HEIC) o un Excel/CSV.");
       return;
     }
 
@@ -177,7 +226,19 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
       }
       return d;
     });
-    setEditablePlan({ ...editablePlan, days: updatedDays });
+    setEditablePlan(withScheduleFromDays(editablePlan, updatedDays));
+  };
+
+  const handleDayOfWeekChange = (dayId: string, dayOfWeek: string) => {
+    if (!editablePlan) return;
+    const updatedDays = editablePlan.days.map(d => (d.id === dayId ? { ...d, day_of_week: dayOfWeek } : d));
+    setEditablePlan(withScheduleFromDays(editablePlan, updatedDays));
+  };
+
+  const handleRemoveDay = (dayId: string) => {
+    if (!editablePlan) return;
+    setEditablePlan(withScheduleFromDays(editablePlan, editablePlan.days.filter(d => d.id !== dayId)));
+    if (expandedDayId === dayId) setExpandedDayId(null);
   };
 
   const handleExerciseChange = (dayId: string, blockIdx: number, exerciseIdx: number, field: keyof Exercise, value: any) => {
@@ -253,10 +314,12 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
   const handleAddDay = () => {
     if (!editablePlan) return;
     const newDayId = `day_${Date.now()}`;
+    const used = new Set(editablePlan.days.map(d => weekdayOf(d.day_of_week)?.key));
+    const freeDay = WEEKDAYS.find(w => !used.has(w.key)) ?? WEEKDAYS[0];
     const newDay: DayPlan = {
       id: newDayId,
       name: `Nuevo Día ${editablePlan.days.length + 1}`,
-      day_of_week: "Lunes",
+      day_of_week: freeDay.label,
       focus: "General",
       duration: "~60 min",
       warmup: [],
@@ -284,22 +347,44 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
       cooldown: []
     };
 
-    setEditablePlan({
-      ...editablePlan,
-      days: [...editablePlan.days, newDay]
-    });
+    setEditablePlan(withScheduleFromDays(editablePlan, [...editablePlan.days, newDay]));
     setExpandedDayId(newDayId);
   };
 
-  // Final Action: Save plan to App context and LocalStorage
-  const handleConfirmAndSave = () => {
-    if (!editablePlan) return;
-    
-    // Set to success and trigger onboarding callback 
+  // Final Action: potenciar el plan con IA (descripciones de cada día y pilares) y guardarlo.
+  // Si el enriquecimiento falla o tarda, se guarda igual sin esos campos: nunca bloquea el flujo.
+  const [enriching, setEnriching] = useState(false);
+  const handleConfirmAndSave = async () => {
+    if (!editablePlan || editablePlan.days.length === 0) return;
     setSubState("success");
-    setTimeout(() => {
-      onPlanSaved(editablePlan);
-    }, 1500);
+    setEnriching(true);
+
+    let finalPlan: FullTrainingPlan & { day_descriptions?: DayDescriptions; plan_pillars?: PlanPillar[] } = editablePlan;
+    const abort = new AbortController();
+    const clientTimeout = setTimeout(() => abort.abort(), 20000);   // red: el servidor corta a los 15 s
+    try {
+      const res = await fetch("/api/enrich-uploaded-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: editablePlan, profile }),
+        signal: abort.signal,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        finalPlan = {
+          ...editablePlan,
+          ...(data.day_descriptions ? { day_descriptions: data.day_descriptions as DayDescriptions } : {}),
+          ...(Array.isArray(data.plan_pillars) ? { plan_pillars: data.plan_pillars as PlanPillar[] } : {}),
+        };
+      }
+    } catch (err) {
+      console.error("enrich-uploaded-plan:", err);
+    } finally {
+      clearTimeout(clientTimeout);
+    }
+
+    setEnriching(false);
+    setTimeout(() => onPlanSaved(finalPlan), 1500);
   };
 
   return (
@@ -348,7 +433,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
-              accept=".pdf,.xlsx,.xls,.csv"
+              accept=".pdf,.xlsx,.xls,.csv,.jpg,.jpeg,.png,.webp,.heic,.heif,image/jpeg,image/png,image/webp,image/heic,image/heif"
               className="hidden"
             />
             
@@ -360,7 +445,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
               Arrastrá tu archivo aquí o tocá para seleccionar
             </p>
             <p className="text-xs text-neutral-400 mt-2 max-w-xs leading-relaxed">
-              Soporta PDF o Excel (.xlsx, .xls, .csv)<br/>El plan original que te dio tu gimnasio o entrenador de confianza
+              PDF, Excel (.xlsx, .xls, .csv) o una foto del plan<br/>El plan original que te dio tu gimnasio o entrenador de confianza
             </p>
 
             <div className="flex gap-3 justify-center items-center mt-6">
@@ -531,27 +616,60 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                   className="bg-neutral-950 border border-neutral-900 rounded-2xl overflow-hidden"
                 >
                   {/* Accordion Trigger */}
-                  <div 
+                  <div
                     onClick={() => setExpandedDayId(isExpanded ? null : day.id)}
-                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-neutral-900/40 select-none"
+                    className="p-4 flex items-start justify-between gap-3 cursor-pointer hover:bg-neutral-900/40 select-none"
                   >
-                    <div className="flex-1 mr-4">
-                      <input
-                        type="text"
+                    <div className="flex-1 min-w-0">
+                      <AutoTextarea
                         value={day.name}
-                        onClick={(e) => e.stopPropagation()} // Prevent collapse toggling on input focus
-                        onChange={(e) => handleDayNameChange(day.id, e.target.value)}
-                        className="bg-transparent border-b border-transparent hover:border-neutral-800 focus:border-brand text-sm font-semibold text-white focus:outline-none w-full py-0.5"
+                        ariaLabel="Nombre del día"
+                        onChange={(v) => handleDayNameChange(day.id, v)}
+                        className="bg-transparent border-b border-transparent hover:border-neutral-800 focus:border-brand text-sm font-semibold text-white focus:outline-none w-full py-0.5 leading-snug"
                       />
-                      <p className="text-[10px] text-neutral-400 font-mono mt-0.5 uppercase tracking-wider">
+                      <p className="text-[10px] text-neutral-400 font-mono mt-0.5 uppercase tracking-wider break-words">
                         {day.focus || "Foco libre"} · {day.blocks.flatMap(b => b.exercises).length} Ejercicios
                       </p>
+                      {/* Día de la semana */}
+                      <div role="group" aria-label="Día de la semana" className="grid grid-cols-7 gap-1 mt-2.5 max-w-[288px]" onClick={(e) => e.stopPropagation()}>
+                        {WEEKDAYS.map((w) => {
+                          const active = weekdayOf(day.day_of_week)?.key === w.key;
+                          return (
+                            <button
+                              key={w.key}
+                              type="button"
+                              aria-label={w.label}
+                              aria-pressed={active}
+                              onClick={() => handleDayOfWeekChange(day.id, w.label)}
+                              className={`w-full h-9 rounded-lg text-xs font-bold font-mono transition-colors cursor-pointer border ${
+                                active ? "bg-brand text-black border-brand" : "bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white"
+                              }`}
+                            >
+                              {w.chip}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                    {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 text-neutral-400 shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-neutral-400 shrink-0" />
-                    )}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleRemoveDay(day.id); }}
+                        className="hit-44 relative p-1.5 text-neutral-400 hover:text-red-400 transition-colors cursor-pointer"
+                        aria-label={`Eliminar ${day.name || "día"}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setExpandedDayId(isExpanded ? null : day.id); }}
+                        className="hit-44 relative p-1.5 text-neutral-400 cursor-pointer"
+                        aria-label={isExpanded ? "Contraer día" : "Expandir día"}
+                        aria-expanded={isExpanded}
+                      >
+                        {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Accordion Content Block */}
@@ -572,18 +690,18 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                 className="bg-neutral-900/60 border border-neutral-850 p-3.5 rounded-xl space-y-3.5"
                               >
                                 {/* Header with block number and Needs Review flag */}
-                                <div className="flex items-center justify-between gap-1.5">
-                                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-1.5">
+                                  <div className="flex items-start gap-1.5 flex-1 min-w-0">
                                     {exercise.needs_review && (
                                       <span className="text-yellow-500 text-xs font-bold font-mono uppercase bg-yellow-500/10 border border-yellow-500/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
                                         <AlertTriangle size={11} /> Revisar
                                       </span>
                                     )}
-                                    <input
-                                      type="text"
+                                    <AutoTextarea
                                       value={exercise.name}
-                                      onChange={(e) => handleExerciseChange(day.id, blockIdx, exerciseIdx, "name", e.target.value)}
-                                      className="bg-transparent border-b border-transparent hover:border-neutral-800 focus:border-brand text-xs font-semibold text-white focus:outline-none w-full"
+                                      ariaLabel="Nombre del ejercicio"
+                                      onChange={(v) => handleExerciseChange(day.id, blockIdx, exerciseIdx, "name", v)}
+                                      className="bg-transparent border-b border-transparent hover:border-neutral-800 focus:border-brand text-xs font-semibold text-white focus:outline-none w-full leading-snug"
                                     />
                                   </div>
                                   
@@ -598,7 +716,7 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                 </div>
 
                                 {/* Main inputs row */}
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-4 gap-2">
                                   <div>
                                     <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-sets`}>Series</label>
                                     <input
@@ -629,30 +747,27 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
                                       className="w-full bg-neutral-950 border border-neutral-800 rounded-lg py-1 px-2 text-xs text-center font-mono"
                                     />
                                   </div>
-                                </div>
-
-                                {/* Extra info: Tip of technique or muscles */}
-                                <div className="grid grid-cols-2 gap-2">
                                   <div>
-                                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-rest_seconds`}>Descanso (segundos)</label>
+                                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-rest_seconds`}>Desc. (s)</label>
                                     <input
                                       id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-rest_seconds`}
                                       type="number"
                                       value={exercise.rest_seconds}
                                       onChange={(e) => handleExerciseChange(day.id, blockIdx, exerciseIdx, "rest_seconds", parseInt(e.target.value) || 0)}
-                                      className="w-full bg-neutral-950 border border-neutral-800 rounded-lg py-1 px-2 text-xs font-mono"
+                                      className="w-full bg-neutral-950 border border-neutral-800 rounded-lg py-1 px-2 text-xs text-center font-mono"
                                     />
                                   </div>
-                                  <div>
-                                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-muscles`}>Músculos (separados por coma)</label>
-                                    <input
-                                      id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-muscles`}
-                                      type="text"
-                                      value={exercise.muscles.join(", ")}
-                                      onChange={(e) => handleExerciseChange(day.id, blockIdx, exerciseIdx, "muscles", e.target.value.split(",").map(m => m.trim()))}
-                                      className="w-full bg-neutral-950 border border-neutral-800 rounded-lg py-1 px-2 text-xs"
-                                    />
-                                  </div>
+                                </div>
+
+                                {/* Músculos: ancho completo, crece si la lista es larga */}
+                                <div>
+                                  <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-0.5" htmlFor={`ex-${day.id}-${blockIdx}-${exerciseIdx}-muscles`}>Músculos (separados por coma)</label>
+                                  <AutoTextarea
+                                    id={`ex-${day.id}-${blockIdx}-${exerciseIdx}-muscles`}
+                                    value={exercise.muscles.join(", ")}
+                                    onChange={(v) => handleExerciseChange(day.id, blockIdx, exerciseIdx, "muscles", v.split(",").map(m => m.trim()))}
+                                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg py-1 px-2 text-xs leading-snug"
+                                  />
                                 </div>
                               </div>
                             ))}
@@ -674,6 +789,13 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
             })}
           </div>
 
+          {editablePlan.days.length === 0 && (
+            <div className="p-4 bg-neutral-950 border border-dashed border-neutral-800 rounded-2xl flex items-center gap-2.5 text-xs text-neutral-300">
+              <AlertCircle className="w-4 h-4 text-brand shrink-0" />
+              <span>Agregá al menos un día para poder guardar el plan.</span>
+            </div>
+          )}
+
           {/* Add Day Button */}
           <button
             onClick={handleAddDay}
@@ -688,7 +810,8 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
             <div className="max-w-md mx-auto space-y-2">
               <button
                 onClick={handleConfirmAndSave}
-                className="w-full bg-brand text-black hover:bg-brand/90 py-3.5 rounded-2xl text-sm font-bold font-mono uppercase tracking-wider shadow-lg cursor-pointer"
+                disabled={editablePlan.days.length === 0}
+                className="w-full bg-brand text-black hover:bg-brand/90 py-3.5 rounded-2xl text-sm font-bold font-mono uppercase tracking-wider shadow-lg cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 CONFIRMAR Y GUARDAR PLAN
               </button>
@@ -709,24 +832,38 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
         </motion.div>
       )}
 
-      {/* 5. CONFIRMACIÓN */}
+      {/* 5. CONFIRMACIÓN: primero potencia el plan con IA, después confirma */}
       {subState === "success" && (
-        <div className="flex flex-col items-center justify-center min-h-[70vh] text-center space-y-6">
-          <motion.div
-            initial={{ scale: 0.6, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="w-16 h-16 bg-brand text-black rounded-3xl flex items-center justify-center shadow"
-          >
-            <Check className="w-8 h-8 stroke-[3]" />
-          </motion.div>
+        <div className="flex flex-col items-center justify-center min-h-[70vh] text-center space-y-6" aria-live="polite">
+          {enriching ? (
+            <>
+              <div className="w-16 h-16 rounded-full border-4 border-neutral-900 border-t-brand animate-spin" aria-hidden />
+              <div className="space-y-2">
+                <h2 className="font-display text-4xl tracking-wider text-white uppercase leading-none">Potenciando tu plan con IA...</h2>
+                <p className="text-neutral-400 text-xs px-10">
+                  Estamos armando la descripción de cada día y los pilares de tu plan.
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <motion.div
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="w-16 h-16 bg-brand text-black rounded-3xl flex items-center justify-center shadow"
+              >
+                <Check className="w-8 h-8 stroke-[3]" />
+              </motion.div>
 
-          <div className="space-y-2">
-            <h2 className="font-display text-4xl tracking-wider text-white uppercase leading-none">¡PLAN CARGADO!</h2>
-            <p className="text-neutral-400 text-xs px-10">
-              Rutina digitalizada y potenciada con IA. El coach ya tiene el contexto de tu entrenamiento original.
-            </p>
-          </div>
+              <div className="space-y-2">
+                <h2 className="font-display text-4xl tracking-wider text-white uppercase leading-none">¡PLAN CARGADO!</h2>
+                <p className="text-neutral-400 text-xs px-10">
+                  Rutina digitalizada y potenciada con IA. El coach ya tiene el contexto de tu entrenamiento original.
+                </p>
+              </div>
+            </>
+          )}
         </div>
       )}
 

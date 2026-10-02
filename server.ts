@@ -88,6 +88,40 @@ const EXERCISE_DB_URL = "https://raw.githubusercontent.com/yuhonas/free-exercise
 const EXERCISE_IMAGE_BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
 let exerciseLibraryCache: any[] | null = null;
 
+// Reglas compartidas por /api/generate-plan y /api/enrich-uploaded-plan: cómo se escriben
+// day_descriptions y plan_pillars. Un solo texto para que los dos flujos produzcan lo mismo.
+const DAY_DESCRIPTIONS_RULES = `Generá "day_descriptions": un objeto con los 7 días de la semana en minúscula (lunes, martes, miércoles, jueves, viernes, sábado, domingo) como claves — incluí TODOS los 7, sin excepción. Para cada día:
+   - "type": una de estas categorías EXACTAS según lo que corresponda a ese día — "fuerza", "cardio", "movilidad", "cancha", "descanso", "recuperacion", "mixto". Usá "cancha" para días donde el usuario practica un deporte propio (tenis, fútbol, etc.), "recuperacion" para días de descanso activo, "descanso" para descanso total.
+   - "title": nombre corto del día, 2 a 4 palabras (ej. "Tren superior", "Descanso total", "Tenis + movilidad").
+   - "duration": duración estimada del día (ej. "50-60 min") o "—" si es descanso total sin actividad.
+   - "note": UNA frase personalizada y contextual, máximo 1-2 oraciones. Mencioná actividades reales del usuario cuando corresponda (otras actividades/deportes que practica), condiciones médicas si son relevantes para ese día, y un consejo concreto y específico de ese día (no genérico). Los días de descanso TAMBIÉN necesitan una nota real y útil — nunca los dejes vacíos ni con texto genérico tipo "Descansá hoy".`;
+const PLAN_PILLARS_RULES = `Generá "plan_pillars": un array de 2 a 3 objetos que resuman los pilares centrales de ESTE plan específico.
+   - Los pilares deben surgir naturalmente del perfil de este usuario — NO uses una lista fija de categorías genéricas (no siempre "Fuerza, Cardio, Movilidad"). Elegilos según lo que realmente define su programa: puede ser un pilar de fuerza, uno ligado a su deporte extra, uno de manejo de una condición médica, uno de movilidad si tiene trabajo sedentario, etc.
+   - "nombre": nombre corto del pilar (1-2 palabras, ej. "Fuerza", "Tenis + Prevención", "Cardio Zona 2").
+   - "frecuencia": frecuencia concreta (ej. "≥ 2x/sem", "Todos los días de gym", "3x/sem").
+   - "descripcion": texto LARGO (mínimo 3 párrafos, separados por \\n\\n) que explique POR QUÉ este pilar es importante para ESTE usuario específico. Tiene que sonar como un coach que lo conoce hace meses, no un texto genérico de fitness. Mencioná detalles concretos y reales del perfil: su objetivo específico, sus actividades extra por nombre (ej. "tu tenis dos veces por semana" si juega al tenis), sus condiciones médicas si aplican y cómo se relacionan con este pilar (ej. mencionar la hipertensión en el contexto de cardio), su nivel de experiencia, sus días y horario disponibles. Nunca suene genérico — cada pilar debe leerse como si estuviera escrito específicamente para esta persona. Incluí recomendaciones prácticas concretas, no solo teoría.`;
+const DAY_DESCRIPTIONS_AND_PILLARS_JSON = `  "day_descriptions": {
+    "lunes": {
+      "type": "fuerza" o "cardio" o "movilidad" o "cancha" o "descanso" o "recuperacion" o "mixto",
+      "title": "nombre corto del día (2-4 palabras)",
+      "duration": "50-60 min" o "—" si es descanso total,
+      "note": "frase personalizada y contextual, 1-2 oraciones máximo"
+    },
+    "martes": { "type": "...", "title": "...", "duration": "...", "note": "..." },
+    "miércoles": { "type": "...", "title": "...", "duration": "...", "note": "..." },
+    "jueves": { "type": "...", "title": "...", "duration": "...", "note": "..." },
+    "viernes": { "type": "...", "title": "...", "duration": "...", "note": "..." },
+    "sábado": { "type": "...", "title": "...", "duration": "...", "note": "..." },
+    "domingo": { "type": "...", "title": "...", "duration": "...", "note": "..." }
+  },
+  "plan_pillars": [
+    {
+      "nombre": "Fuerza",
+      "frecuencia": "≥ 2x/sem",
+      "descripcion": "Texto largo y personalizado (mínimo 3 párrafos separados por \\n\\n) explicando por qué este pilar es clave para este usuario específico, mencionando detalles concretos de su perfil."
+    }
+  ]`;
+
 function sanitizeJsonText(text: string): string {
   return text
     .replace(/\/\*[\s\S]*?\*\//g, "") // block comments
@@ -278,17 +312,9 @@ ${trainingLocation === "both"
 
 8. Incluí una GUÍA DE PROGRESIÓN específica para este usuario.
 
-9. Generá "day_descriptions": un objeto con los 7 días de la semana en minúscula (lunes, martes, miércoles, jueves, viernes, sábado, domingo) como claves — incluí TODOS los 7, sin excepción. Para cada día:
-   - "type": una de estas categorías EXACTAS según lo que corresponda a ese día — "fuerza", "cardio", "movilidad", "cancha", "descanso", "recuperacion", "mixto". Usá "cancha" para días donde el usuario practica un deporte propio (tenis, fútbol, etc.), "recuperacion" para días de descanso activo, "descanso" para descanso total.
-   - "title": nombre corto del día, 2 a 4 palabras (ej. "Tren superior", "Descanso total", "Tenis + movilidad").
-   - "duration": duración estimada del día (ej. "50-60 min") o "—" si es descanso total sin actividad.
-   - "note": UNA frase personalizada y contextual, máximo 1-2 oraciones. Mencioná actividades reales del usuario cuando corresponda (otras actividades/deportes que practica), condiciones médicas si son relevantes para ese día, y un consejo concreto y específico de ese día (no genérico). Los días de descanso TAMBIÉN necesitan una nota real y útil — nunca los dejes vacíos ni con texto genérico tipo "Descansá hoy".
+9. ${DAY_DESCRIPTIONS_RULES}
 
-10. Generá "plan_pillars": un array de 2 a 3 objetos que resuman los pilares centrales de ESTE plan específico.
-   - Los pilares deben surgir naturalmente del perfil de este usuario — NO uses una lista fija de categorías genéricas (no siempre "Fuerza, Cardio, Movilidad"). Elegilos según lo que realmente define su programa: puede ser un pilar de fuerza, uno ligado a su deporte extra, uno de manejo de una condición médica, uno de movilidad si tiene trabajo sedentario, etc.
-   - "nombre": nombre corto del pilar (1-2 palabras, ej. "Fuerza", "Tenis + Prevención", "Cardio Zona 2").
-   - "frecuencia": frecuencia concreta (ej. "≥ 2x/sem", "Todos los días de gym", "3x/sem").
-   - "descripcion": texto LARGO (mínimo 3 párrafos, separados por \\n\\n) que explique POR QUÉ este pilar es importante para ESTE usuario específico. Tiene que sonar como un coach que lo conoce hace meses, no un texto genérico de fitness. Mencioná detalles concretos y reales del perfil: su objetivo específico, sus actividades extra por nombre (ej. "tu tenis dos veces por semana" si juega al tenis), sus condiciones médicas si aplican y cómo se relacionan con este pilar (ej. mencionar la hipertensión en el contexto de cardio), su nivel de experiencia, sus días y horario disponibles. Nunca suene genérico — cada pilar debe leerse como si estuviera escrito específicamente para esta persona. Incluí recomendaciones prácticas concretas, no solo teoría.
+10. ${PLAN_PILLARS_RULES}
 
 Deberás responder EN IDIOMA ESPAÑOL.
 RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto adicional de introducción ni de cierre:
@@ -354,27 +380,7 @@ RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
       ]
     }
   ],
-  "day_descriptions": {
-    "lunes": {
-      "type": "fuerza" o "cardio" o "movilidad" o "cancha" o "descanso" o "recuperacion" o "mixto",
-      "title": "nombre corto del día (2-4 palabras)",
-      "duration": "50-60 min" o "—" si es descanso total,
-      "note": "frase personalizada y contextual, 1-2 oraciones máximo"
-    },
-    "martes": { "type": "...", "title": "...", "duration": "...", "note": "..." },
-    "miércoles": { "type": "...", "title": "...", "duration": "...", "note": "..." },
-    "jueves": { "type": "...", "title": "...", "duration": "...", "note": "..." },
-    "viernes": { "type": "...", "title": "...", "duration": "...", "note": "..." },
-    "sábado": { "type": "...", "title": "...", "duration": "...", "note": "..." },
-    "domingo": { "type": "...", "title": "...", "duration": "...", "note": "..." }
-  },
-  "plan_pillars": [
-    {
-      "nombre": "Fuerza",
-      "frecuencia": "≥ 2x/sem",
-      "descripcion": "Texto largo y personalizado (mínimo 3 párrafos separados por \\n\\n) explicando por qué este pilar es clave para este usuario específico, mencionando detalles concretos de su perfil."
-    }
-  ]
+${DAY_DESCRIPTIONS_AND_PILLARS_JSON}
 }`;
 
       const ai = getGeminiClient();
@@ -538,10 +544,23 @@ Devolvé ÚNICAMENTE un JSON válido RFC 8259. Sin comentarios, sin trailing com
       }
 
       const fileBuffer = Buffer.from(fileBase64, "base64");
+      const originalName = String(fileName).toLowerCase();
+      const ext = originalName.slice(originalName.lastIndexOf("."));
+
+      // El navegador a veces manda file.type vacío (o octet-stream): lo resolvemos por extensión.
+      const IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+      const MIME_BY_EXT: Record<string, string> = {
+        ".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+        ".webp": "image/webp", ".heic": "image/heic", ".heif": "image/heif",
+      };
+      let resolvedMime = String(mimeType || "").toLowerCase();
+      if ((!resolvedMime || resolvedMime === "application/octet-stream") && MIME_BY_EXT[ext]) resolvedMime = MIME_BY_EXT[ext];
+      if (resolvedMime === "image/jpg") resolvedMime = "image/jpeg";
+
       const file = {
         buffer: fileBuffer,
         originalname: fileName,
-        mimetype: mimeType || "application/octet-stream"
+        mimetype: resolvedMime || "application/octet-stream"
       };
 
       if (fileBuffer.length > 10 * 1024 * 1024) {
@@ -553,18 +572,36 @@ Devolvé ÚNICAMENTE un JSON válido RFC 8259. Sin comentarios, sin trailing com
         });
       }
 
-      const name = (profile && profile.name) || "Atleta";
-      const apellido = (profile && profile.apellido) || "";
-      const age = profile.age || "No especificada";
-      const weight = profile.weight || "No especificado";
-      const height = profile.height || "No especificada";
-      const objectiveText = (profile.goals && profile.goals.length > 0) ? profile.goals.join(", ") : (profile.objective || "No especificado");
-      const experience = profile.experience || "No especificado";
-      const medicalConditions = profile.medicalConditions?.length > 0 ? profile.medicalConditions.join(", ") : "Ninguna";
-      const equipamiento = `Cardio: ${profile.cardioEquipment?.length > 0 ? profile.cardioEquipment.join(", ") : "Ninguno"} / Fuerza: ${profile.strengthEquipment?.length > 0 ? profile.strengthEquipment.join(", ") : "Ninguno"}`;
+      const p = profile || {};
+      const list = (v: any, empty: string) => (Array.isArray(v) && v.length > 0 ? v.join(", ") : empty);
+      const name = p.name || "Atleta";
+      const apellido = p.apellido || "";
+      const age = p.age || "No especificada";
+      const weight = p.weight || "No especificado";
+      const height = p.height || "No especificada";
+      const objectiveText = list(p.goals, p.objective || "No especificado");
+      const experience = p.experience || "No especificado";
+      const medicalConditions = list(p.medicalConditions, "Ninguna");
+      const equipamiento = `Cardio: ${list(p.cardioEquipment, "Ninguno")} / Fuerza: ${list(p.strengthEquipment, "Ninguno")}`;
+      const LOCATION_LABEL: Record<string, string> = { gym: "Gimnasio", home: "Casa", both: "Gimnasio y casa" };
+      const trainingLocation = LOCATION_LABEL[p.trainingLocation] || p.trainingLocation || "No especificado";
+      const daysPerWeek = p.daysPerWeek || "No especificado";
+      const muscleFocus = list(p.muscle_focus, "Sin preferencia");
+      const preferredDays = list(p.preferred_days, "Sin preferencia");
+      const exercisesToAvoid = p.exercisesToAvoid || "Ninguno";
+      const injuries = p.injuriesOrLimitations || "Ninguna";
 
-      const originalName = file.originalname.toLowerCase();
-      const isExcel = originalName.endsWith(".xlsx") || originalName.endsWith(".xls") || originalName.endsWith(".csv") || file.mimetype === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || file.mimetype === "application/vnd.ms-excel" || file.mimetype === "text/csv";
+      const isExcel = [".xlsx", ".xls", ".csv"].includes(ext) || file.mimetype === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || file.mimetype === "application/vnd.ms-excel" || file.mimetype === "text/csv";
+      const isInlineDoc = file.mimetype === "application/pdf" || IMAGE_MIMES.includes(file.mimetype);
+
+      if (!isExcel && !isInlineDoc) {
+        return res.status(400).json({
+          success: false,
+          parsed_plan: null,
+          inconsistency_warning: null,
+          error: "Formato no soportado. Subí un PDF, una foto (JPG, PNG, WEBP, HEIC) o un Excel/CSV."
+        });
+      }
 
       let spreadsheetDataText = "";
       if (isExcel) {
@@ -592,20 +629,31 @@ PERFIL DEL USUARIO (para darte contexto de sus necesidades, NO para inventar eje
 - Condiciones médicas: ${medicalConditions}
 - Nivel de experiencia: ${experience}
 - Equipamiento disponible: ${equipamiento}
+- Lugar de entrenamiento: ${trainingLocation}
+- Días disponibles por semana: ${daysPerWeek}
+- Días preferidos: ${preferredDays}
+- Zonas musculares a priorizar: ${muscleFocus}
+- Ejercicios que quiere evitar: ${exercisesToAvoid}
+- Lesiones o limitaciones físicas: ${injuries}
 
 DOCUMENTO DE ENTRENAMIENTO ANALIZADO:
 ${docTextContext}
 
 INSTRUCCIONES CRÍTICAS:
-1. Extraé ÚNICAMENTE los ejercicios, series, repeticiones, pesos y días que aparecen en el documento. NO inventes ejercicios que no estén en el documento original.
-2. Si el documento no especifica algún dato (ej: no dice el descanso entre series), inferí un valor razonable según el tipo de ejercicio y anotalo, pero priorizá siempre lo que el documento dice explícitamente.
-3. Si hay un ejercicio con texto ambiguo, abreviado o manuscrito poco claro, haz tu mejor interpretación y marca ese ejercicio como "needs_review": true en el JSON.
-4. Identificá la estructura de días tal como está en el documento (no la reorganices a Push/Pull/Legs si el documento ya tiene su propia división de días/grupos).
-5. Para cada ejercicio, agrega de tu parte la lista de músculos trabajados ("muscles" como string[]), un tip de técnica breve en "technique_tip", y si puedes identificar el ejercicio con certeza, un enlace a YouTube Shorts de muestra relevante en "youtube_url" (si no estás seguro o no hay, pon null).
-6. Después de extraer todo el plan, compáralo con el perfil del usuario y genera un campo "inconsistency_warning" si detectas alguna inconsistencia que valga la pena avisarle al usuario. Ejemplos:
+1. Extraé ÚNICAMENTE los ejercicios, series, repeticiones, pesos y días que aparecen en el documento. Nunca inventes ejercicios que no estén en el documento.
+2. Conservá el nombre completo del ejercicio sin abreviar, aunque sea largo.
+3. Si el documento no especifica algún dato (ej: no dice el descanso entre series), inferí un valor razonable según el tipo de ejercicio y anotalo, pero priorizá siempre lo que el documento dice explícitamente.
+4. Si hay un ejercicio con texto ambiguo, abreviado o manuscrito poco claro, haz tu mejor interpretación y marca ese ejercicio como "needs_review": true en el JSON.
+5. Identificá la estructura de días tal como está en el documento (no la reorganices a Push/Pull/Legs si el documento ya tiene su propia división de días/grupos).
+6. Si el documento no tiene bloques explícitos (calentamiento/trabajo/enfriamiento), inferí la estructura según el tipo de ejercicio: movilidad y activación en "warmup", el trabajo principal en "blocks", estiramientos en "cooldown".
+7. Para cada ejercicio, agregá de tu parte la lista de músculos trabajados ("muscles" como string[]) y un tip de técnica breve en "technique_tip".
+8. Después de extraer todo el plan, compáralo con el perfil del usuario y genera un campo "inconsistency_warning" si detectas alguna inconsistencia que valga la pena avisarle al usuario. Tené en cuenta todo el perfil: condiciones médicas, lesiones o limitaciones, ejercicios que quiere evitar, equipamiento y lugar de entrenamiento, días disponibles y preferidos, objetivo y zonas a priorizar. Ejemplos:
    - El usuario tiene colesterol alto pero el plan no incluye nada de cardio.
-   - El usuario tiene problemas de rodilla o tobillo pero el plan incluye ejercicios de alto impacto sin variantes.
-   - Para ejecutar el plan se requiere equipo (ej: máquinas específicas) que el usuario NO marcó disponible en su equipamiento.
+   - El usuario tiene problemas de rodilla o tobillo (o los declaró como lesión) pero el plan incluye ejercicios de alto impacto sin variantes.
+   - El plan incluye un ejercicio que el usuario dijo que quiere evitar.
+   - Para ejecutar el plan se requiere equipo (ej: máquinas específicas) que el usuario NO marcó disponible, o entrena en casa y el plan es de gimnasio.
+   - El plan tiene más días de entrenamiento que los días disponibles del usuario, o cae en días distintos a los que prefiere.
+   - El usuario quiere priorizar una zona muscular que el plan casi no trabaja.
    Si no hay ninguna inconsistencia relevante, el campo "inconsistency_warning" debe ser null.
 
 Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin backticks, con esta estructura exacta:
@@ -648,7 +696,7 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
           "title": "nombre o descripción del bloque de ejercicios",
           "exercises": [
             {
-              "name": "nombre del ejercicio EXACTO como viene en el documento",
+              "name": "nombre completo del ejercicio como viene en el documento, sin abreviar",
               "muscles": ["músculo1", "músculo2"],
               "sets": número de series extraído del documento (ej: 4),
               "reps": "valor o rango de reps extraído (ej: \"10-12\" o \"8\")",
@@ -656,7 +704,6 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
               "rest_seconds": número de segundos de descanso (inferido si no está explícito),
               "technique_tip": "tip corto de técnica",
               "common_error": "error común" o null,
-              "youtube_url": "url de youtube" o null,
               "needs_review": true o false
             }
           ]
@@ -705,6 +752,29 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
       }
 
       const parsedPlan = JSON.parse(responseText.trim());
+
+      // La pantalla de revisión recorre days → blocks → exercises → muscles: si la forma no es esa, se rompe.
+      const structureOk =
+        parsedPlan && typeof parsedPlan === "object" && Array.isArray(parsedPlan.days) &&
+        parsedPlan.days.every((day: any) =>
+          day && Array.isArray(day.blocks) &&
+          day.blocks.every((block: any) => block && Array.isArray(block.exercises)));
+      if (!structureOk) {
+        console.error("parse-plan-document: estructura inválida de Gemini:", responseText.slice(0, 500));
+        return res.status(500).json({
+          success: false,
+          parsed_plan: null,
+          inconsistency_warning: null,
+          error: "La IA devolvió el plan con un formato que no pudimos leer. Probá de nuevo o con otro archivo."
+        });
+      }
+      for (const day of parsedPlan.days) {
+        for (const block of day.blocks) {
+          for (const ex of block.exercises) {
+            if (!Array.isArray(ex.muscles)) ex.muscles = [];
+          }
+        }
+      }
       parsedPlan.source = "uploaded_document";
 
       return res.json({
@@ -733,6 +803,97 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
         inconsistency_warning: null,
         error: errorMsg
       });
+    }
+  });
+
+  // POST /api/enrich-uploaded-plan — a un plan subido (ya revisado por el usuario) le genera
+  // day_descriptions y plan_pillars con las mismas reglas que el flujo de plan con IA.
+  // El cliente nunca se bloquea por esto: ante cualquier error guarda el plan sin estos campos.
+  app.post("/api/enrich-uploaded-plan", async (req, res) => {
+    const ENRICH_TIMEOUT_MS = 15000;
+    const abort = new AbortController();
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      const { plan, profile } = req.body || {};
+      if (!plan || !Array.isArray(plan.days) || plan.days.length === 0) {
+        return res.status(400).json({ error: "Falta el plan o no tiene días." });
+      }
+      const p = profile || {};
+      const list = (v: any, empty: string) => (Array.isArray(v) && v.length > 0 ? v.join(", ") : empty);
+      const otherActivities = Array.isArray(p.other_activities) && p.other_activities.length > 0
+        ? p.other_activities.map((a: any) => `${a.name}${a.frequency ? ` (${a.frequency} por semana)` : ""}${a.days?.length ? ` los ${a.days.join(", ")}` : ""}`).join("; ")
+        : "Ninguna";
+
+      // Resumen compacto del plan: alcanza para describir cada día y elegir pilares, y mantiene la llamada rápida.
+      const planSummary = plan.days.map((d: any) => {
+        const exercises = (d.blocks || []).flatMap((b: any) => (b.exercises || []).map((e: any) => e.name)).filter(Boolean);
+        return `- ${d.day_of_week || "Sin día asignado"}: ${d.name || ""}${d.focus ? ` (foco: ${d.focus})` : ""}${d.duration ? `, ${d.duration}` : ""}. Ejercicios: ${exercises.join(", ") || "sin detalle"}`;
+      }).join("\n");
+
+      const prompt = `Eres un fisiólogo del ejercicio y entrenador personal experto. El usuario subió el plan de entrenamiento que le armó su profesor o gimnasio y ya lo revisó. NO modifiques el plan: tu tarea es solo describir su semana y resumir sus pilares.
+
+PERFIL DEL USUARIO:
+- Nombre: ${p.name || "Atleta"}${p.apellido ? " " + p.apellido : ""}
+- Edad: ${p.age || "No especificada"} años, Peso: ${p.weight || "No especificado"} kg, Altura: ${p.height || "No especificada"} cm
+- Objetivos: ${list(p.goals, p.objective || "No especificado")}
+- Nivel de experiencia: ${p.experience || "No especificado"}
+- Condiciones médicas: ${list(p.medicalConditions, "Ninguna")}
+- Lesiones o limitaciones: ${p.injuriesOrLimitations || "Ninguna"}
+- Lugar de entrenamiento: ${p.trainingLocation || "No especificado"}
+- Otras actividades: ${otherActivities}
+- Horario preferido: ${p.preferred_schedule || "Sin preferencia"}
+${p.specificGoal ? `- Objetivo o evento específico: ${p.specificGoal}` : ""}
+
+PLAN SUBIDO: "${plan.plan_name || "Plan de entrenamiento"}" · División: ${plan.division || "No especificada"} · ${plan.days.length} días de entrenamiento
+${planSummary}
+
+Los días de entrenamiento son EXACTAMENTE los que figuran arriba con su día de la semana: no los muevas ni agregues días de gym. Los demás días son descanso o, si el usuario tiene otras actividades esos días, esas actividades.
+
+1. ${DAY_DESCRIPTIONS_RULES}
+
+2. ${PLAN_PILLARS_RULES}
+
+Deberás responder EN IDIOMA ESPAÑOL.
+RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto adicional de introducción ni de cierre:
+
+{
+${DAY_DESCRIPTIONS_AND_PILLARS_JSON}
+}`;
+
+      const ai = getGeminiClient();
+      const generation = ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          temperature: 1.0,
+          thinkingConfig: { thinkingBudget: 0 },   // sin razonamiento extendido: el usuario está esperando
+          abortSignal: abort.signal,
+        },
+      });
+      const timeout = new Promise<"timeout">((resolve) => { timer = setTimeout(() => resolve("timeout"), ENRICH_TIMEOUT_MS); });
+      const result = await Promise.race([generation, timeout]);
+      if (result === "timeout") {
+        abort.abort();
+        generation.catch(() => {});                 // el abort rechaza la promesa; no dejarla sin manejar
+        return res.status(504).json({ error: "La IA tardó demasiado en potenciar el plan." });
+      }
+
+      const responseText = result.text;
+      if (!responseText) throw new Error("Respuesta vacía de Gemini.");
+      const parsed = JSON.parse(responseText.trim());
+      const dayDescriptions = parsed?.day_descriptions;
+      const planPillars = parsed?.plan_pillars;
+      if (!dayDescriptions || typeof dayDescriptions !== "object" || Array.isArray(dayDescriptions) || !Array.isArray(planPillars)) {
+        console.error("enrich-uploaded-plan: estructura inválida de Gemini:", responseText.slice(0, 500));
+        return res.status(500).json({ error: "La IA devolvió un formato inesperado." });
+      }
+      return res.json({ day_descriptions: dayDescriptions, plan_pillars: planPillars });
+    } catch (error: any) {
+      console.error("Error in enrich-uploaded-plan API:", error);
+      return res.status(500).json({ error: error?.message || "Error al potenciar el plan." });
+    } finally {
+      if (timer) clearTimeout(timer);
     }
   });
 

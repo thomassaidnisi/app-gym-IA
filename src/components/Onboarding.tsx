@@ -613,43 +613,60 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
       gender, goals, objective: goals.join(", "), muscle_focus: muscleFocus,
       medicalConditions, experience, daysPerWeek, sessionDuration,
       cardioEquipment, strengthEquipment, exercisesToAvoid, injuriesOrLimitations,
+      preferred_days: preferredDays.length > 0 ? preferredDays : undefined,
       trainingLocation: (trainingLocation as "home" | "gym" | "both") || "gym",
     };
     return (
       <PlanUpload
         profile={profilePayload}
         onBack={() => setOnboardingFlow("choose_method")}
-        onPlanSaved={async (plan) => {
+        onPlanSaved={async (savedPlan) => {
+          // PlanUpload suma day_descriptions y plan_pillars al plan si /api/enrich-uploaded-plan respondió.
+          // La app los lee del perfil (GymTab, walkthrough de pilares, racha) y de plan_metadata,
+          // así que se mueven ahí, igual que en el flujo de plan con IA.
+          const { day_descriptions, plan_pillars, ...plan } = savedPlan as FullTrainingPlan & { day_descriptions?: DayDescriptions; plan_pillars?: PlanPillar[] };
+          const enriched = !!day_descriptions || !!plan_pillars;
+          const finalProfile: UserProfile = enriched
+            ? { ...profilePayload, day_descriptions, plan_pillars, walkthrough_seen: false }
+            : profilePayload;
           localStorage.setItem("healty_plan", JSON.stringify(plan));
-          localStorage.setItem("healty_profile", JSON.stringify(profilePayload));
+          localStorage.setItem("healty_profile", JSON.stringify(finalProfile));
           if (user) {
             await Promise.all([
               saveProfile(user.id, {
-                name: profilePayload.name,
-                apellido: profilePayload.apellido,
-                age: profilePayload.age,
-                weight: profilePayload.weight,
-                height: profilePayload.height,
-                gender: profilePayload.gender,
+                name: finalProfile.name,
+                apellido: finalProfile.apellido,
+                age: finalProfile.age,
+                weight: finalProfile.weight,
+                height: finalProfile.height,
+                gender: finalProfile.gender,
               }),
               saveOnboardingData(user.id, {
-                goals: profilePayload.goals,
-                objective: profilePayload.objective,
-                muscle_focus: profilePayload.muscle_focus,
-                experience: profilePayload.experience,
-                daysPerWeek: profilePayload.daysPerWeek,
-                medicalConditions: profilePayload.medicalConditions,
-                sessionDuration: profilePayload.sessionDuration,
-                cardioEquipment: profilePayload.cardioEquipment,
-                strengthEquipment: profilePayload.strengthEquipment,
-                exercisesToAvoid: profilePayload.exercisesToAvoid,
-                injuriesOrLimitations: profilePayload.injuriesOrLimitations,
-                trainingLocation: profilePayload.trainingLocation,
+                goals: finalProfile.goals,
+                objective: finalProfile.objective,
+                muscle_focus: finalProfile.muscle_focus,
+                experience: finalProfile.experience,
+                daysPerWeek: finalProfile.daysPerWeek,
+                medicalConditions: finalProfile.medicalConditions,
+                sessionDuration: finalProfile.sessionDuration,
+                cardioEquipment: finalProfile.cardioEquipment,
+                strengthEquipment: finalProfile.strengthEquipment,
+                exercisesToAvoid: finalProfile.exercisesToAvoid,
+                injuriesOrLimitations: finalProfile.injuriesOrLimitations,
+                trainingLocation: finalProfile.trainingLocation,
+                preferred_days: finalProfile.preferred_days,
               }),
+              ...(enriched
+                ? [savePlanMetadata(user.id, {
+                    day_descriptions: finalProfile.day_descriptions,
+                    plan_pillars: finalProfile.plan_pillars,
+                    walkthrough_seen: false,
+                  })]
+                : []),
               savePlan(user.id, plan),
             ]);
           }
-          handlePlanReady(plan, profilePayload);
+          handlePlanReady(plan, finalProfile);
         }}
       />
     );
