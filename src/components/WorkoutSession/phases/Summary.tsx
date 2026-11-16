@@ -113,6 +113,7 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
   );
   const [notes, setNotes] = useState(session.sessionNotes);
   const [saving, setSaving] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [celebration, setCelebration] = useState<PRCelebrationData | null>(null);
 
   const durationMs = Date.now() - new Date(session.sessionStartTime).getTime();
@@ -405,6 +406,33 @@ export const Summary: React.FC<SummaryProps> = ({ session, day, profile, plan, o
         >
           {saving ? "Guardando…" : "Guardar y terminar"}
         </motion.button>
+
+        {!confirmDiscard ? (
+          <button
+            onClick={() => setConfirmDiscard(true)}
+            className="w-full h-11 mt-2 text-sm font-semibold rounded-2xl"
+            style={{ color: "rgba(255,255,255,0.3)" }}
+          >
+            Descartar sesión
+          </button>
+        ) : (
+          <div className="mt-2 flex gap-2">
+            <button
+              onClick={() => setConfirmDiscard(false)}
+              className="flex-1 h-11 text-sm font-semibold rounded-2xl"
+              style={{ color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => { localStorage.removeItem("paused_session"); onClose(); }}
+              className="flex-1 h-11 text-sm font-semibold rounded-2xl"
+              style={{ color: "rgba(255,100,100,0.9)", border: "1px solid rgba(255,100,100,0.2)" }}
+            >
+              Sí, descartar
+            </button>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
