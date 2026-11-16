@@ -378,7 +378,10 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
       if (res.ok) {
         const data = await res.json();
         finalPlan = {
-          ...editablePlan,
+          ...planWithPhaseDate,
+          ...(data.cardio_note ? { cardio_note: data.cardio_note as string } : {}),
+          ...(data.progression_guide ? { progression_guide: data.progression_guide as string } : {}),
+          ...(data.medical_note ? { medical_note: data.medical_note as string } : {}),
           ...(data.day_descriptions ? { day_descriptions: data.day_descriptions as DayDescriptions } : {}),
           ...(Array.isArray(data.plan_pillars) ? { plan_pillars: data.plan_pillars as PlanPillar[] } : {}),
         };

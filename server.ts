@@ -655,6 +655,7 @@ INSTRUCCIONES CRÍTICAS:
    - El plan tiene más días de entrenamiento que los días disponibles del usuario, o cae en días distintos a los que prefiere.
    - El usuario quiere priorizar una zona muscular que el plan casi no trabaja.
    Si no hay ninguna inconsistencia relevante, el campo "inconsistency_warning" debe ser null.
+9. En "weekly_schedule", si el documento indica para un día sin entrenamiento de gym alguna actividad liviana (caminata, stretching, movilidad, yoga, cardio suave, etc.), devolvé esa actividad como string con su duración o detalle si lo tiene (ej: "Caminata 30-40 min", "Movilidad 15 min"), NUNCA "Rest" ni "Descanso". Usá "Rest" únicamente para días sin ninguna actividad indicada.
 
 DETECCIÓN DE FASES PROGRESIVAS (MUY IMPORTANTE):
 Algunos planes de entrenamiento tienen múltiples fases o mesociclos progresivos (ej: Fase 1 semanas 1-4, Fase 2 semanas 5-8, Fase 3 semanas 9-12). Esto se detecta típicamente por:
@@ -687,7 +688,7 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
   "total_phases": número total de fases (1 si no hay fases),
   "inconsistency_warning": "texto de la inconsistencia en español" o null,
   "weekly_schedule": {
-    "monday": "nombre del día o Rest",
+    "monday": "nombre del día de gym, actividad liviana indicada (ej: \"Caminata 30-40 min\") o Rest",
     "tuesday": "...",
     "wednesday": "...",
     "thursday": "...",
@@ -895,7 +896,36 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
         return `- ${d.day_of_week || "Sin día asignado"}: ${d.name || ""}${d.focus ? ` (foco: ${d.focus})` : ""}${d.duration ? `, ${d.duration}` : ""}. Ejercicios: ${exercises.join(", ") || "sin detalle"}`;
       }).join("\n");
 
-      const prompt = `Eres un fisiólogo del ejercicio y entrenador personal experto. El usuario subió el plan de entrenamiento que le armó su profesor o gimnasio y ya lo revisó. NO modifiques el plan: tu tarea es solo describir su semana y resumir sus pilares.
+      // Build extra plan context for days without gym training
+      const ws = plan.weekly_schedule || {};
+      const weekDays = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"];
+      const daySpanish: Record<string,string> = { monday:"lunes", tuesday:"martes", wednesday:"miércoles", thursday:"jueves", friday:"viernes", saturday:"sábado", sunday:"domingo" };
+      const gymDayNames = new Set(plan.days.map((d: any) => d.day_of_week?.toLowerCase()));
+      const restDaySummary = weekDays
+        .filter(wd => {
+          const sp = daySpanish[wd];
+          return !gymDayNames.has(sp);
+        })
+        .map(wd => {
+          const sp = daySpanish[wd];
+          const wsVal = ws[wd];
+          return `- ${sp.charAt(0).toUpperCase() + sp.slice(1)}: ${wsVal && wsVal !== "Rest" && wsVal !== "Descanso" ? wsVal : "Sin entrenamiento de gym"}`;
+        })
+        .join("\n");
+
+      const extraPlanContext = [
+        plan.progression_guide ? `Guía de progresión: ${plan.progression_guide}` : "",
+        plan.cardio_note ? `Nota de cardio: ${plan.cardio_note}` : "",
+        plan.medical_note ? `Nota médica: ${plan.medical_note}` : "",
+      ].filter(Boolean).join("\n");
+
+      const prompt = `Eres un fisiólogo del ejercicio y entrenador personal experto. Un usuario subió el plan de entrenamiento que le diseñó su profesor o preparador físico. Tu tarea es:
+
+1. ANALIZAR el plan en profundidad: entender su metodología, lógica de división muscular, estrategia de progresión, integración del cardio y el criterio detrás de la selección de ejercicios.
+2. CRUZAR ese análisis con el perfil completo del usuario para entender por qué ese plan tiene sentido (o cómo se adapta) para esta persona en particular.
+3. GENERAR todo el contenido de soporte del plan exactamente como si lo hubieras diseñado vos: descripciones de días, pilares, notas de cardio, progresión y consideraciones médicas.
+
+NO modificás los ejercicios ni la estructura del plan. Solo generás el contenido de soporte.
 
 PERFIL DEL USUARIO:
 - Nombre: ${p.name || "Atleta"}${p.apellido ? " " + p.apellido : ""}
@@ -904,25 +934,44 @@ PERFIL DEL USUARIO:
 - Nivel de experiencia: ${p.experience || "No especificado"}
 - Condiciones médicas: ${list(p.medicalConditions, "Ninguna")}
 - Lesiones o limitaciones: ${p.injuriesOrLimitations || "Ninguna"}
+- Foco muscular: ${list(p.muscle_focus, "No especificado")}
 - Lugar de entrenamiento: ${p.trainingLocation || "No especificado"}
-- Otras actividades: ${otherActivities}
+- Otras actividades fuera del plan: ${otherActivities}
 - Horario preferido: ${p.preferred_schedule || "Sin preferencia"}
+- Días preferidos: ${list(p.preferred_days, "No especificado")}
 ${p.specificGoal ? `- Objetivo o evento específico: ${p.specificGoal}` : ""}
 
-PLAN SUBIDO: "${plan.plan_name || "Plan de entrenamiento"}" · División: ${plan.division || "No especificada"} · ${plan.days.length} días de entrenamiento
+PLAN: "${plan.plan_name || "Plan de entrenamiento"}" · División: ${plan.division || "No especificada"}
+
+DÍAS DE GYM:
 ${planSummary}
 
-Los días de entrenamiento son EXACTAMENTE los que figuran arriba con su día de la semana: no los muevas ni agregues días de gym. Los demás días son descanso o, si el usuario tiene otras actividades esos días, esas actividades.
+DÍAS SIN GYM (descanso o actividad liviana indicada):
+${restDaySummary || "No especificados"}
+
+${extraPlanContext ? `INFORMACIÓN ADICIONAL DEL PLAN:\n${extraPlanContext}\n` : ""}
+INSTRUCCIONES PARA CADA CAMPO:
 
 1. ${DAY_DESCRIPTIONS_RULES}
+   Importante: las descripciones deben reflejar la lógica del plan. Si hoy es día de piernas después de un día de empuje, mencionalo. Si el volumen es moderado porque el usuario vuelve al gym, mencionalo. Las descripciones conectan el día con el diseño general del plan y con el perfil del usuario.
+   Para días sin gym con actividad liviana (caminata, movilidad, etc.): usá type "recuperacion", título específico con la actividad, y una nota que explique el rol de esa actividad en la recuperación.
 
 2. ${PLAN_PILLARS_RULES}
+   Importante: los pilares deben explicar las decisiones de diseño del plan — por qué esta división, por qué esta frecuencia, por qué esta progresión — y cómo esas decisiones se alinean con el perfil específico del usuario: sus condiciones médicas, su nivel de experiencia y sus objetivos concretos.
+
+3. Generá también:
+   - "cardio_note": explicá la estrategia de cardio del plan (cardio integrado, actividades livianas, otras actividades del usuario) y cómo encaja con sus objetivos y condición física.
+   - "progression_guide": explicá cómo el usuario debe progresar en este plan concreto: cuándo subir carga, qué señales buscar, cómo manejar semanas de descarga si las hay. Basado en su nivel de experiencia y condiciones.
+   - "medical_note": recomendaciones específicas para este usuario dado su historial médico y lesiones, aplicadas a los ejercicios concretos del plan. Si no tiene condiciones médicas, escribí una recomendación de cuidado preventivo relevante para el tipo de entrenamiento.
 
 Deberás responder EN IDIOMA ESPAÑOL.
 RESPONDÉ ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto adicional de introducción ni de cierre:
 
 {
-${DAY_DESCRIPTIONS_AND_PILLARS_JSON}
+${DAY_DESCRIPTIONS_AND_PILLARS_JSON},
+  "cardio_note": "descripción de la estrategia de cardio",
+  "progression_guide": "guía de progresión personalizada",
+  "medical_note": "consideraciones médicas y preventivas"
 }`;
 
       const ai = getGeminiClient();
@@ -953,7 +1002,14 @@ ${DAY_DESCRIPTIONS_AND_PILLARS_JSON}
         console.error("enrich-uploaded-plan: estructura inválida de Gemini:", responseText.slice(0, 500));
         return res.status(500).json({ error: "La IA devolvió un formato inesperado." });
       }
-      return res.json({ day_descriptions: dayDescriptions, plan_pillars: planPillars });
+      const str = (v: any) => (typeof v === "string" && v.trim() ? v : null);
+      return res.json({
+        day_descriptions: dayDescriptions,
+        plan_pillars: planPillars,
+        cardio_note: str(parsed.cardio_note),
+        progression_guide: str(parsed.progression_guide),
+        medical_note: str(parsed.medical_note),
+      });
     } catch (error: any) {
       console.error("Error in enrich-uploaded-plan API:", error);
       return res.status(500).json({ error: error?.message || "Error al potenciar el plan." });
