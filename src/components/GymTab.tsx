@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { FullTrainingPlan, UserProfile, DayPlan, ProgressionSuggestion, PausedSession, DayDescription, DailyCheckinData, DayState } from "../types";
 import { WorkoutSession } from "./WorkoutSession";
+import { PhaseAdvancement } from "./PhaseAdvancement";
 import {
   Dumbbell, Clock, Play, Youtube, Check, FileText,
   PersonStanding, Footprints, Bike, Moon, Zap, Flame, CalendarDays, ChevronDown, X, RotateCcw, BookOpen,
-  Activity, Home, AlertTriangle, BedDouble, CheckCircle, MessageSquare,
+  Activity, Home, AlertTriangle, BedDouble, CheckCircle, MessageSquare, Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRestTimer } from "./RestTimerContext";
 import { useAuth } from "./AuthContext";
-import { saveExerciseLog, getTodayCheckin, loadTodayWorkoutLog, saveGymAttendance } from "../lib/db";
+import { saveExerciseLog, getTodayCheckin, loadTodayWorkoutLog, saveGymAttendance, advanceToNextPhase } from "../lib/db";
 import { getReadinessInfo } from "../lib/readiness";
 import { markDayCompleted, calculateStreak } from "../lib/streak";
 import { DailyCheckin } from "./DailyCheckin";
@@ -23,6 +24,7 @@ interface GymTabProps {
   onOpenProfile?: () => void;
   onOpenStats?: () => void;
   onProfileUpdated?: (updated: UserProfile) => void;
+  onPlanUpdated?: (updated: FullTrainingPlan) => void;
   onOpenWalkthrough?: () => void;
 }
 
@@ -128,7 +130,7 @@ const DayPopup: React.FC<{
   );
 };
 
-export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach, onOpenProfile, onOpenStats, onProfileUpdated, onOpenWalkthrough }) => {
+export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions = [], onOpenCoach, onOpenProfile, onOpenStats, onProfileUpdated, onPlanUpdated, onOpenWalkthrough }) => {
   const { startTimer } = useRestTimer();
   const { user } = useAuth();
 
@@ -155,6 +157,33 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
   const [todayCheckin, setTodayCheckin] = useState<DailyCheckinData | null>(null);
   const [showCheckin, setShowCheckin] = useState(false);
   const [todayWorkoutSummary, setTodayWorkoutSummary] = useState<{ duration: number; totalSets: number } | null>(null);
+
+  // Phase advancement detection
+  const [showPhaseAdvancement, setShowPhaseAdvancement] = useState(false);
+
+  useEffect(() => {
+    if (!plan.phases || plan.phases.length <= 1) return;
+    const currentPhase = plan.current_phase ?? 1;
+    const totalPhases = plan.total_phases ?? plan.phases.length;
+    if (currentPhase >= totalPhases) return; // already at last phase
+
+    const phaseStartDate = plan.phase_start_date;
+    if (!phaseStartDate) return;
+
+    // Check if 28 days have passed since phase started
+    const start = new Date(phaseStartDate);
+    const today = new Date();
+    const daysSince = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysSince < 28) return;
+
+    // Don't re-show if already dismissed today
+    const dismissKey = `phase_advance_dismissed_${currentPhase}`;
+    const lastDismissed = localStorage.getItem(dismissKey);
+    const todayStr = today.toISOString().split("T")[0];
+    if (lastDismissed === todayStr) return;
+
+    setShowPhaseAdvancement(true);
+  }, [plan.phase_start_date, plan.current_phase, plan.phases, plan.total_phases]);
 
   useEffect(() => {
     if (!user) return;
@@ -706,9 +735,21 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   className="rounded-3xl p-5 mb-3 bg-zinc-900 border border-zinc-800"
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
-                    Entrenamiento de hoy
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+                      Entrenamiento de hoy
+                    </span>
+                    {plan.phases && plan.phases.length > 1 && (
+                      <button
+                        onClick={() => setShowPhaseAdvancement(true)}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                        style={{ backgroundColor: "color-mix(in srgb, var(--color-brand) 15%, transparent)", color: "var(--color-brand)" }}
+                      >
+                        <Sparkles size={10} />
+                        Fase {plan.current_phase ?? 1} de {plan.total_phases ?? plan.phases.length}
+                      </button>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-white/60 shrink-0">
                       {getWorkoutIcon(todayDayPlan.name, "w-5 h-5")}
@@ -1158,6 +1199,30 @@ export const GymTab: React.FC<GymTabProps> = ({ plan, profile, coachSuggestions 
           onClose={() => { setSessionDay(null); setResumeState(null); setStatsRefreshKey((k) => k + 1); }}
         />
       )}
+
+      {/* Phase advancement modal */}
+      <AnimatePresence>
+        {showPhaseAdvancement && plan.phases && plan.phases.length > 1 && (
+          <PhaseAdvancement
+            plan={plan}
+            onConfirm={async () => {
+              if (!user) return;
+              const result = await advanceToNextPhase(user.id);
+              if (result.success && result.updatedPlan) {
+                onPlanUpdated?.(result.updatedPlan);
+                localStorage.setItem("healty_plan", JSON.stringify(result.updatedPlan));
+              }
+              setShowPhaseAdvancement(false);
+            }}
+            onDismiss={() => {
+              const currentPhase = plan.current_phase ?? 1;
+              const todayStr = new Date().toISOString().split("T")[0];
+              localStorage.setItem(`phase_advance_dismissed_${currentPhase}`, todayStr);
+              setShowPhaseAdvancement(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Toast */}
       <div

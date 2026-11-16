@@ -258,6 +258,7 @@ if (!plan || !profile) {
                     onOpenProfile={() => setActiveTab("profile")}
                     onOpenStats={() => setActiveTab("stats")}
                     onProfileUpdated={handleProfileUpdated}
+                    onPlanUpdated={handlePlanUpdated}
                     onOpenWalkthrough={() => setManualWalkthroughOpen(true)}
                   />
                 )}

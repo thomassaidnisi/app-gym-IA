@@ -360,7 +360,12 @@ export const PlanUpload: React.FC<PlanUploadProps> = ({ profile, onBack, onPlanS
     setSubState("success");
     setEnriching(true);
 
-    let finalPlan: FullTrainingPlan & { day_descriptions?: DayDescriptions; plan_pillars?: PlanPillar[] } = editablePlan;
+    // Si es un plan con fases progresivas, registrar la fecha de inicio de la fase 1
+    const isPhasedPlan = Array.isArray(editablePlan.phases) && editablePlan.phases.length > 1;
+    const planWithPhaseDate: FullTrainingPlan = isPhasedPlan
+      ? { ...editablePlan, phase_start_date: new Date().toISOString().split("T")[0] }
+      : editablePlan;
+    let finalPlan: FullTrainingPlan & { day_descriptions?: DayDescriptions; plan_pillars?: PlanPillar[] } = planWithPhaseDate;
     const abort = new AbortController();
     const clientTimeout = setTimeout(() => abort.abort(), 20000);   // red: el servidor corta a los 15 s
     try {

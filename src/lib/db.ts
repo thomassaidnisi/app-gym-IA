@@ -171,6 +171,58 @@ export async function savePlan(userId: string, plan: FullTrainingPlan) {
   }, { onConflict: "user_id" });
 }
 
+/** Avanza al siguiente mesociclo en planes con fases progresivas.
+ *  Actualiza plan_json.days con los ejercicios de la nueva fase
+ *  y actualiza current_phase + phase_start_date. */
+export async function advanceToNextPhase(userId: string): Promise<{
+  success: boolean;
+  newPhase: number;
+  updatedPlan?: FullTrainingPlan;
+  error?: string;
+}> {
+  const { data: planRow, error: loadError } = await supabase
+    .from("plans")
+    .select("plan_json")
+    .eq("user_id", userId)
+    .single();
+
+  if (loadError || !planRow?.plan_json) {
+    return { success: false, newPhase: 1, error: "No se encontró el plan." };
+  }
+
+  const plan = planRow.plan_json as FullTrainingPlan;
+
+  if (!plan.phases || plan.phases.length === 0) {
+    return { success: false, newPhase: 1, error: "El plan no tiene fases progresivas." };
+  }
+
+  const currentPhase = plan.current_phase ?? 1;
+  const nextPhaseNumber = currentPhase + 1;
+  const nextPhase = plan.phases.find((p) => p.phase_number === nextPhaseNumber);
+
+  if (!nextPhase) {
+    return { success: false, newPhase: currentPhase, error: "Ya estás en la última fase." };
+  }
+
+  const updatedPlan: FullTrainingPlan = {
+    ...plan,
+    days: nextPhase.days,
+    current_phase: nextPhaseNumber,
+    phase_start_date: localDateStr(),
+  };
+
+  const { error: saveError } = await supabase
+    .from("plans")
+    .update({ plan_json: updatedPlan, updated_at: new Date().toISOString() })
+    .eq("user_id", userId);
+
+  if (saveError) {
+    return { success: false, newPhase: currentPhase, error: saveError.message };
+  }
+
+  return { success: true, newPhase: nextPhaseNumber, updatedPlan };
+}
+
 export async function loadUserData(userId: string): Promise<{
   profile: UserProfile | null;
   plan: FullTrainingPlan | null;

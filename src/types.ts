@@ -105,6 +105,12 @@ export interface DayPlan {
   cooldown: CooldownItem[];
 }
 
+export interface PlanPhase {
+  phase_number: number;
+  weeks: string; // e.g. "1-4"
+  days: DayPlan[];
+}
+
 export interface FullTrainingPlan {
   plan_name: string;
   division: string;
@@ -123,6 +129,11 @@ export interface FullTrainingPlan {
     sunday: string;
   };
   days: DayPlan[];
+  // Multi-phase plan support (e.g. 3 mesocycles of 4 weeks each)
+  phases?: PlanPhase[];
+  current_phase?: number;   // 1-based, which phase is active
+  total_phases?: number;
+  phase_start_date?: string; // YYYY-MM-DD when current phase started
   source?: "ai_generated" | "uploaded_document";
 }
 
@@ -205,6 +216,7 @@ export interface CoachResponse {
 export interface ParsedPlanResponse {
   success: boolean;
   parsed_plan: FullTrainingPlan | null;
+  is_phased_plan: boolean;
   inconsistency_warning: string | null;
   error: string | null;
 }

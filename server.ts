@@ -656,6 +656,25 @@ INSTRUCCIONES CRÍTICAS:
    - El usuario quiere priorizar una zona muscular que el plan casi no trabaja.
    Si no hay ninguna inconsistencia relevante, el campo "inconsistency_warning" debe ser null.
 
+DETECCIÓN DE FASES PROGRESIVAS (MUY IMPORTANTE):
+Algunos planes de entrenamiento tienen múltiples fases o mesociclos progresivos (ej: Fase 1 semanas 1-4, Fase 2 semanas 5-8, Fase 3 semanas 9-12). Esto se detecta típicamente por:
+- Columnas o secciones llamadas "Fase 1 / Fase 2 / Fase 3" (u otras denominaciones como "Mes 1", "Bloque A/B", "Semanas 1-4 / 5-8")
+- Tablas donde cada fila es un ejercicio y cada columna es una variante progresiva de ese ejercicio
+- En estos casos, el plan evoluciona con el tiempo: el mismo día entrena distintos ejercicios según en qué fase está el usuario
+
+Si detectás que el plan tiene fases progresivas:
+- Establecé "is_phased_plan": true
+- Extraé los días completos para CADA fase en el array "phases"
+- El campo "days" debe contener SOLO los ejercicios de la FASE 1 (punto de partida)
+- Si los sets/reps son globales por fase (ej: Fase 1: 2x12-15, Fase 2: 3x10-12), aplicalos a todos los ejercicios de esa fase
+
+Si el plan NO tiene fases:
+- Establecé "is_phased_plan": false
+- El array "phases" puede estar vacío o ausente
+- El campo "days" contiene el plan completo normalmente
+
+La estructura de cada "day" dentro de "phases" es IDÉNTICA a la estructura de "days" (mismos campos: id, name, day_of_week, focus, duration, warmup, blocks, cooldown).
+
 Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin backticks, con esta estructura exacta:
 
 {
@@ -664,6 +683,8 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
   "days_per_week": número de días de entrenamiento detectados,
   "session_duration": "estimación de la duración de cada sesión (ej: ~60 min)",
   "source": "uploaded_document",
+  "is_phased_plan": true o false,
+  "total_phases": número total de fases (1 si no hay fases),
   "inconsistency_warning": "texto de la inconsistencia en español" o null,
   "weekly_schedule": {
     "monday": "nombre del día o Rest",
@@ -674,6 +695,18 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
     "saturday": "...",
     "sunday": "..."
   },
+  "phases": [
+    {
+      "phase_number": 1,
+      "weeks": "1-4",
+      "days": [ /* misma estructura que el array days de abajo */ ]
+    },
+    {
+      "phase_number": 2,
+      "weeks": "5-8",
+      "days": [ /* ejercicios de la fase 2 */ ]
+    }
+  ],
   "days": [
     {
       "id": "day_1",
@@ -753,12 +786,28 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
 
       const parsedPlan = JSON.parse(responseText.trim());
 
+      // Helper: validate that an array of days has the expected structure
+      const isValidDaysArray = (days: any[]) =>
+        days.every((day: any) =>
+          day && Array.isArray(day.blocks) &&
+          day.blocks.every((block: any) => block && Array.isArray(block.exercises)));
+
+      // Helper: normalize muscles array in all exercises of a days array
+      const normalizeDays = (days: any[]) => {
+        for (const day of days) {
+          for (const block of day.blocks) {
+            for (const ex of block.exercises) {
+              if (!Array.isArray(ex.muscles)) ex.muscles = [];
+              if (ex.youtube_url !== undefined) delete ex.youtube_url;
+            }
+          }
+        }
+      };
+
       // La pantalla de revisión recorre days → blocks → exercises → muscles: si la forma no es esa, se rompe.
       const structureOk =
         parsedPlan && typeof parsedPlan === "object" && Array.isArray(parsedPlan.days) &&
-        parsedPlan.days.every((day: any) =>
-          day && Array.isArray(day.blocks) &&
-          day.blocks.every((block: any) => block && Array.isArray(block.exercises)));
+        isValidDaysArray(parsedPlan.days);
       if (!structureOk) {
         console.error("parse-plan-document: estructura inválida de Gemini:", responseText.slice(0, 500));
         return res.status(500).json({
@@ -768,18 +817,34 @@ Tu respuesta debe de ser un JSON válido, sin texto adicional, sin markdown, sin
           error: "La IA devolvió el plan con un formato que no pudimos leer. Probá de nuevo o con otro archivo."
         });
       }
-      for (const day of parsedPlan.days) {
-        for (const block of day.blocks) {
-          for (const ex of block.exercises) {
-            if (!Array.isArray(ex.muscles)) ex.muscles = [];
+
+      // Normalize days (phase 1 / only phase)
+      normalizeDays(parsedPlan.days);
+
+      // Handle phased plan
+      const isPhasedPlan = parsedPlan.is_phased_plan === true && Array.isArray(parsedPlan.phases) && parsedPlan.phases.length > 1;
+      if (isPhasedPlan) {
+        // Validate and normalize all phases
+        for (const phase of parsedPlan.phases) {
+          if (Array.isArray(phase.days)) {
+            normalizeDays(phase.days);
           }
         }
+        parsedPlan.current_phase = 1;
+        parsedPlan.total_phases = parsedPlan.phases.length;
+      } else {
+        parsedPlan.phases = [];
+        parsedPlan.is_phased_plan = false;
+        parsedPlan.total_phases = 1;
+        parsedPlan.current_phase = 1;
       }
+
       parsedPlan.source = "uploaded_document";
 
       return res.json({
         success: true,
         parsed_plan: parsedPlan,
+        is_phased_plan: isPhasedPlan,
         inconsistency_warning: parsedPlan.inconsistency_warning || null,
         error: null
       });
