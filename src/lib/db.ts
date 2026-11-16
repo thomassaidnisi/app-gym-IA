@@ -20,6 +20,7 @@ const STATIC_LOCAL_KEYS = [
   "workoutLogs",
   "coach_daily_message",
   "coach_daily_message_date",
+  "healty_onboarding_draft",
 ];
 
 // Prefijos de claves con sufijo dinámico (fecha, nombre de ejercicio, etc.).

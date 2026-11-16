@@ -83,19 +83,35 @@ const TooltipModal: React.FC<{ text: string; onClose: () => void }> = ({ text, o
   </div>
 );
 
+const ONBOARDING_DRAFT_KEY = "healty_onboarding_draft";
+
+function readDraft(): Record<string, any> {
+  try {
+    const raw = localStorage.getItem(ONBOARDING_DRAFT_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
 export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignOut }) => {
   const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
+    localStorage.removeItem(ONBOARDING_DRAFT_KEY);
     await signOut();
     onSignOut?.();
   };
   const { isSupported: pushSupported, subscribe: subscribePush } = usePushNotifications();
-  const [step, setStep] = useState(1);
+
+  // Restore draft on mount
+  const _d = readDraft();
+
+  const [step, setStep] = useState(_d.step ?? 1);
   const [pendingPlanResult, setPendingPlanResult] = useState<{ plan: FullTrainingPlan; profile: UserProfile } | null>(null);
   const [pushPromptLoading, setPushPromptLoading] = useState(false);
 
   const handlePlanReady = (plan: FullTrainingPlan, profile: UserProfile) => {
+    // Clear the draft — onboarding is done
+    localStorage.removeItem(ONBOARDING_DRAFT_KEY);
     if (!pushSupported) {
       onPlanGenerated(plan, profile);
       return;
@@ -122,37 +138,37 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
   };
 
   // --- Existing state ---
-  const [name, setName] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [age, setAge] = useState<number | "">("");
-  const [weight, setWeight] = useState<number | "">("");
-  const [height, setHeight] = useState<number | "">("");
-  const [gender, setGender] = useState("");
-  const [goals, setGoals] = useState<string[]>([]);
-  const [muscleFocus, setMuscleFocus] = useState<string[]>([]);
-  const [medicalConditions, setMedicalConditions] = useState<string[]>([]);
-  const [otherMedical, setOtherMedical] = useState("");
-  const [experience, setExperience] = useState("");
-  const [daysPerWeek, setDaysPerWeek] = useState<number>(3);
-  const [sessionDuration, setSessionDuration] = useState("60 min");
-  const [cardioEquipment, setCardioEquipment] = useState<string[]>([]);
-  const [strengthEquipment, setStrengthEquipment] = useState<string[]>([]);
-  const [exercisesToAvoid, setExercisesToAvoid] = useState("");
-  const [injuriesOrLimitations, setInjuriesOrLimitations] = useState("");
-  const [specificGoal, setSpecificGoal] = useState("");
-  const [preferredDays, setPreferredDays] = useState<string[]>([]);
-  const [otherActivitiesChips, setOtherActivitiesChips] = useState<string[]>([]);
-  const [otherActivityText, setOtherActivityText] = useState("");
-  const [activityDetails, setActivityDetails] = useState<Record<string, { frequency: string; days: string[] }>>({});
-  const [preferredSchedule, setPreferredSchedule] = useState("");
+  const [name, setName] = useState(_d.name ?? "");
+  const [apellido, setApellido] = useState(_d.apellido ?? "");
+  const [age, setAge] = useState<number | "">(_d.age ?? "");
+  const [weight, setWeight] = useState<number | "">(_d.weight ?? "");
+  const [height, setHeight] = useState<number | "">(_d.height ?? "");
+  const [gender, setGender] = useState(_d.gender ?? "");
+  const [goals, setGoals] = useState<string[]>(_d.goals ?? []);
+  const [muscleFocus, setMuscleFocus] = useState<string[]>(_d.muscleFocus ?? []);
+  const [medicalConditions, setMedicalConditions] = useState<string[]>(_d.medicalConditions ?? []);
+  const [otherMedical, setOtherMedical] = useState(_d.otherMedical ?? "");
+  const [experience, setExperience] = useState(_d.experience ?? "");
+  const [daysPerWeek, setDaysPerWeek] = useState<number>(_d.daysPerWeek ?? 3);
+  const [sessionDuration, setSessionDuration] = useState(_d.sessionDuration ?? "60 min");
+  const [cardioEquipment, setCardioEquipment] = useState<string[]>(_d.cardioEquipment ?? []);
+  const [strengthEquipment, setStrengthEquipment] = useState<string[]>(_d.strengthEquipment ?? []);
+  const [exercisesToAvoid, setExercisesToAvoid] = useState(_d.exercisesToAvoid ?? "");
+  const [injuriesOrLimitations, setInjuriesOrLimitations] = useState(_d.injuriesOrLimitations ?? "");
+  const [specificGoal, setSpecificGoal] = useState(_d.specificGoal ?? "");
+  const [preferredDays, setPreferredDays] = useState<string[]>(_d.preferredDays ?? []);
+  const [otherActivitiesChips, setOtherActivitiesChips] = useState<string[]>(_d.otherActivitiesChips ?? []);
+  const [otherActivityText, setOtherActivityText] = useState(_d.otherActivityText ?? "");
+  const [activityDetails, setActivityDetails] = useState<Record<string, { frequency: string; days: string[] }>>(_d.activityDetails ?? {});
+  const [preferredSchedule, setPreferredSchedule] = useState(_d.preferredSchedule ?? "");
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
 
   // --- New location state ---
-  const [trainingLocation, setTrainingLocation] = useState<"home" | "gym" | "both" | "">("");
-  const [locationByDay, setLocationByDay] = useState<Record<string, "" | "gym" | "home">>({});
-  const [gymCardioEquipment, setGymCardioEquipment] = useState<string[]>([]);
-  const [gymStrengthEquipment, setGymStrengthEquipment] = useState<string[]>([]);
-  const [homeEquipment, setHomeEquipment] = useState<string[]>([]);
+  const [trainingLocation, setTrainingLocation] = useState<"home" | "gym" | "both" | "">(_d.trainingLocation ?? "");
+  const [locationByDay, setLocationByDay] = useState<Record<string, "" | "gym" | "home">>(_d.locationByDay ?? {});
+  const [gymCardioEquipment, setGymCardioEquipment] = useState<string[]>(_d.gymCardioEquipment ?? []);
+  const [gymStrengthEquipment, setGymStrengthEquipment] = useState<string[]>(_d.gymStrengthEquipment ?? []);
+  const [homeEquipment, setHomeEquipment] = useState<string[]>(_d.homeEquipment ?? []);
 
   // --- Step sequence (dynamic for "both" mode) ---
   const stepSequence = useMemo((): StepId[] => {
@@ -181,7 +197,29 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onPlanGenerated, onSignO
   const [isGenerating, setIsGenerating] = useState(false);
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [onboardingFlow, setOnboardingFlow] = useState<"questions" | "choose_method" | "upload">("questions");
+  const [onboardingFlow, setOnboardingFlow] = useState<"questions" | "choose_method" | "upload">(_d.onboardingFlow ?? "questions");
+
+  // Persist draft on every change so the user can resume if they leave
+  useEffect(() => {
+    // Don't save intro step — only once the user starts filling real data
+    if (step <= 1 && !name && !gender) return;
+    const draft = {
+      step, name, apellido, age, weight, height, gender, goals, muscleFocus,
+      medicalConditions, otherMedical, experience, daysPerWeek, sessionDuration,
+      cardioEquipment, strengthEquipment, exercisesToAvoid, injuriesOrLimitations,
+      specificGoal, preferredDays, otherActivitiesChips, otherActivityText,
+      activityDetails, preferredSchedule, trainingLocation, locationByDay,
+      gymCardioEquipment, gymStrengthEquipment, homeEquipment, onboardingFlow,
+    };
+    localStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify(draft));
+  }, [
+    step, name, apellido, age, weight, height, gender, goals, muscleFocus,
+    medicalConditions, otherMedical, experience, daysPerWeek, sessionDuration,
+    cardioEquipment, strengthEquipment, exercisesToAvoid, injuriesOrLimitations,
+    specificGoal, preferredDays, otherActivitiesChips, otherActivityText,
+    activityDetails, preferredSchedule, trainingLocation, locationByDay,
+    gymCardioEquipment, gymStrengthEquipment, homeEquipment, onboardingFlow,
+  ]);
 
   const loadingPhrases = [
     "Analizando tu perfil...",
